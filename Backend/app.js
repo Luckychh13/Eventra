@@ -1,13 +1,15 @@
 import express from "express";
 import cors from "cors";
-import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
+import eventRoutes from "./routes/eventRoutes.js";
 import requestLogger from "./middleware/requestLogger.js";
+import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
 const app = express();
 
-app.use(requestLogger);
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(requestLogger);
 
 app.get("/", (req, res) => {
   res.status(200).json({
@@ -23,6 +25,9 @@ app.get("/api/health", (req, res) => {
     status: "healthy",
   });
 });
+
+
+app.use("/api/events", eventRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

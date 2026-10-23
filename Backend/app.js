@@ -4,6 +4,7 @@ import eventRoutes from "./routes/eventRoutes.js";
 import requestLogger from "./middleware/requestLogger.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 import authRoutes from "./routes/authRoutes.js";
+import participantRoutes from "./routes/participantRoutes.js";
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/events", eventRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/participants", participantRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

@@ -8,6 +8,7 @@ import participantRoutes from "./routes/participantRoutes.js";
 import configRoutes from "./routes/configRoutes.js";
 import voteRoutes from "./routes/voteRoutes.js";
 import pricingRoutes from "./routes/pricingRoutes.js";
+import cartRoutes from "./routes/cartRoutes.js";
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use("/api/participants", participantRoutes);
 app.use("/api/config", configRoutes);
 app.use("/api/votes", voteRoutes);
 app.use("/api/pricing", pricingRoutes);
+app.use("/api/cart", cartRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

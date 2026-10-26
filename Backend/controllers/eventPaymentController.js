@@ -6,7 +6,6 @@ import EventOrder from "../models/EventOrder.js";
 import Pricing from "../models/Pricing.js";
 import Event from "../models/Event.js";
 
-// Use the current offer price only while the offer is valid.
 const getEffectivePrice = (pricing) => {
     const offerIsValid =
         pricing.offer?.active === true &&
@@ -18,7 +17,6 @@ const getEffectivePrice = (pricing) => {
         : pricing.price;
 };
 
-// Create a Razorpay order using the authenticated user's cart.
 export const createEventOrder = async (req, res) => {
     try {
         const uid = req.user?.uid;
@@ -38,7 +36,6 @@ export const createEventOrder = async (req, res) => {
             });
         }
 
-        // Get the authenticated user's cart and its ticket details.
         const cart = await Cart.findOne({ uid }).populate(
             "items.pricingId"
         );
@@ -52,7 +49,6 @@ export const createEventOrder = async (req, res) => {
         let totalAmount = 0;
         const orderItems = [];
 
-        // Calculate the amount using server-side pricing records.
         for (const item of cart.items) {
             const pricing = item.pricingId;
 
@@ -98,7 +94,6 @@ export const createEventOrder = async (req, res) => {
 
             totalAmount += item.quantity * price;
 
-            // Save a snapshot of the ticket details for this checkout.
             orderItems.push({
                 eventId: cart.eventId,
                 pricingId: pricing._id,
@@ -120,7 +115,6 @@ export const createEventOrder = async (req, res) => {
             key_secret: process.env.RAZORPAY_KEY_SECRET,
         });
 
-        // Create the payment order with Razorpay.
         const order = await razorpay.orders.create({
             amount: amountInPaise,
             currency: "INR",
@@ -131,7 +125,6 @@ export const createEventOrder = async (req, res) => {
             },
         });
 
-        // Record the pending order and the cart snapshot.
         const pendingOrder = new EventOrder({
             uid,
             items: orderItems,
@@ -142,7 +135,6 @@ export const createEventOrder = async (req, res) => {
 
         await pendingOrder.save();
 
-        // Preserve the original frontend's expected response structure.
         return res.status(200).json({
             order,
             totalAmount: amountInPaise / 100,
@@ -194,7 +186,6 @@ export const verifyEventPayment = async (req, res) => {
             });
         }
 
-        // Find the order that Eventra saved when checkout started.
         const pendingOrder = await EventOrder.findOne({
             razorpay_order_id,
         });
@@ -210,8 +201,6 @@ export const verifyEventPayment = async (req, res) => {
                 error: "This payment order does not belong to you",
             });
         }
-
-        // An already completed order must not deduct inventory twice.
         if (pendingOrder.paymentStatus === "SUCCESS") {
             return res.status(200).json({
                 success: true,
@@ -226,7 +215,6 @@ export const verifyEventPayment = async (req, res) => {
             });
         }
 
-        // Verify the checkout signature using the Razorpay secret.
         const expectedSignature = crypto
             .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
             .update(`${razorpay_order_id}|${razorpay_payment_id}`)
@@ -249,7 +237,6 @@ export const verifyEventPayment = async (req, res) => {
             key_secret: process.env.RAZORPAY_KEY_SECRET,
         });
 
-        // Independently verify the Razorpay order and payment.
         const razorpayOrder =
             await razorpay.orders.fetch(razorpay_order_id);
 
@@ -277,7 +264,6 @@ export const verifyEventPayment = async (req, res) => {
             });
         }
 
-        // All items come from the saved order snapshot, not the current cart.
         if (!pendingOrder.items.length) {
             return res.status(400).json({
                 error: "The saved order contains no ticket items",
@@ -309,8 +295,6 @@ export const verifyEventPayment = async (req, res) => {
         session.startTransaction();
 
         try {
-            // Claim the pending order within the transaction. This prevents two
-            // concurrent verification requests from fulfilling the same order.
             const claimedOrder = await EventOrder.findOne({
                 _id: pendingOrder._id,
                 paymentStatus: "PENDING",
@@ -323,7 +307,6 @@ export const verifyEventPayment = async (req, res) => {
                 );
             }
 
-            // Reserve/sell each ticket against its stored order quantity.
             for (const item of pendingOrder.items) {
                 const updatedPricing = await Pricing.findOneAndUpdate(
                     {
@@ -377,15 +360,13 @@ export const verifyEventPayment = async (req, res) => {
                 );
             }
 
-            // Finalize the existing pending order instead of creating a duplicate.
             claimedOrder.razorpay_payment_id = razorpay_payment_id;
             claimedOrder.razorpay_signature = razorpay_signature;
             claimedOrder.paymentStatus = "SUCCESS";
 
             await claimedOrder.save({ session });
 
-            // Remove the purchased quantities from the cart, preserving any
-            // additional items the user may have added during checkout.
+           
             const cart = await Cart.findOne({ uid }).session(session);
 
             if (cart) {
@@ -471,7 +452,6 @@ export const verifyEventPayment = async (req, res) => {
     }
 };
 
-// Get orders belonging to the authenticated user.
 export const getUserOrders = async (req, res) => {
     try {
         const { uid } = req.params;
@@ -501,7 +481,6 @@ export const getUserOrders = async (req, res) => {
     }
 };
 
-// Get orders for a specific event and calculate totals.
 export const getEventOrders = async (req, res) => {
     try {
         const { eventId } = req.params;
@@ -558,7 +537,6 @@ export const getEventOrders = async (req, res) => {
     }
 };
 
-// Get all event orders for the admin dashboard.
 export const getAllEventOrders = async (req, res) => {
     try {
         const orders = await EventOrder.find()
@@ -647,7 +625,6 @@ export const getAllEventOrders = async (req, res) => {
     }
 };
 
-// Mark an order's tickets as allotted by an administrator.
 export const allotEventTicket = async (req, res) => {
     try {
         const { orderId } = req.params;

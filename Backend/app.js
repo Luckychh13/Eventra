@@ -12,6 +12,7 @@ import cartRoutes from "./routes/cartRoutes.js";
 import eventPaymentRoutes from "./routes/eventPaymentRoutes.js";
 import announcementRoutes from "./routes/announcementRoutes.js";
 import feedbackRoutes from "./routes/feedbackRoutes.js";
+import leaderboardRoutes from "./routes/leaderboardRoutes.js";
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/razorpay/events", eventPaymentRoutes);
 app.use("/api/announcements", announcementRoutes);
 app.use("/api/feedback", feedbackRoutes);
+app.use("/api/leaderboard", leaderboardRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

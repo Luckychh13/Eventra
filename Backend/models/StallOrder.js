@@ -18,6 +18,10 @@ const stallOrderItemSchema = new mongoose.Schema({
     type: Number,
     default: 1,
   },
+  imageUrl: {
+    type: String,
+    default: "",
+  },
 });
 
 const stallOrderSchema = new mongoose.Schema(
@@ -53,16 +57,14 @@ const stallOrderSchema = new mongoose.Schema(
     },
     razorpay_payment_id: {
       type: String,
-      required: true,
     },
     razorpay_signature: {
       type: String,
-      required: true,
     },
     paymentStatus: {
       type: String,
-      enum: ["SUCCESS", "FAILED"],
-      default: "SUCCESS",
+      enum: ["PENDING", "SUCCESS", "FAILED"],
+      default: "PENDING",
     },
   },
   {

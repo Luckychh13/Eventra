@@ -15,6 +15,7 @@ import feedbackRoutes from "./routes/feedbackRoutes.js";
 import leaderboardRoutes from "./routes/leaderboardRoutes.js";
 import stallRoutes from "./routes/stallRoutes.js";
 import stallCartRoutes from "./routes/stallCartRoutes.js";
+import stallPaymentRoutes from "./routes/stallPaymentRoutes.js";
 
 const app = express();
 
@@ -52,6 +53,7 @@ app.use("/api/feedback", feedbackRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/stalls", stallRoutes);
 app.use("/api/stallCart", stallCartRoutes);
+app.use("/api/stallPayment", stallPaymentRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

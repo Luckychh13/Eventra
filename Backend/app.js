@@ -17,6 +17,9 @@ import stallRoutes from "./routes/stallRoutes.js";
 import stallCartRoutes from "./routes/stallCartRoutes.js";
 import stallPaymentRoutes from "./routes/stallPaymentRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import firebaseRoutes from "./routes/firebaseRoutes.js";
 
 const app = express();
 
@@ -56,6 +59,9 @@ app.use("/api/stalls", stallRoutes);
 app.use("/api/stallCart", stallCartRoutes);
 app.use("/api/stallPayment", stallPaymentRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/firebase", firebaseRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

@@ -20,6 +20,7 @@ import dashboardRoutes from "./routes/dashboardRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import firebaseRoutes from "./routes/firebaseRoutes.js";
+import imageRoutes from "./routes/imageRoutes.js";
 
 const app = express();
 
@@ -62,6 +63,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/firebase", firebaseRoutes);
+app.use("/api/images", imageRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

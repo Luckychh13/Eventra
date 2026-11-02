@@ -21,6 +21,7 @@ import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import firebaseRoutes from "./routes/firebaseRoutes.js";
 import imageRoutes from "./routes/imageRoutes.js";
+import performerRoutes from "./routes/performerRoutes.js";
 
 const app = express();
 
@@ -64,6 +65,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/firebase", firebaseRoutes);
 app.use("/api/images", imageRoutes);
+app.use("/api/performers", performerRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

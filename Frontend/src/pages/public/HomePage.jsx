@@ -1,15 +1,33 @@
-function HomePage() {
-    return (
-        <main className="min-h-screen bg-eventra-black px-6 py-16 text-white">
-            <div className="mx-auto max-w-7xl">
-                <h1 className="font-display text-4xl font-bold">
-                    Welcome to <span className="text-eventra-purple">Eventra</span>
-                </h1>
+import HeroSection from '../../components/home/HeroSection.jsx'
+import UpcomingEventsSection from '../../components/home/UpcomingEventsSection.jsx'
+import AnnouncementsSection from '../../components/home/AnnouncementsSection.jsx'
+import PerformersStallsSection from '../../components/home/PerformersStallsSection.jsx'
+import FeaturedEventSection from '../../components/home/FeaturedEventSection.jsx'
+import EditorialSection from '../../components/home/EditorialSection.jsx'
+import WhyEventraSection from '../../components/home/WhyEventraSection.jsx'
 
-                <p className="mt-4 max-w-2xl font-body text-eventra-muted">
-                    Discover events, explore experiences and find your next great plan.
-                </p>
-            </div>
+import useEvents from '../../hooks/useEvents.js'
+function HomePage() {
+    const { events, loading, error } = useEvents()
+
+    return (
+        <main>
+            <HeroSection />
+            <FeaturedEventSection
+                events={events}
+                loading={loading}
+                error={error}
+            />
+            <UpcomingEventsSection
+                events={events}
+                loading={loading}
+                error={error}
+            />
+            <EditorialSection />
+            <WhyEventraSection />
+            <AnnouncementsSection />
+            <PerformersStallsSection />
+
         </main>
     )
 }

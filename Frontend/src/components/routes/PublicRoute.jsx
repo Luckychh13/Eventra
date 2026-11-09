@@ -1,15 +1,13 @@
-import {Navigate, Outlet} from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import useAuth from "../../hooks/useAuth.js";
 
 const PublicRoute = () => {
-    const {user, loading} = useAuth()
+    const { user, loading } = useAuth()
 
-    if(loading) {
+    if (loading) {
         return <h1>Loading...</h1>
     }
-    if(user) {
-        return <Navigate to='/' replace />
-    }
+    if (user?.emailVerified) return <Navigate to='/' replace />
 
     return <Outlet />
 }

@@ -1,15 +1,15 @@
 import { Route, Routes } from 'react-router-dom'
-
 import AppLayout from './layouts/AppLayout.jsx'
 import AdminLayout from './layouts/AdminLayout.jsx'
-
 import HomePage from './pages/public/HomePage.jsx'
 import NotFoundPage from './pages/public/NotFoundPage.jsx'
 import RoutePlaceholder from './pages/RoutePlaceholder.jsx'
-
-import PublicRoute from './components/routes/PublicRoute.jsx'
 import ProtectedRoute from './components/routes/ProtectedRoute.jsx'
 import AdminRoute from './components/routes/AdminRoute.jsx'
+import LoginPage from './pages/auth/LoginPage.jsx'
+import SignupPage from './pages/auth/SignupPage.jsx'
+import PublicRoute from './components/routes/PublicRoute.jsx'
+import AccountPage from './pages/user/AccountPage.jsx'
 
 function App() {
   return (
@@ -29,8 +29,8 @@ function App() {
 
         {/* Guest-only pages */}
         <Route element={<PublicRoute />}>
-          <Route path="login" element={<RoutePlaceholder title="Login" />} />
-          <Route path="signup" element={<RoutePlaceholder title="Signup" />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="signup" element={<SignupPage />} />
         </Route>
 
         {/* Authenticated user pages */}
@@ -39,8 +39,12 @@ function App() {
           <Route path="voting" element={<RoutePlaceholder title="Voting Zone" />} />
         </Route>
 
-        {/* Pages without a route-level guard in the reference */}
-        <Route path="account" element={<RoutePlaceholder title="My Account" />} />
+        {/* Authenticated user pages */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="account" element={<AccountPage />} />
+        </Route>
+
+        {/* Other pages */}
         <Route path="cart" element={<RoutePlaceholder title="Cart" />} />
 
         {/* Stall-owner page; authentication is handled inside its page */}

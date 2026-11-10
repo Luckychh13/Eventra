@@ -10,6 +10,7 @@ import LoginPage from './pages/auth/LoginPage.jsx'
 import SignupPage from './pages/auth/SignupPage.jsx'
 import PublicRoute from './components/routes/PublicRoute.jsx'
 import AccountPage from './pages/user/AccountPage.jsx'
+import EventPricingPage from './pages/public/EventPricingPage.jsx'
 
 function App() {
   return (
@@ -23,7 +24,7 @@ function App() {
         <Route path="eventSchedules" element={<RoutePlaceholder title="Event Schedules" />} />
         <Route path="contact" element={<RoutePlaceholder title="Contact" />} />
         <Route path="stall/:id" element={<RoutePlaceholder title="Stall Details" />} />
-        <Route path="pricing/:eventId" element={<RoutePlaceholder title="Event Pricing" />} />
+        <Route path="pricing/:eventId" element={<EventPricingPage />} />
         <Route path="success" element={<RoutePlaceholder title="Payment Success" />} />
         <Route path="cancel" element={<RoutePlaceholder title="Payment Cancel" />} />
 

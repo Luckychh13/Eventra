@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 function UpcomingEventsSection({ events, loading, error }) {
     if (loading) {
         return <p>Loading events...</p>
@@ -45,6 +47,13 @@ function UpcomingEventsSection({ events, loading, error }) {
                                     {event.description}
                                 </p>
                             )}
+
+                            <Link
+                                to={`/pricing/${event._id}`}
+                                className="mt-4 inline-block rounded border border-white/20 px-4 py-2"
+                            >
+                                View Tickets
+                            </Link>
                         </article>
                     ))}
                 </div>

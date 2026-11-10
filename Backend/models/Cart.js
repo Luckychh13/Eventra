@@ -21,12 +21,6 @@ const cartSchema = new mongoose.Schema(
             required: true,
         },
 
-        eventId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Event",
-            required: true,
-        },
-
         items: [cartItemSchema],
 
         totalPrice: {

@@ -6,58 +6,101 @@ const authorizeCartOwner = (req, res, requestedUid) => {
     const authenticatedUid = req.user?.uid;
 
     if (!authenticatedUid) {
-        res.status(401).json({ error: "Authentication required" });
+        res.status(401).json({
+            error: "Authentication required",
+        });
         return null;
     }
 
     if (!requestedUid) {
-        res.status(400).json({ error: "uid is required" });
+        res.status(400).json({
+            error: "uid is required",
+        });
         return null;
     }
 
     if (requestedUid !== authenticatedUid) {
-        res.status(403).json({ error: "You cannot access another user's cart" });
+        res.status(403).json({
+            error: "You cannot access another user's cart",
+        });
         return null;
     }
 
     return authenticatedUid;
 };
 
+const getEffectivePrice = (pricing) => {
+    const offerIsValid =
+        pricing.offer?.active === true &&
+        pricing.offer?.expiry &&
+        new Date(pricing.offer.expiry) > new Date();
+
+    return offerIsValid
+        ? pricing.finalPrice ?? pricing.price
+        : pricing.price;
+};
+
 const calculateCartTotal = async (cart) => {
-    const pricingIds = cart.items.map((item) => item.pricingId);
+    const pricingIds = cart.items.map(
+        (item) => item.pricingId
+    );
 
     const pricingDocs = await Pricing.find({
         _id: { $in: pricingIds },
     });
 
+    const pricingMap = new Map(
+        pricingDocs.map((pricing) => [
+            pricing._id.toString(),
+            pricing,
+        ])
+    );
+
     cart.totalPrice = cart.items.reduce((total, item) => {
-        const pricing = pricingDocs.find(
-            (entry) => entry._id.toString() === item.pricingId.toString()
+        const pricing = pricingMap.get(
+            item.pricingId.toString()
         );
 
-        const price = pricing?.finalPrice ?? pricing?.price ?? 0;
+        if (!pricing) {
+            return total;
+        }
 
-        return total + item.quantity * price;
+        return total + item.quantity * getEffectivePrice(pricing);
     }, 0);
 };
 
 const getPopulatedCart = async (cartId) => {
-    return Cart.findById(cartId).populate("items.pricingId");
+    return Cart.findById(cartId).populate({
+        path: "items.pricingId",
+        populate: {
+            path: "event",
+            select: "title day date time location imageUrl",
+        },
+    });
+};
+
+const getAvailableTickets = (pricing) => {
+    return Math.max(
+        0,
+        pricing.totalTickets - pricing.ticketsSold
+    );
 };
 
 export const addToCart = async (req, res) => {
     try {
-        const { uid, eventId, pricingId, quantity = 1 } = req.body;
+        const {
+            uid,
+            pricingId,
+            quantity = 1,
+        } = req.body;
 
         const ownerUid = authorizeCartOwner(req, res, uid);
+
         if (!ownerUid) return;
 
-        if (
-            !mongoose.isValidObjectId(eventId) ||
-            !mongoose.isValidObjectId(pricingId)
-        ) {
+        if (!mongoose.isValidObjectId(pricingId)) {
             return res.status(400).json({
-                error: "Invalid event ID or pricing ID",
+                error: "Invalid pricing ID",
             });
         }
 
@@ -70,38 +113,47 @@ export const addToCart = async (req, res) => {
         const pricing = await Pricing.findById(pricingId);
 
         if (!pricing) {
-            return res.status(404).json({ error: "Ticket type not found" });
-        }
-
-        if (pricing.event.toString() !== eventId) {
-            return res.status(400).json({
-                error: "Ticket pricing does not belong to this event",
+            return res.status(404).json({
+                error: "Ticket type not found",
             });
         }
 
-        let cart = await Cart.findOne({ uid: ownerUid });
+        let cart = await Cart.findOne({
+            uid: ownerUid,
+        });
+
+        const existingItem = cart?.items.find(
+            (item) =>
+                item.pricingId.toString() === pricingId
+        );
+
+        const existingQuantity = existingItem
+            ? existingItem.quantity
+            : 0;
+
+        const availableTickets = getAvailableTickets(pricing);
+
+        if (existingQuantity + quantity > availableTickets) {
+            return res.status(409).json({
+                error: `Only ${availableTickets} ${pricing.ticketType} tickets are currently available`,
+            });
+        }
 
         if (!cart) {
             cart = new Cart({
                 uid: ownerUid,
-                eventId,
                 items: [],
                 totalPrice: 0,
             });
-        } else if (cart.eventId.toString() !== eventId) {
-            return res.status(400).json({
-                error: "Your cart already belongs to another event",
-            });
         }
-
-        const existingItem = cart.items.find(
-            (item) => item.pricingId.toString() === pricingId
-        );
 
         if (existingItem) {
             existingItem.quantity += quantity;
         } else {
-            cart.items.push({ pricingId, quantity });
+            cart.items.push({
+                pricingId,
+                quantity,
+            });
         }
 
         await calculateCartTotal(cart);
@@ -128,16 +180,22 @@ export const getCart = async (req, res) => {
         const { uid } = req.params;
 
         const ownerUid = authorizeCartOwner(req, res, uid);
+
         if (!ownerUid) return;
 
-        const cart = await Cart.findOne({ uid: ownerUid }).populate(
-            "items.pricingId"
-        );
+        const cart = await Cart.findOne({
+            uid: ownerUid,
+        }).populate({
+            path: "items.pricingId",
+            populate: {
+                path: "event",
+                select: "title day date time location imageUrl",
+            },
+        });
 
         if (!cart) {
             return res.status(200).json({
                 uid: ownerUid,
-                eventId: null,
                 items: [],
                 totalPrice: 0,
             });
@@ -155,13 +213,20 @@ export const getCart = async (req, res) => {
 
 export const updateCartItem = async (req, res) => {
     try {
-        const { uid, pricingId, action } = req.body;
+        const {
+            uid,
+            pricingId,
+            action,
+        } = req.body;
 
         const ownerUid = authorizeCartOwner(req, res, uid);
+
         if (!ownerUid) return;
 
         if (!mongoose.isValidObjectId(pricingId)) {
-            return res.status(400).json({ error: "Invalid pricing ID" });
+            return res.status(400).json({
+                error: "Invalid pricing ID",
+            });
         }
 
         if (!["increase", "decrease"].includes(action)) {
@@ -170,14 +235,19 @@ export const updateCartItem = async (req, res) => {
             });
         }
 
-        const cart = await Cart.findOne({ uid: ownerUid });
+        const cart = await Cart.findOne({
+            uid: ownerUid,
+        });
 
         if (!cart) {
-            return res.status(404).json({ error: "Cart not found" });
+            return res.status(404).json({
+                error: "Cart not found",
+            });
         }
 
         const item = cart.items.find(
-            (entry) => entry.pricingId.toString() === pricingId
+            (entry) =>
+                entry.pricingId.toString() === pricingId
         );
 
         if (!item) {
@@ -187,6 +257,22 @@ export const updateCartItem = async (req, res) => {
         }
 
         if (action === "increase") {
+            const pricing = await Pricing.findById(pricingId);
+
+            if (!pricing) {
+                return res.status(404).json({
+                    error: "Ticket type not found",
+                });
+            }
+
+            const availableTickets = getAvailableTickets(pricing);
+
+            if (item.quantity + 1 > availableTickets) {
+                return res.status(409).json({
+                    error: `Only ${availableTickets} ${pricing.ticketType} tickets are currently available`,
+                });
+            }
+
             item.quantity += 1;
         } else {
             item.quantity -= 1;
@@ -194,7 +280,8 @@ export const updateCartItem = async (req, res) => {
 
         if (item.quantity <= 0) {
             cart.items = cart.items.filter(
-                (entry) => entry.pricingId.toString() !== pricingId
+                (entry) =>
+                    entry.pricingId.toString() !== pricingId
             );
         }
 
@@ -218,25 +305,36 @@ export const updateCartItem = async (req, res) => {
 
 export const deleteCartItem = async (req, res) => {
     try {
-        const { uid, pricingId } = req.body;
+        const {
+            uid,
+            pricingId,
+        } = req.body;
 
         const ownerUid = authorizeCartOwner(req, res, uid);
+
         if (!ownerUid) return;
 
         if (!mongoose.isValidObjectId(pricingId)) {
-            return res.status(400).json({ error: "Invalid pricing ID" });
+            return res.status(400).json({
+                error: "Invalid pricing ID",
+            });
         }
 
-        const cart = await Cart.findOne({ uid: ownerUid });
+        const cart = await Cart.findOne({
+            uid: ownerUid,
+        });
 
         if (!cart) {
-            return res.status(404).json({ error: "Cart not found" });
+            return res.status(404).json({
+                error: "Cart not found",
+            });
         }
 
         const originalCount = cart.items.length;
 
         cart.items = cart.items.filter(
-            (item) => item.pricingId.toString() !== pricingId
+            (item) =>
+                item.pricingId.toString() !== pricingId
         );
 
         if (cart.items.length === originalCount) {

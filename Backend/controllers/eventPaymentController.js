@@ -36,9 +36,13 @@ export const createEventOrder = async (req, res) => {
             });
         }
 
-        const cart = await Cart.findOne({ uid }).populate(
-            "items.pricingId"
-        );
+        const cart = await Cart.findOne({ uid }).populate({
+            path: "items.pricingId",
+            populate: {
+                path: "event",
+                select: "_id title",
+            },
+        });
 
         if (!cart || cart.items.length === 0) {
             return res.status(400).json({
@@ -46,23 +50,14 @@ export const createEventOrder = async (req, res) => {
             });
         }
 
-        let totalAmount = 0;
-        const orderItems = [];
+        const groupedItems = new Map();
 
         for (const item of cart.items) {
             const pricing = item.pricingId;
 
-            if (!pricing) {
+            if (!pricing?._id) {
                 return res.status(400).json({
                     error: "A ticket pricing record no longer exists",
-                });
-            }
-
-            if (
-                pricing.event.toString() !== cart.eventId.toString()
-            ) {
-                return res.status(400).json({
-                    error: "Cart contains a ticket for another event",
                 });
             }
 
@@ -75,36 +70,68 @@ export const createEventOrder = async (req, res) => {
                 });
             }
 
+            const pricingId = pricing._id.toString();
+
+            const existingItem = groupedItems.get(pricingId);
+
+            groupedItems.set(pricingId, {
+                pricing,
+                quantity:
+                    (existingItem?.quantity ?? 0) + item.quantity,
+            });
+        }
+
+        let totalAmount = 0;
+        const orderItems = [];
+
+        for (const { pricing, quantity } of groupedItems.values()) {
+            const eventId = pricing.event?._id;
+
+            if (!eventId) {
+                return res.status(400).json({
+                    error: "The event associated with a ticket no longer exists",
+                });
+            }
+
             const availableTickets =
                 pricing.totalTickets - pricing.ticketsSold;
 
-            if (item.quantity > availableTickets) {
-                return res.status(400).json({
+            if (
+                !Number.isInteger(availableTickets) ||
+                quantity > availableTickets
+            ) {
+                return res.status(409).json({
                     error: `Not enough ${pricing.ticketType} tickets available`,
                 });
             }
 
             const price = getEffectivePrice(pricing);
 
-            if (!Number.isFinite(price) || price < 0) {
+            if (
+                !Number.isFinite(price) ||
+                price < 0
+            ) {
                 return res.status(400).json({
                     error: "Invalid ticket price",
                 });
             }
 
-            totalAmount += item.quantity * price;
+            totalAmount += quantity * price;
 
             orderItems.push({
-                eventId: cart.eventId,
+                eventId,
                 pricingId: pricing._id,
-                quantity: item.quantity,
+                quantity,
                 price,
             });
         }
 
         const amountInPaise = Math.round(totalAmount * 100);
 
-        if (!Number.isSafeInteger(amountInPaise) || amountInPaise <= 0) {
+        if (
+            !Number.isSafeInteger(amountInPaise) ||
+            amountInPaise <= 0
+        ) {
             return res.status(400).json({
                 error: "Cart total must be greater than zero",
             });
@@ -121,7 +148,7 @@ export const createEventOrder = async (req, res) => {
             receipt: `event_${Date.now()}`,
             notes: {
                 uid,
-                eventId: cart.eventId.toString(),
+                cartId: cart._id.toString(),
             },
         });
 
@@ -201,6 +228,7 @@ export const verifyEventPayment = async (req, res) => {
                 error: "This payment order does not belong to you",
             });
         }
+
         if (pendingOrder.paymentStatus === "SUCCESS") {
             return res.status(200).json({
                 success: true,
@@ -270,25 +298,31 @@ export const verifyEventPayment = async (req, res) => {
             });
         }
 
-        const eventId = pendingOrder.items[0].eventId;
-        const totalTickets = pendingOrder.items.reduce(
-            (sum, item) => sum + item.quantity,
-            0
-        );
+        const eventTicketTotals = new Map();
 
-        if (
-            pendingOrder.items.some(
-                (item) =>
-                    item.eventId.toString() !== eventId.toString() ||
-                    !Number.isInteger(item.quantity) ||
-                    item.quantity < 1 ||
-                    !Number.isFinite(item.price) ||
-                    item.price < 0
-            )
-        ) {
-            return res.status(400).json({
-                error: "The saved order contains invalid ticket items",
-            });
+        for (const item of pendingOrder.items) {
+            const eventId = item.eventId?.toString();
+            const pricingId = item.pricingId?.toString();
+
+            if (
+                !mongoose.isValidObjectId(eventId) ||
+                !mongoose.isValidObjectId(pricingId) ||
+                !Number.isInteger(item.quantity) ||
+                item.quantity < 1 ||
+                !Number.isFinite(item.price) ||
+                item.price < 0
+            ) {
+                return res.status(400).json({
+                    error: "The saved order contains invalid ticket items",
+                });
+            }
+
+            const currentTotal = eventTicketTotals.get(eventId) ?? 0;
+
+            eventTicketTotals.set(
+                eventId,
+                currentTotal + item.quantity
+            );
         }
 
         session = await mongoose.startSession();
@@ -307,20 +341,27 @@ export const verifyEventPayment = async (req, res) => {
                 );
             }
 
-            for (const item of pendingOrder.items) {
+            for (const item of claimedOrder.items) {
                 const updatedPricing = await Pricing.findOneAndUpdate(
                     {
                         _id: item.pricingId,
                         event: item.eventId,
                         $expr: {
                             $gte: [
-                                { $subtract: ["$totalTickets", "$ticketsSold"] },
+                                {
+                                    $subtract: [
+                                        "$totalTickets",
+                                        "$ticketsSold",
+                                    ],
+                                },
                                 item.quantity,
                             ],
                         },
                     },
                     {
-                        $inc: { ticketsSold: item.quantity },
+                        $inc: {
+                            ticketsSold: item.quantity,
+                        },
                     },
                     {
                         new: true,
@@ -336,29 +377,34 @@ export const verifyEventPayment = async (req, res) => {
                 }
             }
 
-            const updatedEvent = await Event.findOneAndUpdate(
-                {
-                    _id: eventId,
-                    ticketsAvailable: { $gte: totalTickets },
-                },
-                {
-                    $inc: {
-                        ticketsAvailable: -totalTickets,
-                        ticketsSold: totalTickets,
+            for (const [eventId, totalTickets] of eventTicketTotals) {
+                const updatedEvent = await Event.findOneAndUpdate(
+                    {
+                        _id: eventId,
+                        ticketsAvailable: {
+                            $gte: totalTickets,
+                        },
                     },
-                },
-                {
-                    new: true,
-                    session,
-                }
-            );
-
-            if (!updatedEvent) {
-                throw Object.assign(
-                    new Error("Event ticket availability is insufficient"),
-                    { statusCode: 409 }
+                    {
+                        $inc: {
+                            ticketsAvailable: -totalTickets,
+                            ticketsSold: totalTickets,
+                        },
+                    },
+                    {
+                        new: true,
+                        session,
+                    }
                 );
+
+                if (!updatedEvent) {
+                    throw Object.assign(
+                        new Error("Event ticket availability is insufficient"),
+                        { statusCode: 409 }
+                    );
+                }
             }
+
 
             claimedOrder.razorpay_payment_id = razorpay_payment_id;
             claimedOrder.razorpay_signature = razorpay_signature;
@@ -366,11 +412,10 @@ export const verifyEventPayment = async (req, res) => {
 
             await claimedOrder.save({ session });
 
-           
             const cart = await Cart.findOne({ uid }).session(session);
 
             if (cart) {
-                for (const purchasedItem of pendingOrder.items) {
+                for (const purchasedItem of claimedOrder.items) {
                     const cartItem = cart.items.find(
                         (item) =>
                             item.pricingId.toString() ===
@@ -391,7 +436,6 @@ export const verifyEventPayment = async (req, res) => {
                         );
                     }
                 }
-
                 const remainingPricingIds = cart.items.map(
                     (item) => item.pricingId
                 );
@@ -400,10 +444,16 @@ export const verifyEventPayment = async (req, res) => {
                     _id: { $in: remainingPricingIds },
                 }).session(session);
 
+                const pricingMap = new Map(
+                    remainingPricings.map((pricing) => [
+                        pricing._id.toString(),
+                        pricing,
+                    ])
+                );
+
                 cart.totalPrice = cart.items.reduce((sum, item) => {
-                    const pricing = remainingPricings.find(
-                        (entry) =>
-                            entry._id.toString() === item.pricingId.toString()
+                    const pricing = pricingMap.get(
+                        item.pricingId.toString()
                     );
 
                     const price = pricing

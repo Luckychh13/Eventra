@@ -11,6 +11,8 @@ import SignupPage from './pages/auth/SignupPage.jsx'
 import PublicRoute from './components/routes/PublicRoute.jsx'
 import AccountPage from './pages/user/AccountPage.jsx'
 import EventPricingPage from './pages/public/EventPricingPage.jsx'
+import CartPage from './pages/user/CartPage.jsx'
+import MyBookingsPage from './pages/user/MyBookingsPage.jsx'
 
 function App() {
   return (
@@ -38,15 +40,15 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="stalls" element={<RoutePlaceholder title="Stalls" />} />
           <Route path="voting" element={<RoutePlaceholder title="Voting Zone" />} />
+          <Route path="cart" element={<CartPage />} />
         </Route>
 
         {/* Authenticated user pages */}
         <Route element={<ProtectedRoute />}>
           <Route path="account" element={<AccountPage />} />
+          <Route path="bookings" element={<MyBookingsPage />} />
         </Route>
 
-        {/* Other pages */}
-        <Route path="cart" element={<RoutePlaceholder title="Cart" />} />
 
         {/* Stall-owner page; authentication is handled inside its page */}
         <Route path="stall-dashboard" element={<RoutePlaceholder title="Stall Owner Dashboard" />} />

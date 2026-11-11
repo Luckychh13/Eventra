@@ -35,6 +35,13 @@ function Navbar() {
                         <span>Checking account...</span>
                     ) : user ? (
                         <>
+                            <Link
+                                to="/bookings"
+                                className="text-sm text-gray-300 transition hover:text-white"
+                            >
+                                My Bookings
+                            </Link>
+
                             <span>
                                 {user.displayName || user.email}
                             </span>

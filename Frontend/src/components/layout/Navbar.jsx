@@ -42,6 +42,13 @@ function Navbar() {
                                 My Bookings
                             </Link>
 
+                            <Link
+                                to="/stall-orders"
+                                className="text-sm text-gray-300 transition hover:text-white"
+                            >
+                                My Stall Orders
+                            </Link>
+
                             <span>
                                 {user.displayName || user.email}
                             </span>

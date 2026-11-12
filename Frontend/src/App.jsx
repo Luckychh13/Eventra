@@ -13,6 +13,13 @@ import AccountPage from './pages/user/AccountPage.jsx'
 import EventPricingPage from './pages/public/EventPricingPage.jsx'
 import CartPage from './pages/user/CartPage.jsx'
 import MyBookingsPage from './pages/user/MyBookingsPage.jsx'
+import StallsPage from './pages/public/StallsPage.jsx'
+import StallDetailsPage from './pages/public/StallDetailsPage.jsx'
+import StallCartPage from './pages/user/StallCartPage.jsx'
+import MyStallOrdersPage from './pages/user/MyStallOrdersPage.jsx'
+import StallOwnerRoute from './components/routes/StallOwnerRoute.jsx'
+import StallOwnerDashboard from './pages/user/StallOwnerDashboard.jsx'
+import ManageStallPage from './pages/user/ManageStallPage.jsx'
 
 function App() {
   return (
@@ -25,7 +32,8 @@ function App() {
         <Route path="gallery" element={<RoutePlaceholder title="Gallery" />} />
         <Route path="eventSchedules" element={<RoutePlaceholder title="Event Schedules" />} />
         <Route path="contact" element={<RoutePlaceholder title="Contact" />} />
-        <Route path="stall/:id" element={<RoutePlaceholder title="Stall Details" />} />
+        <Route path="stalls" element={<StallsPage />} />
+        <Route path="stall/:id" element={<StallDetailsPage />} />
         <Route path="pricing/:eventId" element={<EventPricingPage />} />
         <Route path="success" element={<RoutePlaceholder title="Payment Success" />} />
         <Route path="cancel" element={<RoutePlaceholder title="Payment Cancel" />} />
@@ -38,20 +46,19 @@ function App() {
 
         {/* Authenticated user pages */}
         <Route element={<ProtectedRoute />}>
-          <Route path="stalls" element={<RoutePlaceholder title="Stalls" />} />
-          <Route path="voting" element={<RoutePlaceholder title="Voting Zone" />} />
-          <Route path="cart" element={<CartPage />} />
-        </Route>
-
-        {/* Authenticated user pages */}
-        <Route element={<ProtectedRoute />}>
           <Route path="account" element={<AccountPage />} />
           <Route path="bookings" element={<MyBookingsPage />} />
+          <Route path="cart" element={<CartPage />} />
+          <Route path="stall/:id/cart" element={<StallCartPage />} />
+          <Route path="stall-orders" element={<MyStallOrdersPage />} />
         </Route>
 
 
-        {/* Stall-owner page; authentication is handled inside its page */}
-        <Route path="stall-dashboard" element={<RoutePlaceholder title="Stall Owner Dashboard" />} />
+        {/* Stall Owner pages */}
+        <Route element={<StallOwnerRoute />}>
+          <Route path="stall-dashboard" element={<StallOwnerDashboard />} />
+          <Route path="stall-dashboard/stalls/:id/manage" element={<ManageStallPage />} />
+        </Route>
 
         {/* Admin pages */}
         <Route element={<AdminRoute />}>

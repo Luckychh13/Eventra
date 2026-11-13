@@ -20,6 +20,13 @@ import MyStallOrdersPage from './pages/user/MyStallOrdersPage.jsx'
 import StallOwnerRoute from './components/routes/StallOwnerRoute.jsx'
 import StallOwnerDashboard from './pages/user/StallOwnerDashboard.jsx'
 import ManageStallPage from './pages/user/ManageStallPage.jsx'
+import AdminStallsPage from './pages/admin/AdminStallsPage.jsx'
+import AdminStallOrdersPage from './pages/admin/AdminStallOrdersPage.jsx'
+import AdminDashboard from './pages/admin/AdminDashboard.jsx'
+import AdminUsersPage from "./pages/admin/AdminUsersPage.jsx";
+import MakeAdminPage from "./pages/admin/MakeAdminPage.jsx";
+import AdminEventsPage from "./pages/admin/AdminEventsPage.jsx";
+import AdminPricingPage from "./pages/admin/AdminPricingPage.jsx";
 
 function App() {
   return (
@@ -63,20 +70,20 @@ function App() {
         {/* Admin pages */}
         <Route element={<AdminRoute />}>
           <Route path="dashboard" element={<AdminLayout />}>
-            <Route index element={<RoutePlaceholder title="Admin Dashboard" />} />
-            <Route path="users" element={<RoutePlaceholder title="Users" />} />
-            <Route path="make-admin" element={<RoutePlaceholder title="Make Admin" />} />
+            <Route index element={<AdminDashboard />} />
+            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="make-admin" element={<MakeAdminPage />} />
             <Route path="images" element={<RoutePlaceholder title="Images" />} />
             <Route path="participants" element={<RoutePlaceholder title="Participants" />} />
             <Route path="leaderboard" element={<RoutePlaceholder title="Leaderboard" />} />
-            <Route path="events" element={<RoutePlaceholder title="Events" />} />
+            <Route path="events" element={<AdminEventsPage />} />
             <Route path="eventOrder" element={<RoutePlaceholder title="Event Orders" />} />
-            <Route path="pricingSet" element={<RoutePlaceholder title="Pricing" />} />
+            <Route path="pricingSet" element={<AdminPricingPage />} />
             <Route path="performers" element={<RoutePlaceholder title="Performers" />} />
             <Route path="feedback" element={<RoutePlaceholder title="Feedback" />} />
             <Route path="announcement" element={<RoutePlaceholder title="Announcements" />} />
-            <Route path="stalls" element={<RoutePlaceholder title="Stalls Management" />} />
-            <Route path="stallsOrder" element={<RoutePlaceholder title="Stall Orders" />} />
+            <Route path="stalls" element={<AdminStallsPage />} />
+            <Route path="stallsOrder" element={<AdminStallOrdersPage />} />
           </Route>
         </Route>
 

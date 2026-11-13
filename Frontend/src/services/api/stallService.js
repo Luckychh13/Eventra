@@ -70,3 +70,34 @@ export const generateStallToken = async (stallId, visitorData) => {
 
     return response.data
 }
+
+export const createStall = async (formData) => {
+    const response = await api.post(
+        '/api/stalls',
+        formData
+    )
+
+    return response.data
+}
+
+export const updateStall = async (stallId, formData) => {
+    const response = await api.put(
+        `/api/stalls/${encodeURIComponent(stallId)}`,
+        formData
+    )
+
+    return response.data
+}
+
+export const deleteStall = async (stallId) => {
+    const response = await api.delete(
+        `/api/stalls/${encodeURIComponent(stallId)}`
+    )
+
+    return response.data
+}
+
+export const getMyStalls = async () => {
+    const response = await api.get('/api/stalls/my-stalls')
+    return response.data
+}

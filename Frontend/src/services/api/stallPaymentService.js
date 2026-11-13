@@ -33,3 +33,11 @@ export const getUserStallOrders = async (uid) => {
 
     return response.data
 }
+
+export const getStallOrders = async (stallId) => {
+    const response = await api.get(
+        `/api/stallPayment/stall/${encodeURIComponent(stallId)}`
+    )
+
+    return response.data
+}

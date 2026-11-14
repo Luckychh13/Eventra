@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { getEvents } from "../../services/api/eventService.js";
 import {

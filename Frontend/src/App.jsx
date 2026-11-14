@@ -27,6 +27,13 @@ import AdminUsersPage from "./pages/admin/AdminUsersPage.jsx";
 import MakeAdminPage from "./pages/admin/MakeAdminPage.jsx";
 import AdminEventsPage from "./pages/admin/AdminEventsPage.jsx";
 import AdminPricingPage from "./pages/admin/AdminPricingPage.jsx";
+import AdminEventOrdersPage from './pages/admin/AdminEventOrdersPage.jsx'
+import AdminParticipantsPage from './pages/admin/AdminParticipantsPage.jsx'
+import AdminPerformersPage from './pages/admin/AdminPerformersPage.jsx'
+import AdminLeaderboardPage from './pages/admin/AdminLeaderboardPage.jsx'
+import AdminImagesPage from './pages/admin/AdminImagesPage.jsx'
+import AdminAnnouncementsPage from './pages/admin/AdminAnnouncementsPage.jsx'
+import AdminFeedbackPage from './pages/admin/AdminFeedbackPage.jsx'
 
 function App() {
   return (
@@ -73,15 +80,15 @@ function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="make-admin" element={<MakeAdminPage />} />
-            <Route path="images" element={<RoutePlaceholder title="Images" />} />
-            <Route path="participants" element={<RoutePlaceholder title="Participants" />} />
-            <Route path="leaderboard" element={<RoutePlaceholder title="Leaderboard" />} />
+            <Route path="images" element={<AdminImagesPage />} />
+            <Route path="participants" element={<AdminParticipantsPage />} />
+            <Route path="leaderboard" element={<AdminLeaderboardPage />} />
             <Route path="events" element={<AdminEventsPage />} />
-            <Route path="eventOrder" element={<RoutePlaceholder title="Event Orders" />} />
+            <Route path="eventOrder" element={<AdminEventOrdersPage />} />
             <Route path="pricingSet" element={<AdminPricingPage />} />
-            <Route path="performers" element={<RoutePlaceholder title="Performers" />} />
-            <Route path="feedback" element={<RoutePlaceholder title="Feedback" />} />
-            <Route path="announcement" element={<RoutePlaceholder title="Announcements" />} />
+            <Route path="performers" element={<AdminPerformersPage />} />
+            <Route path="feedback" element={<AdminFeedbackPage />} />
+            <Route path="announcement" element={<AdminAnnouncementsPage />} />
             <Route path="stalls" element={<AdminStallsPage />} />
             <Route path="stallsOrder" element={<AdminStallOrdersPage />} />
           </Route>

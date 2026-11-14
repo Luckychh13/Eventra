@@ -33,3 +33,19 @@ export const getUserOrders = async (uid) => {
 
     return response.data
 }
+
+export const getAllEventOrders = async () => {
+    const response = await api.get(
+        '/api/razorpay/events/all-orders'
+    )
+
+    return response.data
+}
+
+export const allotEventTicket = async (orderId) => {
+    const response = await api.put(
+        `/api/razorpay/events/allot/${orderId}`
+    )
+
+    return response.data
+}

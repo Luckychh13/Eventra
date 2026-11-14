@@ -7,6 +7,7 @@ import {
     updatePricing,
     applyOffer,
     removeOffer,
+    deletePricing,
 } from "../../services/api/pricingService.js";
 
 function AdminPricingPage() {
@@ -84,7 +85,7 @@ function AdminPricingPage() {
     }, []);
 
     useEffect(() => {
-    if (!selectedEventId) return;
+        if (!selectedEventId) return;
 
         let isActive = true;
 
@@ -360,6 +361,37 @@ function AdminPricingPage() {
             );
         } finally {
             setOfferLoading(false);
+        }
+    };
+
+    const handleDeletePricing = async (pricing) => {
+        const confirmed = window.confirm(
+            `Are you sure you want to delete the ${pricing.ticketType} pricing tier?`
+        );
+
+        if (!confirmed) return;
+
+        try {
+            setFormError("");
+            setSuccessMessage("");
+
+            await deletePricing(pricing._id);
+
+            const updatedPricings = await getEventPricings(selectedEventId);
+
+            setPricings(
+                Array.isArray(updatedPricings) ? updatedPricings : []
+            );
+
+            setSuccessMessage(
+                `${pricing.ticketType} pricing deleted successfully.`
+            );
+        } catch (err) {
+            setFormError(
+                err.response?.data?.message ||
+                err.message ||
+                "Failed to delete pricing."
+            );
         }
     };
 
@@ -774,6 +806,14 @@ function AdminPricingPage() {
                                         className="mt-5 rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-300 transition hover:bg-white/5"
                                     >
                                         Edit Pricing
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => handleDeletePricing(pricing)}
+                                        className="mt-3 rounded-lg border border-red-500/20 px-4 py-2 text-sm text-red-300 transition hover:bg-red-500/10"
+                                    >
+                                        Delete Pricing
                                     </button>
                                 </>
                             )}

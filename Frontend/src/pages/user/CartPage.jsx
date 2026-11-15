@@ -5,6 +5,7 @@ import {
     createEventOrder,
     verifyEventPayment,
 } from '../../services/api/eventPaymentService.js'
+import {useNavigate } from 'react-router-dom';
 
 const formatPrice = (amount) => {
     return new Intl.NumberFormat('en-IN', {
@@ -42,6 +43,7 @@ function CartPage() {
     } = useCart()
 
     const { user } = useAuth()
+    const navigate = useNavigate();
 
     const [checkoutLoading, setCheckoutLoading] = useState(false)
     const [checkoutError, setCheckoutError] = useState('')
@@ -81,15 +83,24 @@ function CartPage() {
 
                 handler: async (paymentResponse) => {
                     try {
-                        const result = await verifyEventPayment(
-                            paymentResponse
-                        )
+                        const result = await verifyEventPayment(paymentResponse);
 
-                        setCheckoutMessage(
-                            result.message || 'Payment verified successfully!'
-                        )
+                        if (!result?.success || !result?.order?.ticketOrderId) {
+                            throw new Error(
+                                result?.message || 'Payment verification could not be confirmed.'
+                            );
+                        }
 
-                        await refreshCart()
+                        navigate('/success', {
+                            replace: true,
+                            state: {
+                                paymentType: 'event',
+                                order: result.order,
+                            },
+                        });
+
+
+                        refreshCart().catch(() => { });
                     } catch (verificationError) {
                         setCheckoutError(
                             verificationError.response?.data?.error ||
@@ -113,10 +124,17 @@ function CartPage() {
             const razorpayInstance = new window.Razorpay(options)
 
             razorpayInstance.on('payment.failed', (response) => {
-                setCheckoutError(
-                    response.error?.description ||
-                    'Payment failed. Your cart has not been cleared.'
-                )
+                navigate('/cancel', {
+                    replace: true,
+                    state: {
+                        message:
+                            response.error?.description ||
+                            response.error?.reason ||
+                            'Your event payment could not be completed.',
+                        returnTo: '/cart',
+                        returnLabel: 'Return to Cart',
+                    },
+                })
 
                 setCheckoutLoading(false)
             })

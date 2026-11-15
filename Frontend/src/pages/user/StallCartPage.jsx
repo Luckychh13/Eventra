@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import useAuth from '../../hooks/useAuth.js'
 import useStall from '../../hooks/useStall.js'
 import useStallCart from '../../hooks/useStallCart.js'
@@ -42,6 +42,8 @@ function StallCartPage() {
     const [checkoutError, setCheckoutError] = useState('')
     const [checkoutMessage, setCheckoutMessage] = useState('')
     const [tokenNumber, setTokenNumber] = useState(null)
+
+    const navigate = useNavigate()
 
     const handleCheckout = async () => {
         setCheckoutError('')
@@ -99,20 +101,28 @@ function StallCartPage() {
 
                         const result = await verifyStallPayment(paymentResponse)
 
-                        if (!result?.success) {
+                        const confirmedTokenNumber =
+                            result?.tokenNumber ?? result?.order?.tokenNumber
+
+                        if (!result?.success || !result?.order || confirmedTokenNumber == null) {
                             throw new Error(
-                                result?.error || 'Payment verification failed.'
+                                result?.error || 'Payment verification could not be confirmed.'
                             )
                         }
 
                         paymentVerified = true
 
-                        setTokenNumber(result.tokenNumber ?? null)
-                        setCheckoutMessage(
-                            result.message || 'Payment verified successfully!'
-                        )
-
                         refreshCart()
+
+                        navigate('/success', {
+                            replace: true,
+                            state: {
+                                paymentType: 'stall',
+                                order: result.order,
+                                tokenNumber: confirmedTokenNumber,
+                                stallName: stall?.name,
+                            },
+                        })
                     } catch (verificationError) {
                         setCheckoutError(
                             verificationError.response?.data?.error ||
@@ -136,14 +146,21 @@ function StallCartPage() {
                     },
                 },
             }
-            
+
             const razorpayInstance = new window.Razorpay(options)
 
             razorpayInstance.on('payment.failed', (response) => {
-                setCheckoutError(
-                    response.error?.description ||
-                    'Payment failed. Your cart has not been cleared.'
-                )
+                navigate('/cancel', {
+                    replace: true,
+                    state: {
+                        message:
+                            response.error?.description ||
+                            response.error?.reason ||
+                            'Your stall payment could not be completed.',
+                        returnTo: `/stall/${id}/cart`,
+                        returnLabel: 'Return to Stall Cart',
+                    },
+                })
 
                 setCheckoutLoading(false)
             })

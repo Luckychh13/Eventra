@@ -3,7 +3,6 @@ import AppLayout from './layouts/AppLayout.jsx'
 import AdminLayout from './layouts/AdminLayout.jsx'
 import HomePage from './pages/public/HomePage.jsx'
 import NotFoundPage from './pages/public/NotFoundPage.jsx'
-import RoutePlaceholder from './pages/RoutePlaceholder.jsx'
 import ProtectedRoute from './components/routes/ProtectedRoute.jsx'
 import AdminRoute from './components/routes/AdminRoute.jsx'
 import LoginPage from './pages/auth/LoginPage.jsx'
@@ -34,6 +33,12 @@ import AdminLeaderboardPage from './pages/admin/AdminLeaderboardPage.jsx'
 import AdminImagesPage from './pages/admin/AdminImagesPage.jsx'
 import AdminAnnouncementsPage from './pages/admin/AdminAnnouncementsPage.jsx'
 import AdminFeedbackPage from './pages/admin/AdminFeedbackPage.jsx'
+import GalleryPage from './pages/public/GalleryPage.jsx'
+import EventSchedulePage from './pages/public/EventSchedulePage.jsx'
+import AboutPage from "./pages/public/AboutPage.jsx";
+import ContactPage from "./pages/public/ContactPage.jsx";
+import PaymentSuccessPage from './pages/user/PaymentSuccessPage.jsx';
+import PaymentCancelPage from './pages/user/PaymentCancelPage.jsx';
 
 function App() {
   return (
@@ -42,15 +47,15 @@ function App() {
 
         {/* Public pages */}
         <Route path="/" element={<HomePage />} />
-        <Route path="about" element={<RoutePlaceholder title="About" />} />
-        <Route path="gallery" element={<RoutePlaceholder title="Gallery" />} />
-        <Route path="eventSchedules" element={<RoutePlaceholder title="Event Schedules" />} />
-        <Route path="contact" element={<RoutePlaceholder title="Contact" />} />
+        <Route path="about" element={<AboutPage />} />
+        <Route path="gallery" element={<GalleryPage />} />
+        <Route path="eventSchedules" element={<EventSchedulePage />} />
+        <Route path="contact" element={<ContactPage />} />
         <Route path="stalls" element={<StallsPage />} />
         <Route path="stall/:id" element={<StallDetailsPage />} />
         <Route path="pricing/:eventId" element={<EventPricingPage />} />
-        <Route path="success" element={<RoutePlaceholder title="Payment Success" />} />
-        <Route path="cancel" element={<RoutePlaceholder title="Payment Cancel" />} />
+        <Route path="success" element={<PaymentSuccessPage />} />
+        <Route path="cancel" element={<PaymentCancelPage />} />
 
         {/* Guest-only pages */}
         <Route element={<PublicRoute />}>

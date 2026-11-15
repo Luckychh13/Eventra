@@ -134,6 +134,10 @@ function StallCartPage() {
                     }
                 },
 
+                retry: {
+                    enabled: false,
+                },
+
                 modal: {
                     ondismiss: () => {
                         if (!paymentVerified) {

@@ -5,7 +5,7 @@ import {
     createEventOrder,
     verifyEventPayment,
 } from '../../services/api/eventPaymentService.js'
-import {useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const formatPrice = (amount) => {
     return new Intl.NumberFormat('en-IN', {
@@ -109,6 +109,10 @@ function CartPage() {
                     } finally {
                         setCheckoutLoading(false)
                     }
+                },
+
+                retry: {
+                    enabled: false,
                 },
 
                 modal: {

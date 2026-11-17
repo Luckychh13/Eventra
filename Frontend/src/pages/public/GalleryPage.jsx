@@ -6,7 +6,7 @@ function GalleryHero() {
         <section className="relative overflow-hidden bg-black px-6 pb-24 pt-12 text-white">
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
                 <div className="absolute left-0 top-10 h-96 w-96 rounded-full bg-pink-600/20 blur-[150px]" />
-                <div className="absolute bottom-0 right-0 h-[30rem] w-[30rem] rounded-full bg-purple-700/25 blur-[180px]" />
+                <div className="absolute bottom-0 right-0 h-120 w-120 rounded-full bg-purple-700/25 blur-[180px]" />
             </div>
 
             <div className="relative z-10 mx-auto max-w-6xl text-center">
@@ -84,7 +84,7 @@ function GalleryImageSection() {
     return (
         <section className="min-h-screen bg-black px-6 py-16 text-white">
             <div className="mx-auto max-w-7xl">
-                <h2 className="mb-12 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-center text-4xl font-extrabold text-transparent sm:text-5xl">
+                <h2 className="mb-12 bg-linear-to-r from-purple-400 to-pink-400 bg-clip-text text-center text-4xl font-extrabold text-transparent sm:text-5xl">
                     Moments of Magic
                 </h2>
 

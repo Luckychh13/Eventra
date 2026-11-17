@@ -1,0 +1,620 @@
+/* =========================================================
+   PERFORMERS — FESTIVAL LINEUP
+========================================================= */
+
+.lineup-stage__header,
+.stalls-stage__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem 1.5rem;
+    margin-bottom: 1.75rem;
+}
+
+.lineup-stage__header>div,
+.stalls-stage__header>div {
+    max-width: 46rem;
+}
+
+.lineup-stage__header .home-kicker,
+.stalls-stage__header .home-kicker {
+    margin-bottom: 0.7rem;
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.lineup-stage__header .home-title,
+.stalls-stage__header .home-title {
+    font-size: clamp(2rem, 4vw, 3.5rem);
+}
+
+.lineup-stage__header .home-lede,
+.stalls-stage__header .home-lede {
+    max-width: 36rem;
+}
+
+/* Navigation buttons */
+
+.lineup-stage__controls {
+    display: flex;
+    flex-shrink: 0;
+    gap: 0.55rem;
+}
+
+.lineup-nav {
+    display: inline-grid;
+    place-items: center;
+
+    width: 2.65rem;
+    height: 2.65rem;
+
+    border: 1px solid var(--line);
+    border-radius: 999px;
+
+    color: var(--ink);
+    background: #fff;
+
+    font-size: 1.1rem;
+    cursor: pointer;
+
+    transition:
+        transform 250ms ease,
+        border-color 250ms ease,
+        background-color 250ms ease,
+        color 250ms ease;
+}
+
+.lineup-nav:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+    color: #fff;
+    background: var(--accent);
+}
+
+.lineup-nav:focus-visible {
+    outline: 3px solid var(--heat);
+    outline-offset: 3px;
+}
+
+/* =========================================================
+   PERFORMER HORIZONTAL RAIL
+========================================================= */
+
+.performer-rail {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(240px, 280px);
+
+    align-items: start;
+    gap: 0.95rem;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    padding: 1.25rem 0.15rem 0.85rem;
+
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 0.15rem;
+    overscroll-behavior-inline: contain;
+
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) transparent;
+}
+
+.performer-rail::-webkit-scrollbar {
+    height: 5px;
+}
+
+.performer-rail::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.performer-rail::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: var(--accent);
+}
+
+.performer-tile {
+    position: relative;
+    isolation: isolate;
+
+    min-width: 0;
+    min-height: 20rem;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+
+    background: #0d2a38;
+
+    scroll-snap-align: start;
+
+    box-shadow: 0 14px 32px rgba(7, 24, 36, 0.1);
+
+    transition:
+        transform 450ms cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 450ms ease,
+        border-color 450ms ease;
+}
+
+.performer-tile.is-tall {
+    min-height: 24rem;
+    margin-top: -0.7rem;
+}
+
+.performer-tile:hover {
+    transform: translateY(-7px);
+    border-color: rgba(26, 143, 156, 0.45);
+    box-shadow: 0 22px 44px rgba(7, 24, 36, 0.17);
+}
+
+.performer-tile__image,
+.performer-tile__fallback {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    transition: transform 850ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.performer-tile__fallback {
+    background:
+        radial-gradient(circle at 40% 20%,
+            rgba(34, 168, 182, 0.4),
+            transparent 50%),
+        linear-gradient(160deg, #134556, #071824);
+}
+
+.performer-tile:hover .performer-tile__image {
+    transform: scale(1.075);
+}
+
+.performer-tile__shade {
+    position: absolute;
+    inset: 0;
+
+    background: linear-gradient(180deg,
+            rgba(7, 24, 36, 0.04) 10%,
+            rgba(7, 24, 36, 0.15) 40%,
+            rgba(7, 24, 36, 0.94) 100%);
+
+    pointer-events: none;
+}
+
+.performer-tile__copy {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 1;
+
+    padding: 1.35rem;
+    color: #f4f8fa;
+}
+
+.performer-tile__eyebrow {
+    display: block;
+    margin-bottom: 0.7rem;
+
+    color: #9fe3ea;
+
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+}
+
+.performer-tile__copy h3 {
+    margin: 0;
+
+    color: #f4f8fa;
+
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 700;
+
+    line-height: 1.2;
+    letter-spacing: -0.035em;
+}
+
+.performer-tile__copy p {
+    margin: 0.45rem 0 0;
+
+    color: rgba(244, 248, 250, 0.74);
+
+    font-size: 0.84rem;
+    line-height: 1.5;
+}
+
+.performer-rail__hint {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.45rem;
+
+    margin: 0.6rem 0 0;
+
+    color: var(--ink-soft);
+
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+}
+
+.performer-rail__hint span {
+    color: var(--accent);
+}
+
+/* =========================================================
+   STALLS — EDITORIAL MARKETPLACE
+========================================================= */
+
+.stalls-stage {
+    overflow: hidden;
+}
+
+.stalls-stage__header {
+    margin-bottom: 2rem;
+}
+
+.stalls-stage__count {
+    flex-shrink: 0;
+
+    margin-bottom: 0.35rem;
+
+    color: var(--ink-soft);
+
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+}
+
+/* Asymmetric grid */
+
+.stall-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+
+    grid-auto-rows: minmax(205px, auto);
+
+    gap: 1rem;
+}
+
+/* Common stall card */
+
+.stall-tile {
+    position: relative;
+    isolation: isolate;
+
+    display: grid;
+    grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+
+    min-width: 0;
+    min-height: 205px;
+
+    overflow: hidden;
+
+    border: 1px solid var(--line);
+    border-radius: 19px;
+
+    color: var(--ink);
+    background: #f7fafb;
+
+    box-shadow: 0 10px 26px rgba(7, 24, 36, 0.045);
+
+    transition:
+        transform 400ms cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 400ms ease,
+        border-color 400ms ease;
+}
+
+.stall-tile:hover {
+    transform: translateY(-5px);
+    border-color: rgba(26, 143, 156, 0.38);
+    box-shadow: 0 20px 42px rgba(7, 24, 36, 0.12);
+}
+
+/* Stall image */
+
+.stall-tile__image,
+.stall-tile__fallback {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+    min-height: 205px;
+
+    object-fit: cover;
+
+    transition: transform 800ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.stall-tile__fallback {
+    background:
+        radial-gradient(circle at 30% 25%,
+            rgba(159, 227, 234, 0.5),
+            transparent 45%),
+        linear-gradient(145deg, #d6ecee, #95c8ce);
+}
+
+.stall-tile:hover .stall-tile__image {
+    transform: scale(1.06);
+}
+
+/* Stall information */
+
+.stall-tile__body {
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    min-width: 0;
+
+    padding: 1.2rem 1.25rem;
+}
+
+.stall-tile__eyebrow {
+    display: block;
+
+    margin-bottom: 0.6rem;
+
+    color: var(--heat);
+
+    font-size: 0.63rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+}
+
+.stall-tile__body h3 {
+    margin: 0;
+
+    color: var(--ink);
+
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+    font-weight: 700;
+
+    line-height: 1.25;
+    letter-spacing: -0.035em;
+    overflow-wrap: anywhere;
+}
+
+.stall-tile__meta {
+    margin: 0.5rem 0 0;
+
+    color: var(--accent-deep);
+
+    font-size: 0.77rem;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.stall-tile__description {
+    display: -webkit-box;
+
+    overflow: hidden;
+
+    margin: 0.7rem 0 0;
+
+    color: var(--ink-soft);
+
+    font-size: 0.82rem;
+    line-height: 1.6;
+
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+/* Stall index */
+
+.stall-tile__index {
+    position: absolute;
+    top: 0.85rem;
+    right: 0.9rem;
+    z-index: 3;
+
+    color: rgba(12, 31, 43, 0.42);
+
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+
+/* =========================================================
+   LARGE SPOTLIGHT STALL
+========================================================= */
+
+.stall-tile--spotlight {
+    display: block;
+    min-height: 340px;
+
+    border-color: rgba(255, 255, 255, 0.12);
+
+    color: #f4f8fa;
+    background: #0d2a38;
+}
+
+.stall-tile--spotlight .stall-tile__image,
+.stall-tile--spotlight .stall-tile__fallback {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+}
+
+.stall-tile__shade {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+
+    background: linear-gradient(180deg,
+            rgba(7, 24, 36, 0.08) 10%,
+            rgba(7, 24, 36, 0.22) 44%,
+            rgba(7, 24, 36, 0.93) 100%);
+
+    pointer-events: none;
+}
+
+.stall-tile__body--spotlight {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+
+    padding: clamp(1.35rem, 3vw, 2rem);
+
+    color: #f4f8fa;
+}
+
+.stall-tile__body--spotlight .stall-tile__eyebrow {
+    color: #9fe3ea;
+}
+
+.stall-tile__body--spotlight h3 {
+    max-width: 18ch;
+
+    color: #f4f8fa;
+
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+}
+
+.stall-tile__body--spotlight .stall-tile__meta {
+    color: rgba(244, 248, 250, 0.9);
+}
+
+.stall-tile__body--spotlight .stall-tile__description {
+    max-width: 34rem;
+    color: rgba(244, 248, 250, 0.78);
+}
+
+.stall-tile--spotlight .stall-tile__index {
+    top: 1.1rem;
+    right: 1.2rem;
+
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* =========================================================
+   RESPONSIVE STALL GRID
+========================================================= */
+
+@media (min-width: 640px) {
+    .stall-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-auto-rows: minmax(200px, auto);
+        gap: 1.15rem;
+    }
+
+    .stall-tile--spotlight {
+        grid-column: 1 / -1;
+        min-height: 370px;
+    }
+}
+
+@media (min-width: 960px) {
+    .stall-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-auto-rows: minmax(205px, auto);
+        gap: 1.2rem;
+    }
+
+    .stall-tile--spotlight {
+        grid-column: span 2;
+        grid-row: span 2;
+        min-height: 430px;
+    }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+
+    .lineup-stage__header,
+    .stalls-stage__header {
+        align-items: flex-start;
+    }
+
+    .lineup-stage__header .home-title,
+    .stalls-stage__header .home-title {
+        font-size: clamp(1.9rem, 9vw, 2.7rem);
+    }
+
+    .performer-rail {
+        grid-auto-columns: minmax(230px, 82%);
+        gap: 0.75rem;
+    }
+
+    .performer-tile {
+        min-height: 19rem;
+    }
+
+    .performer-tile.is-tall {
+        min-height: 22rem;
+        margin-top: 0;
+    }
+
+    .stall-grid {
+        gap: 0.8rem;
+    }
+
+    .stall-tile {
+        min-height: 185px;
+        grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+    }
+
+    .stall-tile__image,
+    .stall-tile__fallback {
+        min-height: 185px;
+    }
+
+    .stall-tile__body {
+        padding: 0.9rem;
+    }
+
+    .stall-tile__body h3 {
+        font-size: 1rem;
+    }
+
+    .stall-tile__description {
+        font-size: 0.76rem;
+        -webkit-line-clamp: 2;
+    }
+
+    .stall-tile--spotlight {
+        min-height: 315px;
+    }
+
+    .stall-tile--spotlight .stall-tile__body {
+        padding: 1.2rem;
+    }
+}
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .lineup-nav,
+    .performer-tile,
+    .performer-tile__image,
+    .stall-tile,
+    .stall-tile__image {
+        transform: none;
+        transition: none;
+    }
+}

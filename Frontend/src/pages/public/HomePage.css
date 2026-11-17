@@ -1,0 +1,54 @@
+/* =========================================================
+   Homepage section surfaces
+========================================================= */
+
+/* All homepage stages except the Hero */
+.home-reveal:not(:first-child) .home-stage {
+    background: #E8EFF2 !important;
+    border: 1px solid rgba(255, 255, 255, 0.65);
+}
+
+/* Keep individual cards white */
+.home-reveal:not(:first-child) .stall-tile,
+.home-reveal:not(:first-child) .featured-spotlight,
+.home-reveal:not(:first-child) .announcement-card {
+    background-color: #FFFFFF;
+}
+
+/* =========================================================
+   Cinematic section reveal
+========================================================= */
+
+.home-reveal {
+    opacity: 0;
+    transform: translate3d(0, 42px, 0);
+    transition:
+        opacity 1s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+}
+
+.home-reveal.is-visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+}
+
+@media (max-width: 640px) {
+    .home-reveal {
+        transform: translate3d(0, 26px, 0);
+        transition:
+            opacity 0.85s ease,
+            transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .home-reveal,
+    .home-reveal.is-visible {
+        opacity: 1;
+        transform: none;
+        transition: none;
+        will-change: auto;
+    }
+}

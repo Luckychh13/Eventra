@@ -1,53 +1,103 @@
+
+import { Link } from 'react-router-dom'
+import './HeroSection.css'
+
 function HeroSection() {
     return (
-        <section className="bg-eventra-black px-6 py-16 text-white">
-            <div className="mx-auto max-w-7xl">
+        <section
+            className="home-stage home-stage--glass eventra-hero"
+            aria-labelledby="eventra-hero-title"
+        >
+            {/* Atmospheric background */}
+            <div className="eventra-hero__glow" aria-hidden="true" />
+            <div className="eventra-hero__ring" aria-hidden="true" />
+            <div className="eventra-hero__ambient-dot" aria-hidden="true" />
 
-                <div className="grid items-center gap-12 lg:grid-cols-2">
+            {/* Top metadata */}
+            <div className="eventra-hero__top">
+                <p className="eventra-hero__meta">
+                    <span className="eventra-hero__meta-dot" />
+                    Campus fest · Live this season
+                </p>
 
-                    {/* Hero Content */}
-                    <div>
-                        <p className="mb-6 text-xs font-semibold tracking-[0.2em]">
-                            <span className="mr-2 text-eventra-coral">●</span>
-                            LESS SCROLLING. MORE LIVING.
-                        </p>
+                <p className="eventra-hero__meta eventra-hero__meta--right">
+                    Events · Performers · Stalls
+                </p>
+            </div>
 
-                        <h1 className="max-w-xl font-display text-5xl font-bold leading-tight">
-                            Your next
-                            <span className="block text-eventra-purple">
-                                unforgettable
-                            </span>
-                            experience starts here.
-                        </h1>
+            {/* Main headline */}
+            <div className="eventra-hero__stage">
+                <div className="eventra-hero__eyebrow">
+                    <span />
+                    A CELEBRATION OF CULTURE & CREATIVITY
+                </div>
 
-                        <p className="mt-6 max-w-sm font-body text-eventra-muted">
-                            Discover events and experiences worth stepping out for.
-                        </p>
+                <h1
+                    id="eventra-hero-title"
+                    className="eventra-hero__title"
+                >
+                    <span className="eventra-hero__line">
+                        Grand
+                        <em className="serif-accent"> fest.</em>
+                    </span>
 
-                        <p className="mt-8 text-xs tracking-widest text-eventra-muted">
-                            ━━━ GOOD PLANS START HERE.
-                        </p>
-                    </div>
+                    <span className="eventra-hero__line eventra-hero__line--split">
+                        <span>Annual nights</span>
 
-                    {/* Featured Event Visual Placeholder */}
-                    <div className="relative flex min-h-[360px] items-end rounded-2xl bg-gradient-to-br from-eventra-spotlight via-eventra-dark to-eventra-black p-6">
-
-                        <span className="absolute left-6 top-6 rounded-md bg-black/70 px-4 py-2 text-xs tracking-widest">
-                            IN THE SPOTLIGHT
+                        <span
+                            className="eventra-hero__orb"
+                            aria-hidden="true"
+                        >
+                            <span className="eventra-hero__orb-core">E</span>
                         </span>
 
-                        <div className="w-full rounded-xl border border-white/10 bg-eventra-dark/95 p-5">
-                            <p className="font-display text-lg font-semibold">
-                                Featured Event
-                            </p>
-                            <p className="mt-2 text-sm text-eventra-muted">
-                                Your next unforgettable experience awaits.
-                            </p>
-                        </div>
+                        <span>
+                            with
+                            <em className="serif-accent"> elite acts</em>
+                        </span>
+                    </span>
 
-                    </div>
+                    <span className="eventra-hero__line">
+                        and top stalls.
+                    </span>
+                </h1>
 
-                </div>
+                <p className="eventra-hero__brand">
+                    EVENTRA
+                </p>
+
+                <p className="eventra-hero__description">
+                    Discover the performances, experiences and moments
+                    that bring our campus together.
+                </p>
+            </div>
+
+            {/* Actions */}
+            <div className="eventra-hero__bottom">
+                <Link
+                    to="/eventSchedules"
+                    className="btn-solid eventra-hero__primary"
+                >
+                    Explore events
+                    <span aria-hidden="true">↗</span>
+                </Link>
+
+                <Link
+                    to="/stalls"
+                    className="eventra-hero__ghost-link"
+                >
+                    Discover stalls
+                    <span aria-hidden="true">→</span>
+                </Link>
+            </div>
+
+            {/* Decorative bottom indicator */}
+            <div
+                className="eventra-hero__scroll-indicator"
+                aria-hidden="true"
+            >
+                <span />
+                SCROLL TO EXPLORE
             </div>
         </section>
     )

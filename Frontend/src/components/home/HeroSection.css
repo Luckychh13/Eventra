@@ -1,0 +1,682 @@
+/* =========================================================
+   EVENTRA HERO
+   Cinematic editorial composition
+========================================================= */
+
+.eventra-hero {
+    --hero-white: #f4f8fa;
+    --hero-muted: rgba(244, 248, 250, 0.65);
+    --hero-accent: #9fe3ea;
+    --hero-coral: #ff6a45;
+
+    position: relative;
+    isolation: isolate;
+
+    display: flex;
+    min-height: min(78vh, 720px);
+    min-height: min(78svh, 720px);
+
+    flex-direction: column;
+    justify-content: space-between;
+
+    padding: clamp(1.5rem, 3.5vw, 3rem);
+    overflow: hidden;
+}
+
+/* Inner editorial frame */
+
+.eventra-hero::before {
+    content: '';
+    position: absolute;
+    inset: 1rem;
+
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: calc(var(--stage-radius, 28px) - 10px);
+
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Ambient background glow */
+
+.eventra-hero__glow {
+    position: absolute;
+    inset: auto -10% -35% 15%;
+
+    height: 75%;
+    border-radius: 50%;
+
+    background: radial-gradient(ellipse,
+            rgba(90, 210, 230, 0.3),
+            rgba(26, 143, 156, 0.12) 42%,
+            transparent 72%);
+
+    filter: blur(18px);
+    pointer-events: none;
+
+    animation: hero-glow 12s ease-in-out infinite alternate;
+}
+
+/* Main orbital ring */
+
+.eventra-hero__ring {
+    position: absolute;
+    top: 51%;
+    left: 50%;
+
+    width: min(68vw, 580px);
+    aspect-ratio: 1;
+
+    border: 1px dashed rgba(255, 255, 255, 0.16);
+    border-radius: 50%;
+
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 0;
+
+    animation: hero-ring 55s linear infinite;
+}
+
+.eventra-hero__ring::before {
+    content: '';
+    position: absolute;
+    inset: 12%;
+
+    border: 1px solid rgba(159, 227, 234, 0.09);
+    border-radius: 50%;
+}
+
+/* Secondary ambient element */
+
+.eventra-hero__ambient-dot {
+    position: absolute;
+    top: 23%;
+    right: 13%;
+
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+    background: var(--hero-accent);
+
+    box-shadow:
+        0 0 18px rgba(159, 227, 234, 0.75),
+        0 0 42px rgba(159, 227, 234, 0.25);
+
+    animation: hero-dot-pulse 4s ease-in-out infinite alternate;
+}
+
+/* =========================================================
+   TOP METADATA
+========================================================= */
+
+.eventra-hero__top {
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 0.75rem 1.5rem;
+
+    animation: hero-content-enter 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.eventra-hero__meta {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 0.65rem;
+    margin: 0;
+
+    color: var(--hero-muted);
+
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.eventra-hero__meta-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+
+    flex-shrink: 0;
+    border-radius: 50%;
+
+    background: var(--hero-coral);
+    box-shadow: 0 0 0 5px rgba(255, 106, 69, 0.13);
+}
+
+.eventra-hero__meta--right {
+    text-align: right;
+}
+
+/* =========================================================
+   MAIN HERO STAGE
+========================================================= */
+
+.eventra-hero__stage {
+    position: relative;
+    z-index: 2;
+
+    display: grid;
+    justify-items: center;
+
+    flex: 1;
+    align-content: center;
+
+    gap: 1.25rem;
+    padding: 3rem 0;
+
+    text-align: center;
+
+    animation: hero-content-enter 1100ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
+}
+
+/* Eyebrow */
+
+.eventra-hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+
+    color: rgba(244, 248, 250, 0.58);
+
+    font-size: 0.69rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-align: center;
+}
+
+.eventra-hero__eyebrow span {
+    width: 1.5rem;
+    height: 1px;
+
+    background: var(--hero-coral);
+}
+
+/* Main heading */
+
+.eventra-hero__title {
+    width: 100%;
+    max-width: 18ch;
+
+    margin: 0;
+
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 6.8vw, 6rem);
+    font-weight: 700;
+
+    line-height: 0.99;
+    letter-spacing: -0.065em;
+
+    color: var(--hero-white);
+
+    text-shadow: 0 12px 50px rgba(0, 0, 0, 0.16);
+}
+
+.eventra-hero__line {
+    display: block;
+}
+
+/* Middle split line */
+
+.eventra-hero__line--split {
+    display: flex;
+    flex-wrap: wrap;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 0.5rem 0.9rem;
+
+    margin: 0.08em 0;
+}
+
+/* Serif contrast */
+
+.eventra-hero__title .serif-accent {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+
+    letter-spacing: -0.035em;
+    color: var(--hero-accent);
+}
+
+/* =========================================================
+   EVENTRA ORB
+========================================================= */
+
+.eventra-hero__orb {
+    position: relative;
+
+    display: inline-grid;
+    place-items: center;
+
+    flex-shrink: 0;
+
+    width: clamp(3.4rem, 7.5vw, 5.6rem);
+    height: clamp(3.4rem, 7.5vw, 5.6rem);
+
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+
+    background:
+        radial-gradient(circle at 35% 28%,
+            rgba(255, 255, 255, 0.38),
+            transparent 42%),
+        linear-gradient(145deg,
+            rgba(34, 168, 182, 0.92),
+            rgba(7, 40, 56, 0.96));
+
+    box-shadow:
+        0 18px 40px rgba(0, 0, 0, 0.28),
+        inset 0 1px 12px rgba(255, 255, 255, 0.12);
+
+    animation: hero-orb 6s ease-in-out infinite alternate;
+}
+
+.eventra-hero__orb::before {
+    content: '';
+    position: absolute;
+    inset: -9px;
+
+    border: 1px solid rgba(159, 227, 234, 0.25);
+    border-radius: 50%;
+
+    animation: hero-orb-ring 15s linear infinite;
+}
+
+.eventra-hero__orb::after {
+    content: '';
+    position: absolute;
+    top: 15%;
+    right: 13%;
+
+    width: 12px;
+    height: 12px;
+
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.55);
+    filter: blur(7px);
+}
+
+.eventra-hero__orb-core {
+    position: relative;
+    z-index: 1;
+
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: clamp(1.5rem, 3.5vw, 2.4rem);
+
+    color: #fff;
+}
+
+/* =========================================================
+   BRAND + DESCRIPTION
+========================================================= */
+
+.eventra-hero__brand {
+    margin: 0;
+
+    color: rgba(244, 248, 250, 0.34);
+
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 700;
+
+    letter-spacing: 0.5em;
+}
+
+.eventra-hero__description {
+    max-width: 34rem;
+    margin: 0.2rem 0 0;
+
+    color: rgba(244, 248, 250, 0.68);
+
+    font-size: clamp(0.86rem, 1.2vw, 1rem);
+    line-height: 1.8;
+}
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.eventra-hero__bottom {
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    flex-wrap: wrap;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 0.85rem 1.25rem;
+
+    animation: hero-content-enter 900ms cubic-bezier(0.22, 1, 0.36, 1) 280ms both;
+}
+
+/* Primary CTA */
+
+.eventra-hero .eventra-hero__primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 0.8rem;
+
+    min-height: 3.15rem;
+    padding: 0 1.65rem;
+
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+
+    color: #fff;
+    background: linear-gradient(115deg, #22a8b6, #1a8f9c);
+
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+
+    box-shadow: 0 12px 32px rgba(26, 143, 156, 0.25);
+
+    transition:
+        transform 300ms ease,
+        box-shadow 300ms ease,
+        filter 300ms ease;
+}
+
+.eventra-hero .eventra-hero__primary:hover {
+    transform: translateY(-3px);
+
+    filter: brightness(1.08);
+
+    box-shadow: 0 18px 42px rgba(26, 143, 156, 0.34);
+}
+
+.eventra-hero .eventra-hero__primary span {
+    transition: transform 300ms ease;
+}
+
+.eventra-hero .eventra-hero__primary:hover span {
+    transform: translate(3px, -2px);
+}
+
+/* Secondary CTA */
+
+.eventra-hero__ghost-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 0.65rem;
+
+    min-height: 3.15rem;
+    padding: 0 1.35rem;
+
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+
+    color: rgba(244, 248, 250, 0.84);
+
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+
+    transition:
+        color 300ms ease,
+        background 300ms ease,
+        border-color 300ms ease,
+        transform 300ms ease;
+}
+
+.eventra-hero__ghost-link:hover {
+    color: #fff;
+    border-color: rgba(159, 227, 234, 0.48);
+    background: rgba(255, 255, 255, 0.06);
+
+    transform: translateY(-2px);
+}
+
+.eventra-hero__ghost-link span {
+    transition: transform 300ms ease;
+}
+
+.eventra-hero__ghost-link:hover span {
+    transform: translateX(4px);
+}
+
+/* =========================================================
+   SCROLL INDICATOR
+========================================================= */
+
+.eventra-hero__scroll-indicator {
+    position: absolute;
+    right: clamp(1.5rem, 3.5vw, 3rem);
+    bottom: 1.8rem;
+
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+
+    color: rgba(244, 248, 250, 0.35);
+
+    font-size: 0.58rem;
+    font-weight: 600;
+    letter-spacing: 0.19em;
+
+    pointer-events: none;
+}
+
+.eventra-hero__scroll-indicator span {
+    width: 1.5rem;
+    height: 1px;
+
+    background: rgba(159, 227, 234, 0.55);
+}
+
+/* =========================================================
+   ANIMATIONS
+========================================================= */
+
+@keyframes hero-content-enter {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes hero-glow {
+    from {
+        transform: translate3d(0, 0, 0) scale(1);
+        opacity: 0.65;
+    }
+
+    to {
+        transform: translate3d(-4%, -3%, 0) scale(1.09);
+        opacity: 1;
+    }
+}
+
+@keyframes hero-ring {
+    from {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+@keyframes hero-orb {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-9px);
+    }
+}
+
+@keyframes hero-orb-ring {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes hero-dot-pulse {
+    from {
+        opacity: 0.45;
+        transform: scale(0.85);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 900px) {
+    .eventra-hero {
+        min-height: min(76vh, 680px);
+        min-height: min(76svh, 680px);
+    }
+
+    .eventra-hero__title {
+        font-size: clamp(2.8rem, 8vw, 5.2rem);
+    }
+
+    .eventra-hero__ring {
+        width: min(78vw, 520px);
+    }
+}
+
+@media (max-width: 640px) {
+    .eventra-hero {
+        min-height: 70vh;
+        min-height: 70svh;
+
+        padding: 1.4rem 1.25rem 4.6rem;
+    }
+
+    .eventra-hero::before {
+        inset: 0.65rem;
+        border-radius: 20px;
+    }
+
+    .eventra-hero__top {
+        align-items: flex-start;
+    }
+
+    .eventra-hero__meta {
+        font-size: 0.62rem;
+        letter-spacing: 0.04em;
+    }
+
+    .eventra-hero__meta--right {
+        display: none;
+    }
+
+    .eventra-hero__stage {
+        gap: 1rem;
+        padding: 2.5rem 0;
+    }
+
+    .eventra-hero__eyebrow {
+        font-size: 0.58rem;
+        letter-spacing: 0.16em;
+    }
+
+    .eventra-hero__title {
+        font-size: clamp(2.55rem, 10.5vw, 4rem);
+        line-height: 1.02;
+    }
+
+    .eventra-hero__line--split {
+        gap: 0.35rem 0.55rem;
+    }
+
+    .eventra-hero__orb {
+        width: clamp(3rem, 12vw, 4rem);
+        height: clamp(3rem, 12vw, 4rem);
+    }
+
+    .eventra-hero__brand {
+        font-size: 0.75rem;
+    }
+
+    .eventra-hero__description {
+        max-width: 27rem;
+        font-size: 0.84rem;
+    }
+
+    .eventra-hero__bottom {
+        flex-direction: column;
+        gap: 0.7rem;
+    }
+
+    .eventra-hero .eventra-hero__primary,
+    .eventra-hero__ghost-link {
+        width: min(100%, 18rem);
+    }
+
+    .eventra-hero__scroll-indicator {
+        right: 0;
+        bottom: 1.15rem;
+        left: 0;
+
+        justify-content: center;
+
+        font-size: 0.52rem;
+    }
+
+    .eventra-hero__ring {
+        width: 120%;
+    }
+
+    .eventra-hero__ambient-dot {
+        top: 18%;
+        right: 12%;
+    }
+}
+
+/* Reduced motion accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .eventra-hero__glow,
+    .eventra-hero__ring,
+    .eventra-hero__orb,
+    .eventra-hero__orb::before,
+    .eventra-hero__ambient-dot,
+    .eventra-hero__top,
+    .eventra-hero__stage,
+    .eventra-hero__bottom {
+        animation: none !important;
+    }
+
+    .eventra-hero *,
+    .eventra-hero *::before,
+    .eventra-hero *::after {
+        scroll-behavior: auto;
+        transition-duration: 0.01ms !important;
+    }
+}

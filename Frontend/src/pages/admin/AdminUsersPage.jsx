@@ -1,5 +1,7 @@
+
 import { useEffect, useMemo, useState } from "react";
 import { getAllUsers } from "../../services/api/adminService.js";
+import "./AdminUsersPage.css";
 
 const formatDate = (value) => {
     if (!value) return "—";
@@ -99,14 +101,13 @@ function AdminUsersPage() {
     };
 
     return (
-        <section className="space-y-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <section className="users-page">
+            <div className="users-page-header">
                 <div>
-                    <h1 className="text-2xl font-bold text-white sm:text-3xl">
-                        Users
-                    </h1>
-                    <p className="mt-1 text-sm text-gray-400">
-                        View registered users and their account information.
+                    <div className="users-eyebrow">USER MANAGEMENT</div>
+                    <h1>Users</h1>
+                    <p>
+                        Manage and monitor registered accounts across Eventra.
                     </p>
                 </div>
 
@@ -114,41 +115,56 @@ function AdminUsersPage() {
                     type="button"
                     onClick={handleRefresh}
                     disabled={loading}
-                    className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="users-refresh-button"
                 >
+                    <span className={loading ? "users-refresh-icon spinning" : "users-refresh-icon"}>
+                        ↻
+                    </span>
                     {loading ? "Loading..." : "Refresh Users"}
                 </button>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-                    <p className="text-sm text-gray-400">Total registered users</p>
-                    <p className="mt-2 text-3xl font-bold text-white">
-                        {users.length}
-                    </p>
-                </div>
+            <div className="users-stats-grid">
+                <article className="users-stat-card">
+                    <div className="users-stat-top">
+                        <span className="users-stat-label">Total registered users</span>
+                        <span className="users-stat-icon">US</span>
+                    </div>
+                    <strong>{users.length.toLocaleString("en-IN")}</strong>
+                    <span className="users-stat-caption">
+                        All accounts registered on Eventra
+                    </span>
+                </article>
 
-                <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-                    <p className="text-sm text-gray-400">Matching users</p>
-                    <p className="mt-2 text-3xl font-bold text-white">
-                        {filteredUsers.length}
-                    </p>
-                </div>
+                <article className="users-stat-card users-stat-card-accent">
+                    <div className="users-stat-top">
+                        <span className="users-stat-label">Matching users</span>
+                        <span className="users-stat-icon">FL</span>
+                    </div>
+                    <strong>{filteredUsers.length.toLocaleString("en-IN")}</strong>
+                    <span className="users-stat-caption">
+                        Accounts matching current filters
+                    </span>
+                </article>
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row">
-                <input
-                    type="search"
-                    value={searchTerm}
-                    onChange={(event) => setSearchTerm(event.target.value)}
-                    placeholder="Search by name, email, or role..."
-                    className="min-w-0 flex-1 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 focus:border-purple-500"
-                />
+            <div className="users-toolbar">
+                <div className="users-search-wrapper">
+                    <span className="users-search-icon">⌕</span>
+                    <input
+                        type="search"
+                        value={searchTerm}
+                        onChange={(event) => setSearchTerm(event.target.value)}
+                        placeholder="Search by name, email, or role..."
+                        aria-label="Search users"
+                    />
+                </div>
 
                 <select
                     value={roleFilter}
                     onChange={(event) => setRoleFilter(event.target.value)}
-                    className="rounded-lg border border-white/10 bg-[#171522] px-4 py-3 text-sm text-white outline-none focus:border-purple-500"
+                    className="users-role-filter"
+                    aria-label="Filter users by role"
                 >
                     <option value="all">All roles</option>
                     <option value="user">Users</option>
@@ -158,98 +174,93 @@ function AdminUsersPage() {
             </div>
 
             {error && (
-                <div className="flex flex-col gap-3 rounded-lg border border-red-500/20 bg-red-500/5 p-4 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-sm text-red-300">{error}</p>
+                <div className="users-error">
+                    <div>
+                        <strong>Unable to load users</strong>
+                        <p>{error}</p>
+                    </div>
 
-                    <button
-                        type="button"
-                        onClick={handleRefresh}
-                        className="text-sm font-medium text-red-300 underline underline-offset-4"
-                    >
+                    <button type="button" onClick={handleRefresh}>
                         Try again
                     </button>
                 </div>
             )}
 
-            <div className="overflow-hidden rounded-xl border border-white/10 bg-white/5">
+            <div className="users-table-card">
+                <div className="users-table-heading">
+                    <div>
+                        <h2>Registered accounts</h2>
+                        <p>Account details and activity information</p>
+                    </div>
+
+                    <span className="users-result-count">
+                        {filteredUsers.length} results
+                    </span>
+                </div>
+
                 {loading ? (
-                    <div className="p-10 text-center text-sm text-gray-400">
-                        Loading users...
+                    <div className="users-state">
+                        <span className="users-loader" />
+                        <p>Loading users...</p>
                     </div>
                 ) : filteredUsers.length === 0 ? (
-                    <div className="p-10 text-center">
-                        <p className="font-medium text-white">No users found</p>
-                        <p className="mt-1 text-sm text-gray-400">
-                            Try changing your search or role filter.
-                        </p>
+                    <div className="users-state">
+                        <span className="users-empty-icon">◎</span>
+                        <strong>No users found</strong>
+                        <p>Try changing your search or role filter.</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full min-w-[850px] text-left text-sm">
-                            <thead className="border-b border-white/10 bg-white/5 text-xs uppercase text-gray-400">
+                    <div className="users-table-scroll">
+                        <table className="users-table">
+                            <thead>
                                 <tr>
-                                    <th className="px-5 py-4 font-medium">User</th>
-                                    <th className="px-5 py-4 font-medium">Role</th>
-                                    <th className="px-5 py-4 font-medium">Email status</th>
-                                    <th className="px-5 py-4 font-medium">Joined</th>
-                                    <th className="px-5 py-4 font-medium">Last sign-in</th>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Email status</th>
+                                    <th>Joined</th>
+                                    <th>Last sign-in</th>
                                 </tr>
                             </thead>
 
-                            <tbody className="divide-y divide-white/10">
+                            <tbody>
                                 {filteredUsers.map((user) => (
-                                    <tr
-                                        key={user.uid}
-                                        className="transition hover:bg-white/[0.03]"
-                                    >
-                                        <td className="px-5 py-4">
-                                            <div className="flex items-center gap-3">
+                                    <tr key={user.uid}>
+                                        <td>
+                                            <div className="users-identity">
                                                 {user.photoURL ? (
                                                     <img
                                                         src={user.photoURL}
                                                         alt=""
-                                                        className="h-10 w-10 rounded-full object-cover"
+                                                        className="users-avatar"
                                                     />
                                                 ) : (
-                                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/15 text-sm font-semibold text-purple-300">
+                                                    <div className="users-avatar users-avatar-fallback">
                                                         {getInitials(user.name)}
                                                     </div>
                                                 )}
 
-                                                <div>
-                                                    <p className="font-medium text-white">
-                                                        {user.name || "Unknown"}
-                                                    </p>
-                                                    <p className="mt-1 text-gray-400">
-                                                        {user.email || "No email"}
-                                                    </p>
+                                                <div className="users-identity-details">
+                                                    <strong>{user.name || "Unknown"}</strong>
+                                                    <span>{user.email || "No email"}</span>
                                                 </div>
                                             </div>
                                         </td>
 
-                                        <td className="px-5 py-4 text-gray-300">
-                                            {formatRole(user.role)}
+                                        <td>
+                                            <span className={`users-role-badge users-role-${(user.role || "user").toLowerCase()}`}>
+                                                {formatRole(user.role)}
+                                            </span>
                                         </td>
 
-                                        <td className="px-5 py-4">
-                                            {user.emailVerified ? (
-                                                <span className="rounded-full bg-green-500/10 px-3 py-1 text-xs font-medium text-green-300">
-                                                    Verified
-                                                </span>
-                                            ) : (
-                                                <span className="rounded-full bg-yellow-500/10 px-3 py-1 text-xs font-medium text-yellow-300">
-                                                    Not verified
-                                                </span>
-                                            )}
+                                        <td>
+                                            <span className={`users-verification ${user.emailVerified ? "is-verified" : "is-unverified"}`}>
+                                                <span />
+                                                {user.emailVerified ? "Verified" : "Not verified"}
+                                            </span>
                                         </td>
 
-                                        <td className="px-5 py-4 text-gray-300">
-                                            {formatDate(user.createdAt)}
-                                        </td>
-
-                                        <td className="px-5 py-4 text-gray-300">
-                                            {formatDate(user.lastSignIn)}
-                                        </td>
+                                        <td>{formatDate(user.createdAt)}</td>
+                                        <td>{formatDate(user.lastSignIn)}</td>
                                     </tr>
                                 ))}
                             </tbody>

@@ -6,6 +6,11 @@ import app from "./app.js";
 import connectDB from "./config/db.js";
 import validateEnv from "./config/env.js";
 
+import {
+  initializeLeaderboardScheduler,
+  clearLeaderboardRevealTimer,
+} from "./services/leaderboardScheduler.js";
+
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
@@ -19,6 +24,9 @@ const shutdown = (signal) => {
   isShuttingDown = true;
 
   console.log(`${signal} received. Starting graceful shutdown...`);
+
+  clearLeaderboardRevealTimer();
+
   io?.disconnectSockets(true);
 
   const shutdownTimer = setTimeout(() => {
@@ -28,6 +36,7 @@ const shutdown = (signal) => {
 
   server.close(async (error) => {
     clearTimeout(shutdownTimer);
+
     if (error) {
       console.error("Error closing HTTP server:", error.message);
       process.exitCode = 1;
@@ -50,6 +59,8 @@ const startServer = async () => {
     validateEnv();
 
     await connectDB();
+
+    await initializeLeaderboardScheduler();
 
     server = http.createServer(app);
 

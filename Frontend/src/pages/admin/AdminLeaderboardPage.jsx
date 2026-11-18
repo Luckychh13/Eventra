@@ -1,11 +1,11 @@
 
 import { useEffect, useState } from "react";
-
 import {
     getLeaderboardStatus,
     toggleLeaderboard,
     scheduleLeaderboard,
 } from "../../services/api/leaderboardService.js";
+import "./AdminLeaderboardPage.css";
 
 function toLocalDateTime(value) {
     if (!value) return "";
@@ -51,6 +51,7 @@ function getErrorMessage(error, fallback) {
 function AdminLeaderboardPage() {
     const [isLeaderboardLive, setIsLeaderboardLive] = useState(null);
     const [scheduledRevealTime, setScheduledRevealTime] = useState(null);
+    const [isRevealScheduled, setIsRevealScheduled] = useState(false);
 
     const [revealTime, setRevealTime] = useState("");
 
@@ -69,6 +70,10 @@ function AdminLeaderboardPage() {
                 if (!isActive) return;
 
                 setIsLeaderboardLive(data.isLeaderboardLive === true);
+
+                setIsRevealScheduled(
+                    data.isRevealScheduled === true
+                );
 
                 setScheduledRevealTime(
                     data.leaderboardRevealTime ?? null
@@ -112,6 +117,7 @@ function AdminLeaderboardPage() {
             const data = await toggleLeaderboard(nextStatus);
 
             setIsLeaderboardLive(nextStatus);
+            setIsRevealScheduled(false);
 
             setSuccessMessage(
                 data.message ||
@@ -144,6 +150,11 @@ function AdminLeaderboardPage() {
             return;
         }
 
+        if (parsedRevealTime <= new Date()) {
+            setError("Reveal time must be in the future.");
+            return;
+        }
+
         try {
             setScheduling(true);
             setError("");
@@ -159,9 +170,14 @@ function AdminLeaderboardPage() {
 
             setScheduledRevealTime(savedRevealTime);
             setRevealTime(toLocalDateTime(savedRevealTime));
+            setIsLeaderboardLive(false);
+            setIsRevealScheduled(
+                data.config?.isRevealScheduled === true
+            );
 
             setSuccessMessage(
-                data.message || "Leaderboard reveal scheduled successfully."
+                data.message ||
+                "Leaderboard reveal scheduled successfully."
             );
         } catch (err) {
             setError(
@@ -176,181 +192,245 @@ function AdminLeaderboardPage() {
     };
 
     return (
-        <div className="space-y-6">
-
-            {/* Page heading */}
-            <div>
-                <h1 className="text-2xl font-semibold text-white">
-                    Leaderboard Management
-                </h1>
-
-                <p className="mt-1 text-sm text-gray-400">
-                    Control leaderboard visibility and schedule result reveals.
-                </p>
-            </div>
-
-            {/* Error message */}
-            {error && (
-                <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
-                    {error}
-                </div>
-            )}
-
-            {/* Success message */}
-            {successMessage && (
-                <div className="rounded-lg border border-green-500/30 bg-green-500/10 p-3 text-sm text-green-300">
-                    {successMessage}
-                </div>
-            )}
-
-            {/* Leaderboard status card */}
-            <section className="rounded-xl border border-white/10 bg-white/5 p-5 space-y-4">
-
+        <main className="admin-leaderboard-page">
+            <header className="admin-leaderboard-header">
                 <div>
-                    <h2 className="text-lg font-medium text-white">
-                        Leaderboard Status
-                    </h2>
+                    <span className="admin-leaderboard-eyebrow">
+                        EVENT CONTROL
+                    </span>
 
-                    <p className="mt-1 text-sm text-gray-400">
-                        Control whether participants can view the leaderboard.
+                    <h1>Leaderboard</h1>
+
+                    <p>
+                        Manage leaderboard visibility and configure the
+                        results reveal schedule.
                     </p>
                 </div>
 
-                {loading ? (
-                    <p className="text-sm text-gray-400">
-                        Loading leaderboard status...
-                    </p>
-                ) : isLeaderboardLive === null ? (
-                    <p className="text-sm text-gray-400">
-                        Unable to retrieve leaderboard status.
-                    </p>
-                ) : (
-                    <>
-                        <div className="flex flex-wrap items-center justify-between gap-4">
+                {!loading && isLeaderboardLive !== null && (
+                    <div
+                        className={`admin-leaderboard-header-status ${isLeaderboardLive ? "is-live" : "is-inactive"
+                            }`}
+                    >
+                        <span />
+                        {isLeaderboardLive
+                            ? "Currently live"
+                            : "Currently inactive"}
+                    </div>
+                )}
+            </header>
 
-                            <div>
-                                <p className="text-sm text-gray-400">
-                                    Current status
-                                </p>
+            {(error || successMessage) && (
+                <div
+                    className={`admin-leaderboard-alert ${error ? "is-error" : "is-success"
+                        }`}
+                    role={error ? "alert" : "status"}
+                >
+                    <span>{error || successMessage}</span>
 
-                                <span
-                                    className={`mt-2 inline-flex rounded-full px-3 py-1 text-sm font-medium ${isLeaderboardLive
-                                            ? "bg-green-500/10 text-green-400"
-                                            : "bg-gray-500/10 text-gray-400"
-                                        }`}
-                                >
-                                    {isLeaderboardLive ? "Live" : "Inactive"}
-                                </span>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setError("");
+                            setSuccessMessage("");
+                        }}
+                        aria-label="Dismiss message"
+                    >
+                        ×
+                    </button>
+                </div>
+            )}
+
+            <div className="admin-leaderboard-layout">
+                <section className="admin-leaderboard-status-card">
+                    <div className="admin-leaderboard-section-heading">
+                        <div>
+                            <span className="admin-leaderboard-eyebrow">
+                                VISIBILITY CONTROL
+                            </span>
+
+                            <h2>Leaderboard status</h2>
+                        </div>
+
+                        <div className="admin-leaderboard-status-icon">
+                            <span />
+                        </div>
+                    </div>
+
+                    {loading ? (
+                        <div className="admin-leaderboard-state">
+                            Loading leaderboard status...
+                        </div>
+                    ) : isLeaderboardLive === null ? (
+                        <div className="admin-leaderboard-state">
+                            Unable to retrieve leaderboard status.
+                        </div>
+                    ) : (
+                        <>
+                            <div
+                                className={`admin-leaderboard-status-panel ${isLeaderboardLive
+                                        ? "is-live"
+                                        : "is-inactive"
+                                    }`}
+                            >
+                                <div>
+                                    <span className="admin-leaderboard-status-label">
+                                        Current status
+                                    </span>
+
+                                    <strong>
+                                        {isLeaderboardLive
+                                            ? "Live"
+                                            : "Inactive"}
+                                    </strong>
+
+                                    <p>
+                                        {isLeaderboardLive
+                                            ? "The public leaderboard endpoint is available."
+                                            : "The public leaderboard is currently hidden."}
+                                    </p>
+                                </div>
+
+                                <span className="admin-leaderboard-status-dot" />
                             </div>
 
                             <button
                                 type="button"
                                 onClick={handleToggleLeaderboard}
                                 disabled={statusUpdating}
-                                className={`rounded-lg px-5 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50 ${isLeaderboardLive
-                                        ? "bg-red-600 hover:bg-red-500"
-                                        : "bg-purple-600 hover:bg-purple-500"
+                                className={`admin-leaderboard-toggle-button ${isLeaderboardLive
+                                        ? "deactivate"
+                                        : "activate"
                                     }`}
                             >
                                 {statusUpdating
-                                    ? "Updating..."
+                                    ? "Updating status..."
                                     : isLeaderboardLive
-                                        ? "Deactivate Leaderboard"
-                                        : "Activate Leaderboard"}
+                                        ? "Deactivate leaderboard"
+                                        : "Activate leaderboard"}
                             </button>
 
+                            <p className="admin-leaderboard-helper">
+                                {isLeaderboardLive
+                                    ? "Deactivating will prevent public access to leaderboard results."
+                                    : "Activating will make leaderboard results available through the public endpoint."}
+                            </p>
+                        </>
+                    )}
+                </section>
+
+                <section className="admin-leaderboard-schedule-card">
+                    <div className="admin-leaderboard-section-heading">
+                        <div>
+                            <span className="admin-leaderboard-eyebrow">
+                                REVEAL CONFIGURATION
+                            </span>
+
+                            <h2>Schedule results reveal</h2>
                         </div>
 
-                        <p className="text-xs text-gray-500">
-                            Activating the leaderboard makes its public endpoint available.
-                            Deactivating it hides the leaderboard from public access.
-                        </p>
-                    </>
-                )}
-            </section>
+                        <div className="admin-leaderboard-schedule-icon">
+                            <span>⌁</span>
+                        </div>
+                    </div>
 
-            {/* Schedule reveal form */}
-            <section className="rounded-xl border border-white/10 bg-white/5 p-5 space-y-4">
-
-                <div>
-                    <h2 className="text-lg font-medium text-white">
-                        Schedule Leaderboard Reveal
-                    </h2>
-
-                    <p className="mt-1 text-sm text-gray-400">
-                        Set the date and time for the leaderboard reveal.
+                    <p className="admin-leaderboard-description">
+                        Choose when the leaderboard should automatically
+                        become public.
                     </p>
+
+                    <form
+                        onSubmit={handleScheduleSubmit}
+                        className="admin-leaderboard-schedule-form"
+                    >
+                        <div className="admin-leaderboard-field">
+                            <label htmlFor="reveal-time">
+                                Reveal date and time
+                            </label>
+
+                            <input
+                                id="reveal-time"
+                                type="datetime-local"
+                                value={revealTime}
+                                onChange={(event) =>
+                                    setRevealTime(event.target.value)
+                                }
+                                min={toLocalDateTime(new Date())}
+                                required
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="admin-leaderboard-save-button"
+                            disabled={scheduling || !revealTime}
+                        >
+                            {scheduling
+                                ? "Saving schedule..."
+                                : "Save reveal schedule"}
+                        </button>
+                    </form>
+
+                    <p className="admin-leaderboard-helper">
+                        The selected browser-local date and time is converted
+                        to ISO format before being sent to the backend.
+                    </p>
+                </section>
+            </div>
+
+            <section className="admin-leaderboard-reveal-card">
+                <div className="admin-leaderboard-reveal-heading">
+                    <div>
+                        <span className="admin-leaderboard-eyebrow">
+                            SCHEDULE OVERVIEW
+                        </span>
+
+                        <h2>Current reveal schedule</h2>
+                    </div>
+
+                    <span className="admin-leaderboard-reveal-badge">
+                        {isRevealScheduled
+                            ? "Pending"
+                            : scheduledRevealTime
+                                ? "Not pending"
+                                : "Not configured"}
+                    </span>
                 </div>
 
-                <form
-                    onSubmit={handleScheduleSubmit}
-                    className="space-y-4"
-                >
-                    <div>
-                        <label
-                            htmlFor="reveal-time"
-                            className="mb-1 block text-sm text-gray-300"
-                        >
-                            Reveal Date and Time
-                        </label>
-
-                        <input
-                            id="reveal-time"
-                            type="datetime-local"
-                            value={revealTime}
-                            onChange={(event) =>
-                                setRevealTime(event.target.value)
-                            }
-                            required
-                            className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-white outline-none focus:border-purple-500 sm:max-w-md"
-                        />
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={scheduling || !revealTime}
-                        className="rounded-lg bg-purple-600 px-5 py-2 text-sm font-medium text-white hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        {scheduling
-                            ? "Scheduling..."
-                            : "Save Reveal Schedule"}
-                    </button>
-                </form>
-
-                <p className="text-xs text-gray-500">
-                    The selected local date and time will be converted to ISO format before being sent to the backend.
-                </p>
-            </section>
-
-            {/* Scheduled reveal information */}
-            <section className="rounded-xl border border-white/10 bg-white/5 p-5 space-y-3">
-
-                <h2 className="text-lg font-medium text-white">
-                    Scheduled Reveal Information
-                </h2>
-
                 {loading ? (
-                    <p className="text-sm text-gray-400">
+                    <div className="admin-leaderboard-state">
                         Loading schedule...
-                    </p>
+                    </div>
                 ) : (
-                    <div>
-                        <p className="text-sm text-gray-400">
-                            Currently scheduled reveal time
-                        </p>
+                    <div className="admin-leaderboard-reveal-information">
+                        <div className="admin-leaderboard-reveal-date">
+                            <span>Scheduled reveal date and time</span>
 
-                        <p className="mt-2 text-base font-medium text-white">
-                            {formatDateTime(scheduledRevealTime)}
-                        </p>
+                            <strong>
+                                {formatDateTime(scheduledRevealTime)}
+                            </strong>
+                        </div>
+
+                        <div className="admin-leaderboard-reveal-note">
+                            <span>Schedule status</span>
+
+                            <p>
+                                {isRevealScheduled
+                                    ? "The leaderboard will automatically become public at the scheduled time. Manually activating or deactivating it cancels this pending reveal."
+                                    : scheduledRevealTime
+                                        ? "There is currently no automatic reveal pending. You can schedule another reveal or control visibility manually."
+                                        : "No automatic leaderboard reveal is currently scheduled."}
+                            </p>
+                        </div>
                     </div>
                 )}
 
-                <p className="text-xs text-gray-500">
-                    Displayed in your browser's local timezone.
+                <p className="admin-leaderboard-helper">
+                    Scheduled time is displayed in your browser's local
+                    timezone.
                 </p>
             </section>
-
-        </div>
+        </main>
     );
 }
 

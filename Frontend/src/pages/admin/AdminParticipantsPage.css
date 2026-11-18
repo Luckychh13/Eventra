@@ -1,0 +1,581 @@
+.admin-participants-page {
+    display: grid;
+    gap: 24px;
+    min-width: 0;
+    color: var(--admin-text);
+}
+
+/* Header */
+
+.admin-participants-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.admin-participants-eyebrow {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--admin-accent);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.7px;
+}
+
+.admin-participants-header h1 {
+    margin: 0;
+    font-size: clamp(25px, 3vw, 32px);
+    font-weight: 750;
+    letter-spacing: -1px;
+}
+
+.admin-participants-header>div:first-child p,
+.admin-participant-list-heading p {
+    margin: 7px 0 0;
+    color: var(--admin-muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.admin-participants-stats {
+    display: flex;
+    gap: 10px;
+}
+
+.admin-participant-stat {
+    display: grid;
+    gap: 5px;
+    min-width: 120px;
+    padding: 13px 15px;
+    border: 1px solid var(--admin-border);
+    border-radius: 13px;
+    background: var(--admin-surface);
+}
+
+.admin-participant-stat span {
+    color: var(--admin-muted);
+    font-size: 10px;
+}
+
+.admin-participant-stat strong {
+    font-size: 23px;
+    line-height: 1.2;
+}
+
+/* Alerts */
+
+.admin-participants-alert {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 15px;
+    border: 1px solid var(--admin-border);
+    border-radius: 11px;
+    font-size: 13px;
+}
+
+.admin-participants-alert.is-error {
+    border-color: rgba(220, 85, 85, 0.3);
+    background: rgba(220, 85, 85, 0.08);
+    color: #dc5555;
+}
+
+.admin-participants-alert.is-success {
+    border-color: rgba(33, 150, 107, 0.3);
+    background: rgba(33, 150, 107, 0.08);
+    color: #21966b;
+}
+
+.admin-participants-alert button {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 21px;
+    cursor: pointer;
+}
+
+/* Main layout */
+
+.admin-participants-layout {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.78fr) minmax(0, 1.7fr);
+    align-items: start;
+    gap: 22px;
+}
+
+.admin-participant-form-card,
+.admin-participant-list-section {
+    min-width: 0;
+    padding: 21px;
+    border: 1px solid var(--admin-border);
+    border-radius: 17px;
+    background: var(--admin-surface);
+}
+
+.admin-participant-section-heading,
+.admin-participant-list-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 21px;
+}
+
+.admin-participant-section-heading h2,
+.admin-participant-list-heading h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+
+.admin-participant-edit-badge {
+    padding: 5px 9px;
+    border-radius: 20px;
+    background: rgba(26, 143, 156, 0.12);
+    color: var(--admin-accent);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* Form */
+
+.admin-participant-form-fields {
+    display: grid;
+    gap: 17px;
+}
+
+.admin-participant-field {
+    display: grid;
+    gap: 8px;
+}
+
+.admin-participant-field label {
+    color: var(--admin-text);
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.admin-participant-field label span {
+    color: var(--admin-coral);
+}
+
+.admin-participant-field input:not([type="file"]),
+.admin-participant-field textarea,
+.admin-participant-search input {
+    width: 100%;
+    min-width: 0;
+    padding: 11px 12px;
+    border: 1px solid var(--admin-border);
+    border-radius: 9px;
+    outline: none;
+    background: var(--admin-surface-soft);
+    color: var(--admin-text);
+    font: inherit;
+    font-size: 12px;
+    transition:
+        border-color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.admin-participant-field textarea {
+    min-height: 100px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.admin-participant-field input::placeholder,
+.admin-participant-field textarea::placeholder,
+.admin-participant-search input::placeholder {
+    color: var(--admin-muted);
+    opacity: 0.75;
+}
+
+.admin-participant-field input:focus,
+.admin-participant-field textarea:focus,
+.admin-participant-search input:focus {
+    border-color: var(--admin-accent);
+    box-shadow: 0 0 0 3px rgba(26, 143, 156, 0.1);
+}
+
+.admin-participant-field small {
+    color: var(--admin-muted);
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.admin-participant-upload {
+    display: grid;
+    gap: 9px;
+    padding: 15px;
+    border: 1px dashed var(--admin-border);
+    border-radius: 11px;
+    background: var(--admin-surface-soft);
+}
+
+.admin-participant-upload input {
+    width: 100%;
+    max-width: 100%;
+    color: var(--admin-muted);
+    font-size: 11px;
+}
+
+.admin-participant-upload input::file-selector-button {
+    margin-right: 10px;
+    padding: 7px 10px;
+    border: 0;
+    border-radius: 7px;
+    background: var(--admin-accent);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.admin-participant-upload p {
+    margin: 0;
+    overflow-wrap: anywhere;
+    color: var(--admin-muted);
+    font-size: 11px;
+}
+
+.admin-participant-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 22px;
+}
+
+.admin-participant-primary-button,
+.admin-participant-secondary-button {
+    min-height: 39px;
+    padding: 0 15px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        transform 180ms ease,
+        background 180ms ease,
+        opacity 180ms ease;
+}
+
+.admin-participant-primary-button {
+    background: var(--admin-accent);
+    color: #fff;
+}
+
+.admin-participant-primary-button:hover:not(:disabled) {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+
+.admin-participant-secondary-button {
+    border-color: var(--admin-border);
+    background: transparent;
+    color: var(--admin-text);
+}
+
+.admin-participant-secondary-button:hover:not(:disabled) {
+    background: var(--admin-surface-soft);
+}
+
+.admin-participant-primary-button:disabled,
+.admin-participant-secondary-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.admin-participant-current-photo {
+    display: grid;
+    gap: 9px;
+    margin-top: 22px;
+    padding-top: 17px;
+    border-top: 1px solid var(--admin-border);
+}
+
+.admin-participant-current-photo span {
+    color: var(--admin-muted);
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.admin-participant-current-photo img {
+    width: 100%;
+    max-height: 150px;
+    border-radius: 9px;
+    object-fit: cover;
+}
+
+/* List heading and search */
+
+.admin-participant-list-heading {
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.admin-participant-search {
+    width: min(100%, 220px);
+}
+
+.admin-participant-search input {
+    min-height: 39px;
+}
+
+/* Participant cards */
+
+.admin-participant-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.admin-participant-card {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--admin-border);
+    border-radius: 13px;
+    background: var(--admin-surface-soft);
+    transition:
+        transform 180ms ease,
+        border-color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.admin-participant-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--admin-accent);
+    box-shadow: 0 8px 22px rgba(15, 40, 55, 0.08);
+}
+
+.admin-participant-photo {
+    height: 180px;
+    overflow: hidden;
+    background: var(--admin-surface);
+}
+
+.admin-participant-photo>img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 250ms ease;
+}
+
+.admin-participant-card:hover .admin-participant-photo>img {
+    transform: scale(1.035);
+}
+
+.admin-participant-no-photo {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+    color: var(--admin-muted);
+}
+
+.admin-participant-no-photo>span {
+    display: grid;
+    width: 55px;
+    height: 55px;
+    place-items: center;
+    border: 1px solid var(--admin-border);
+    border-radius: 50%;
+    background: var(--admin-surface-soft);
+    color: var(--admin-accent);
+    font-size: 22px;
+    font-weight: 750;
+}
+
+.admin-participant-no-photo small {
+    font-size: 10px;
+}
+
+.admin-participant-card-content {
+    display: grid;
+    gap: 12px;
+    padding: 13px;
+}
+
+.admin-participant-card-title {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.admin-participant-card-title h3 {
+    margin: 0;
+    overflow-wrap: anywhere;
+    color: var(--admin-text);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.admin-participant-tag {
+    display: inline-block;
+    margin-top: 5px;
+    color: var(--admin-muted);
+    font-size: 10px;
+}
+
+.admin-participant-votes {
+    display: grid;
+    flex-shrink: 0;
+    gap: 2px;
+    min-width: 53px;
+    padding: 6px 8px;
+    border-radius: 9px;
+    background: rgba(26, 143, 156, 0.1);
+    text-align: center;
+}
+
+.admin-participant-votes strong {
+    color: var(--admin-accent);
+    font-size: 13px;
+}
+
+.admin-participant-votes span {
+    color: var(--admin-muted);
+    font-size: 9px;
+}
+
+.admin-participant-details {
+    display: -webkit-box;
+    margin: 0;
+    overflow: hidden;
+    color: var(--admin-muted);
+    font-size: 11px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+.admin-participant-card-meta {
+    color: var(--admin-muted);
+    font-size: 9px;
+}
+
+.admin-participant-card-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--admin-border);
+}
+
+.admin-participant-card-actions button {
+    min-height: 32px;
+    padding: 0 11px;
+    border: 1px solid var(--admin-border);
+    border-radius: 7px;
+    background: transparent;
+    color: var(--admin-text);
+    font-size: 10px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background 160ms ease;
+}
+
+.admin-participant-card-actions button:hover:not(:disabled) {
+    background: var(--admin-surface);
+}
+
+.admin-participant-card-actions .admin-participant-delete-button {
+    border-color: rgba(220, 85, 85, 0.28);
+    color: #d85a5a;
+}
+
+.admin-participant-card-actions .admin-participant-delete-button:hover:not(:disabled) {
+    background: rgba(220, 85, 85, 0.08);
+}
+
+.admin-participant-card-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Loading and empty states */
+
+.admin-participants-state {
+    display: grid;
+    min-height: 220px;
+    place-items: center;
+    padding: 25px;
+    border: 1px dashed var(--admin-border);
+    border-radius: 12px;
+    color: var(--admin-muted);
+    font-size: 12px;
+    text-align: center;
+}
+
+/* Responsive layout */
+
+@media (max-width: 1100px) {
+    .admin-participants-layout {
+        grid-template-columns: minmax(260px, 0.85fr) minmax(0, 1.4fr);
+        gap: 16px;
+    }
+
+    .admin-participant-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .admin-participants-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .admin-participants-stats {
+        width: 100%;
+    }
+
+    .admin-participant-stat {
+        flex: 1;
+    }
+
+    .admin-participants-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-participant-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 520px) {
+
+    .admin-participant-form-card,
+    .admin-participant-list-section {
+        padding: 15px;
+    }
+
+    .admin-participant-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-participant-list-heading {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .admin-participant-search {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .admin-participant-card,
+    .admin-participant-photo>img,
+    .admin-participant-primary-button,
+    .admin-participant-secondary-button {
+        transition: none;
+    }
+}

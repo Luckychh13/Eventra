@@ -1,9 +1,11 @@
+
 import { useCallback, useEffect, useState } from "react";
 import {
     getAdmins,
     makeAdmin,
     removeAdmin,
 } from "../../services/api/adminService.js";
+import "./MakeAdminPage.css";
 
 function MakeAdminPage() {
     const [admins, setAdmins] = useState([]);
@@ -37,7 +39,9 @@ function MakeAdminPage() {
                 const response = await getAdmins();
 
                 if (isActive) {
-                    setAdmins(Array.isArray(response.admins) ? response.admins : []);
+                    setAdmins(
+                        Array.isArray(response.admins) ? response.admins : []
+                    );
                     setError("");
                 }
             } catch (err) {
@@ -81,6 +85,7 @@ function MakeAdminPage() {
 
             setMessage(response.message || "Admin privileges granted.");
             setEmail("");
+            setLoading(true);
             await fetchAdmins();
         } catch (err) {
             setError(
@@ -107,6 +112,7 @@ function MakeAdminPage() {
             const response = await removeAdmin(admin.email);
 
             setMessage(response.message || "Admin privileges removed.");
+            setLoading(true);
             await fetchAdmins();
         } catch (err) {
             setError(
@@ -118,70 +124,79 @@ function MakeAdminPage() {
     };
 
     return (
-        <section className="space-y-6">
-            <div>
-                <h1 className="text-2xl font-bold text-white sm:text-3xl">
-                    Admin Management
-                </h1>
-                <p className="mt-1 text-sm text-gray-400">
-                    Promote registered users and manage existing administrators.
-                </p>
+        <section className="make-admin-page">
+            <div className="make-admin-header">
+                <div>
+                    <span className="make-admin-eyebrow">ACCESS CONTROL</span>
+                    <h1>Admin Management</h1>
+                    <p>
+                        Promote registered users and manage administrator access.
+                    </p>
+                </div>
+
+                <div className="make-admin-header-count">
+                    <span>ACTIVE ADMINS</span>
+                    <strong>{admins.length}</strong>
+                </div>
             </div>
 
             {error && (
-                <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-300">
-                    {error}
+                <div className="make-admin-alert make-admin-alert-error">
+                    <span className="make-admin-alert-icon">!</span>
+                    <p>{error}</p>
                 </div>
             )}
 
             {message && (
-                <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-4 text-sm text-green-300">
-                    {message}
+                <div className="make-admin-alert make-admin-alert-success">
+                    <span className="make-admin-alert-icon">✓</span>
+                    <p>{message}</p>
                 </div>
             )}
 
-            <form
-                onSubmit={handleMakeAdmin}
-                className="space-y-4 rounded-xl border border-white/10 bg-white/5 p-5 sm:p-6"
-            >
-                <div>
-                    <h2 className="text-lg font-semibold text-white">
-                        Promote a user
-                    </h2>
-                    <p className="mt-1 text-sm text-gray-400">
-                        Enter the email address of an existing registered account.
-                    </p>
+            <article className="make-admin-promote-card">
+                <div className="make-admin-card-heading">
+                    <div className="make-admin-card-icon">+</div>
+                    <div>
+                        <h2>Promote a user</h2>
+                        <p>
+                            Grant administrator privileges to an existing account.
+                        </p>
+                    </div>
                 </div>
 
-                <div className="flex flex-col gap-3 sm:flex-row">
-                    <input
-                        type="email"
-                        required
-                        value={email}
-                        onChange={(event) => setEmail(event.target.value)}
-                        placeholder="user@example.com"
-                        className="min-w-0 flex-1 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 focus:border-purple-500"
-                    />
+                <form onSubmit={handleMakeAdmin} className="make-admin-form">
+                    <div className="make-admin-input-group">
+                        <label htmlFor="admin-email">User email address</label>
+                        <input
+                            id="admin-email"
+                            type="email"
+                            required
+                            value={email}
+                            onChange={(event) => setEmail(event.target.value)}
+                            placeholder="user@example.com"
+                        />
+                    </div>
 
                     <button
                         type="submit"
                         disabled={submitting}
-                        className="rounded-lg bg-purple-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="make-admin-submit"
                     >
                         {submitting ? "Promoting..." : "Make Admin"}
                     </button>
-                </div>
-            </form>
+                </form>
 
-            <div className="overflow-hidden rounded-xl border border-white/10 bg-white/5">
-                <div className="flex items-center justify-between border-b border-white/10 p-5">
+                <p className="make-admin-hint">
+                    Only existing registered accounts can be promoted.
+                </p>
+            </article>
+
+            <article className="make-admin-list-card">
+                <div className="make-admin-list-header">
                     <div>
-                        <h2 className="text-lg font-semibold text-white">
-                            Current Administrators
-                        </h2>
-                        <p className="mt-1 text-sm text-gray-400">
-                            {admins.length} administrator(s)
-                        </p>
+                        <h2>Current administrators</h2>
+                        <p>Manage accounts with administrator privileges.</p>
                     </div>
 
                     <button
@@ -191,48 +206,62 @@ function MakeAdminPage() {
                             fetchAdmins();
                         }}
                         disabled={loading}
-                        className="text-sm font-medium text-purple-300 hover:text-purple-200 disabled:opacity-50"
+                        className="make-admin-refresh"
                     >
-                        Refresh
+                        <span>↻</span>
+                        {loading ? "Loading..." : "Refresh"}
                     </button>
                 </div>
 
                 {loading ? (
-                    <p className="p-8 text-center text-sm text-gray-400">
-                        Loading administrators...
-                    </p>
+                    <div className="make-admin-state">
+                        <span className="make-admin-spinner" />
+                        <p>Loading administrators...</p>
+                    </div>
                 ) : admins.length === 0 ? (
-                    <p className="p-8 text-center text-sm text-gray-400">
-                        No administrators found.
-                    </p>
+                    <div className="make-admin-state">
+                        <span className="make-admin-empty-icon">◎</span>
+                        <strong>No administrators found</strong>
+                        <p>Promoted accounts will appear here.</p>
+                    </div>
                 ) : (
-                    <div className="divide-y divide-white/10">
+                    <div className="make-admin-list">
                         {admins.map((admin) => (
-                            <div
-                                key={admin.uid}
-                                className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between"
-                            >
-                                <div>
-                                    <p className="font-medium text-white">
-                                        {admin.displayName || "Unknown"}
-                                    </p>
-                                    <p className="mt-1 text-sm text-gray-400">
-                                        {admin.email}
-                                    </p>
+                            <div key={admin.uid} className="make-admin-row">
+                                <div className="make-admin-identity">
+                                    <div className="make-admin-avatar">
+                                        {(admin.displayName || "U")
+                                            .trim()
+                                            .charAt(0)
+                                            .toUpperCase()}
+                                    </div>
+
+                                    <div>
+                                        <strong>
+                                            {admin.displayName || "Unknown"}
+                                        </strong>
+                                        <span>{admin.email}</span>
+                                    </div>
                                 </div>
 
-                                <button
-                                    type="button"
-                                    onClick={() => handleRemoveAdmin(admin)}
-                                    className="self-start rounded-lg border border-red-500/20 px-4 py-2 text-sm font-medium text-red-300 transition hover:bg-red-500/10 sm:self-auto"
-                                >
-                                    Remove Admin
-                                </button>
+                                <div className="make-admin-row-actions">
+                                    <span className="make-admin-role-badge">
+                                        Administrator
+                                    </span>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveAdmin(admin)}
+                                        className="make-admin-remove"
+                                    >
+                                        Remove Admin
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>
                 )}
-            </div>
+            </article>
         </section>
     );
 }

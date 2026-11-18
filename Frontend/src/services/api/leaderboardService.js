@@ -21,3 +21,8 @@ export const scheduleLeaderboard = async (revealTime) => {
 
     return response.data;
 };
+
+export const getLeaderboard = async () => {
+    const response = await api.get('/api/leaderboard')
+    return response.data
+}

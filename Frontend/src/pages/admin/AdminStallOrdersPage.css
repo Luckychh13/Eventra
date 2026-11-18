@@ -1,0 +1,484 @@
+.admin-stall-orders-page {
+    display: grid;
+    gap: 24px;
+    min-width: 0;
+    color: var(--admin-text);
+}
+
+/* Header */
+
+.admin-stall-orders-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.admin-stall-orders-eyebrow {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--admin-accent);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.7px;
+}
+
+.admin-stall-orders-header h1 {
+    margin: 0;
+    font-size: clamp(25px, 3vw, 32px);
+    font-weight: 750;
+    letter-spacing: -1px;
+}
+
+.admin-stall-orders-header p,
+.admin-stall-orders-list-heading p {
+    margin: 7px 0 0;
+    color: var(--admin-muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.admin-stall-orders-refresh {
+    display: inline-flex;
+    min-height: 39px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 15px;
+    border: 1px solid var(--admin-border);
+    border-radius: 9px;
+    background: var(--admin-surface);
+    color: var(--admin-text);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 180ms ease;
+}
+
+.admin-stall-orders-refresh:hover {
+    background: var(--admin-surface-soft);
+}
+
+/* Partial errors */
+
+.admin-stall-orders-warning {
+    display: grid;
+    gap: 10px;
+    padding: 14px 16px;
+    border: 1px solid rgba(213, 157, 61, 0.3);
+    border-radius: 12px;
+    background: rgba(213, 157, 61, 0.08);
+}
+
+.admin-stall-orders-warning>div:first-child strong {
+    color: #c58b2c;
+    font-size: 12px;
+}
+
+.admin-stall-orders-warning>div:first-child p {
+    margin: 5px 0 0;
+    color: var(--admin-muted);
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.admin-stall-orders-warning-list {
+    display: grid;
+    gap: 5px;
+    padding-top: 9px;
+    border-top: 1px solid rgba(213, 157, 61, 0.2);
+}
+
+.admin-stall-orders-warning-list p {
+    margin: 0;
+    overflow-wrap: anywhere;
+    color: var(--admin-muted);
+    font-size: 10px;
+    line-height: 1.6;
+}
+
+.admin-stall-orders-warning-list strong {
+    color: var(--admin-text);
+}
+
+/* Statistics */
+
+.admin-stall-orders-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 13px;
+}
+
+.admin-stall-orders-stat-card {
+    display: grid;
+    min-width: 0;
+    min-height: 105px;
+    align-content: space-between;
+    gap: 13px;
+    padding: 16px;
+    border: 1px solid var(--admin-border);
+    border-radius: 13px;
+    background: var(--admin-surface);
+    transition:
+        border-color 180ms ease,
+        transform 180ms ease;
+}
+
+.admin-stall-orders-stat-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--admin-accent);
+}
+
+.admin-stall-orders-stat-card>span {
+    color: var(--admin-muted);
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.admin-stall-orders-stat-card>strong {
+    overflow-wrap: anywhere;
+    color: var(--admin-text);
+    font-size: clamp(19px, 2vw, 25px);
+    font-weight: 750;
+    line-height: 1.2;
+}
+
+/* Orders section */
+
+.admin-stall-orders-list-section {
+    min-width: 0;
+    padding: 21px;
+    border: 1px solid var(--admin-border);
+    border-radius: 17px;
+    background: var(--admin-surface);
+}
+
+.admin-stall-orders-list-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.admin-stall-orders-list-heading h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+
+.admin-stall-orders-count {
+    padding: 7px 10px;
+    border: 1px solid var(--admin-border);
+    border-radius: 20px;
+    background: var(--admin-surface-soft);
+    color: var(--admin-muted);
+    font-size: 10px;
+    font-weight: 700;
+}
+
+/* Order list */
+
+.admin-stall-orders-list {
+    display: grid;
+    gap: 15px;
+}
+
+.admin-stall-order-card {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--admin-border);
+    border-radius: 13px;
+    background: var(--admin-surface-soft);
+    transition:
+        border-color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.admin-stall-order-card:hover {
+    border-color: var(--admin-accent);
+    box-shadow: 0 6px 18px rgba(15, 40, 55, 0.05);
+}
+
+.admin-stall-order-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 17px;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-stall-order-identity {
+    display: grid;
+    min-width: 0;
+    align-content: start;
+    gap: 5px;
+}
+
+.admin-stall-order-identity>span {
+    color: var(--admin-muted);
+    font-size: 10px;
+}
+
+.admin-stall-order-identity h3 {
+    margin: 0;
+    overflow-wrap: anywhere;
+    color: var(--admin-text);
+    font-size: 15px;
+    font-weight: 750;
+}
+
+.admin-stall-order-identity>p {
+    margin: 4px 0 0;
+    overflow-wrap: anywhere;
+    color: var(--admin-muted);
+    font-size: 11px;
+}
+
+.admin-stall-order-token {
+    width: fit-content;
+    margin-top: 5px;
+    padding: 5px 9px;
+    border: 1px solid var(--admin-border);
+    border-radius: 7px;
+    background: var(--admin-surface);
+    color: var(--admin-accent);
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.admin-stall-order-identity time {
+    margin-top: 3px;
+    color: var(--admin-muted);
+    font-size: 10px;
+}
+
+.admin-stall-order-status {
+    display: grid;
+    flex-shrink: 0;
+    justify-items: end;
+    align-content: start;
+    gap: 8px;
+}
+
+.admin-stall-order-status>strong {
+    color: var(--admin-text);
+    font-size: 19px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.admin-stall-payment-badge,
+.admin-stall-completion-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 9px;
+    border: 1px solid transparent;
+    border-radius: 20px;
+    font-size: 9px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.admin-stall-payment-badge {
+    border-color: rgba(32, 167, 121, 0.25);
+    background: rgba(32, 167, 121, 0.09);
+    color: #21966b;
+}
+
+.admin-stall-completion-badge.is-completed {
+    border-color: rgba(32, 167, 121, 0.2);
+    background: rgba(32, 167, 121, 0.06);
+    color: #21966b;
+}
+
+.admin-stall-completion-badge.is-pending {
+    border-color: rgba(213, 157, 61, 0.25);
+    background: rgba(213, 157, 61, 0.09);
+    color: #c58b2c;
+}
+
+/* Purchased items */
+
+.admin-stall-order-items {
+    padding: 16px 17px;
+}
+
+.admin-stall-order-items-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.admin-stall-order-items-heading h4 {
+    margin: 0;
+    color: var(--admin-text);
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.admin-stall-order-items-heading>span {
+    color: var(--admin-muted);
+    font-size: 10px;
+}
+
+.admin-stall-order-item-list {
+    display: grid;
+    gap: 9px;
+}
+
+.admin-stall-order-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 12px;
+    border: 1px solid var(--admin-border);
+    border-radius: 9px;
+    background: var(--admin-surface);
+}
+
+.admin-stall-order-item-info {
+    display: grid;
+    min-width: 0;
+    gap: 5px;
+}
+
+.admin-stall-order-item-info>strong {
+    overflow-wrap: anywhere;
+    color: var(--admin-text);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.admin-stall-order-item-info>span {
+    color: var(--admin-muted);
+    font-size: 10px;
+}
+
+.admin-stall-order-item-total {
+    flex-shrink: 0;
+    color: var(--admin-text);
+    font-size: 12px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.admin-stall-order-no-items {
+    margin: 0;
+    padding: 15px;
+    border: 1px dashed var(--admin-border);
+    border-radius: 9px;
+    color: var(--admin-muted);
+    font-size: 11px;
+    text-align: center;
+}
+
+/* Order footer */
+
+.admin-stall-order-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-height: 48px;
+    padding: 10px 17px;
+    border-top: 1px solid var(--admin-border);
+}
+
+.admin-stall-order-footer>span {
+    color: var(--admin-muted);
+    font-size: 10px;
+    font-weight: 650;
+}
+
+.admin-stall-order-footer>span.is-completed {
+    color: #21966b;
+}
+
+.admin-stall-order-footer>span.is-pending {
+    color: #c58b2c;
+}
+
+/* Loading, error, and empty states */
+
+.admin-stall-orders-state {
+    display: grid;
+    min-height: 220px;
+    place-items: center;
+    align-content: center;
+    gap: 11px;
+    padding: 25px;
+    border: 1px dashed var(--admin-border);
+    border-radius: 12px;
+    color: var(--admin-muted);
+    font-size: 12px;
+    text-align: center;
+}
+
+.admin-stall-orders-state>strong {
+    color: var(--admin-text);
+    font-size: 14px;
+}
+
+.admin-stall-orders-state p {
+    max-width: 500px;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.admin-stall-orders-state.is-error>strong {
+    color: #d85a5a;
+}
+
+/* Responsive */
+
+@media (max-width: 1000px) {
+    .admin-stall-orders-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .admin-stall-orders-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .admin-stall-orders-list-section {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 520px) {
+    .admin-stall-order-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .admin-stall-order-status {
+        justify-items: start;
+    }
+
+    .admin-stall-order-item {
+        align-items: flex-start;
+    }
+
+    .admin-stall-order-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .admin-stall-orders-refresh,
+    .admin-stall-orders-stat-card,
+    .admin-stall-order-card {
+        transition: none;
+    }
+}

@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useState } from 'react'
 import useAuth from './useAuth.js'
 import { getDashboardSummary } from '../services/api/dashboardService.js'
@@ -13,6 +14,7 @@ function useAdminDashboard() {
     })
 
     const [refreshKey, setRefreshKey] = useState(0)
+    const [refreshing, setRefreshing] = useState(false)
 
     useEffect(() => {
         if (authLoading || !uid) return
@@ -20,6 +22,8 @@ function useAdminDashboard() {
         let isActive = true
 
         const fetchSummary = async () => {
+            setRefreshing(true)
+
             try {
                 const response = await getDashboardSummary()
 
@@ -51,6 +55,10 @@ function useAdminDashboard() {
                             error.message ||
                             'Failed to fetch dashboard summary.',
                     })
+                }
+            } finally {
+                if (isActive) {
+                    setRefreshing(false)
                 }
             }
         }
@@ -84,6 +92,7 @@ function useAdminDashboard() {
     return {
         summary,
         loading,
+        refreshing,
         error,
         refreshSummary,
     }

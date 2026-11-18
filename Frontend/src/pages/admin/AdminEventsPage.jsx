@@ -1,11 +1,11 @@
-
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
     createEvent,
     getEvents,
     updateEvent,
     deleteEvent,
 } from "../../services/api/eventService.js";
+import "./AdminEventsPage.css";
 
 const initialFormData = {
     title: "",
@@ -15,6 +15,15 @@ const initialFormData = {
     time: "",
     description: "",
 };
+
+function getErrorMessage(error, fallback) {
+    return (
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        fallback
+    );
+}
 
 function AdminEventsPage() {
     const [events, setEvents] = useState([]);
@@ -31,6 +40,8 @@ function AdminEventsPage() {
     const [formError, setFormError] = useState("");
     const [saving, setSaving] = useState(false);
 
+    const imageInputRef = useRef(null);
+
     const fetchEvents = useCallback(async () => {
         try {
             const response = await getEvents();
@@ -38,15 +49,14 @@ function AdminEventsPage() {
             setError("");
         } catch (err) {
             setError(
-                err.response?.data?.message ||
-                err.message ||
-                "Failed to load events."
+                getErrorMessage(err, "Failed to load events.")
             );
         } finally {
             setLoading(false);
         }
     }, []);
 
+    // Initial fetch. The active flag prevents state updates after unmount.
     useEffect(() => {
         let isActive = true;
 
@@ -61,9 +71,7 @@ function AdminEventsPage() {
             } catch (err) {
                 if (isActive) {
                     setError(
-                        err.response?.data?.message ||
-                        err.message ||
-                        "Failed to load events."
+                        getErrorMessage(err, "Failed to load events.")
                     );
                 }
             } finally {
@@ -80,6 +88,21 @@ function AdminEventsPage() {
         };
     }, []);
 
+    // Release temporary browser image URLs when the preview changes or unmounts.
+    useEffect(() => {
+        return () => {
+            if (imagePreview.startsWith("blob:")) {
+                URL.revokeObjectURL(imagePreview);
+            }
+        };
+    }, [imagePreview]);
+
+    const clearImageInput = () => {
+        if (imageInputRef.current) {
+            imageInputRef.current.value = "";
+        }
+    };
+
     const openCreateForm = () => {
         setEditingEvent(null);
         setFormData({ ...initialFormData });
@@ -87,11 +110,13 @@ function AdminEventsPage() {
         setImagePreview("");
         setFormError("");
         setActionError("");
+        clearImageInput();
         setShowForm(true);
     };
 
     const openEditForm = (event) => {
         setEditingEvent(event);
+
         setFormData({
             title: event.title || "",
             day: event.day || "",
@@ -100,11 +125,18 @@ function AdminEventsPage() {
             time: event.time || "",
             description: event.description || "",
         });
+
         setSelectedImage(null);
         setImagePreview(event.imageUrl || "");
         setFormError("");
         setActionError("");
+        clearImageInput();
         setShowForm(true);
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
     };
 
     const closeForm = () => {
@@ -114,6 +146,7 @@ function AdminEventsPage() {
         setSelectedImage(null);
         setImagePreview("");
         setFormError("");
+        clearImageInput();
     };
 
     const handleInputChange = (event) => {
@@ -136,6 +169,17 @@ function AdminEventsPage() {
 
     const handleFormSubmit = async (event) => {
         event.preventDefault();
+
+        if (
+            !formData.title.trim() ||
+            !formData.day.trim() ||
+            !formData.date.trim() ||
+            !formData.location.trim() ||
+            !formData.time.trim()
+        ) {
+            setFormError("Please complete all required event fields.");
+            return;
+        }
 
         try {
             setSaving(true);
@@ -161,9 +205,7 @@ function AdminEventsPage() {
             await fetchEvents();
         } catch (err) {
             setFormError(
-                err.response?.data?.message ||
-                err.message ||
-                "Failed to save event."
+                getErrorMessage(err, "Failed to save event.")
             );
         } finally {
             setSaving(false);
@@ -186,11 +228,13 @@ function AdminEventsPage() {
             setEvents((currentEvents) =>
                 currentEvents.filter((item) => item._id !== event._id)
             );
+
+            if (editingEvent?._id === event._id) {
+                closeForm();
+            }
         } catch (err) {
             setActionError(
-                err.response?.data?.message ||
-                err.message ||
-                "Failed to delete event."
+                getErrorMessage(err, "Failed to delete event.")
             );
         } finally {
             setDeletingId(null);
@@ -198,280 +242,400 @@ function AdminEventsPage() {
     };
 
     return (
-        <section className="space-y-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <main className="admin-events-page">
+            <header className="admin-events-header">
                 <div>
-                    <h1 className="text-2xl font-bold text-white sm:text-3xl">
-                        Event Management
-                    </h1>
-                    <p className="mt-1 text-sm text-gray-400">
-                        View and manage all events.
+                    <span className="admin-events-eyebrow">
+                        EVENT MANAGEMENT
+                    </span>
+
+                    <h1>Events</h1>
+
+                    <p>
+                        Create, update, and manage the events displayed on
+                        Eventra.
                     </p>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="admin-events-header-actions">
                     <button
                         type="button"
+                        className="admin-events-refresh-button"
                         onClick={() => {
                             setLoading(true);
                             fetchEvents();
                         }}
                         disabled={loading}
-                        className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10 disabled:opacity-50"
                     >
-                        Refresh Events
+                        {loading ? "Loading..." : "Refresh events"}
                     </button>
 
                     <button
                         type="button"
+                        className="admin-events-create-button"
                         onClick={openCreateForm}
-                        className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-700"
+                        disabled={saving}
                     >
-                        + Create Event
+                        + Create event
                     </button>
                 </div>
-            </div>
-
-            {showForm && (
-                <form
-                    onSubmit={handleFormSubmit}
-                    className="space-y-5 rounded-xl border border-white/10 bg-white/5 p-5"
-                >
-                    <div>
-                        <h2 className="text-xl font-semibold text-white">
-                            {editingEvent ? "Edit Event" : "Create Event"}
-                        </h2>
-                        <p className="mt-1 text-sm text-gray-400">
-                            {editingEvent
-                                ? "Update the event details below."
-                                : "Enter the details for the new event."}
-                        </p>
-                    </div>
-
-                    {formError && (
-                        <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-3 text-sm text-red-300">
-                            {formError}
-                        </div>
-                    )}
-
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <div>
-                            <label className="mb-1 block text-sm text-gray-300">
-                                Event title *
-                            </label>
-                            <input
-                                name="title"
-                                value={formData.title}
-                                onChange={handleInputChange}
-                                required
-                                className="w-full rounded-lg border border-white/10 bg-[#171522] px-3 py-2 text-white outline-none focus:border-purple-500"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="mb-1 block text-sm text-gray-300">
-                                Day *
-                            </label>
-                            <input
-                                name="day"
-                                value={formData.day}
-                                onChange={handleInputChange}
-                                required
-                                className="w-full rounded-lg border border-white/10 bg-[#171522] px-3 py-2 text-white outline-none focus:border-purple-500"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="mb-1 block text-sm text-gray-300">
-                                Date *
-                            </label>
-                            <input
-                                name="date"
-                                value={formData.date}
-                                onChange={handleInputChange}
-                                required
-                                placeholder="Use the date format expected by your existing events"
-                                className="w-full rounded-lg border border-white/10 bg-[#171522] px-3 py-2 text-white outline-none focus:border-purple-500"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="mb-1 block text-sm text-gray-300">
-                                Time *
-                            </label>
-                            <input
-                                name="time"
-                                value={formData.time}
-                                onChange={handleInputChange}
-                                required
-                                className="w-full rounded-lg border border-white/10 bg-[#171522] px-3 py-2 text-white outline-none focus:border-purple-500"
-                            />
-                        </div>
-
-                        <div className="sm:col-span-2">
-                            <label className="mb-1 block text-sm text-gray-300">
-                                Location *
-                            </label>
-                            <input
-                                name="location"
-                                value={formData.location}
-                                onChange={handleInputChange}
-                                required
-                                className="w-full rounded-lg border border-white/10 bg-[#171522] px-3 py-2 text-white outline-none focus:border-purple-500"
-                            />
-                        </div>
-
-                        <div className="sm:col-span-2">
-                            <label className="mb-1 block text-sm text-gray-300">
-                                Description
-                            </label>
-                            <textarea
-                                name="description"
-                                value={formData.description}
-                                onChange={handleInputChange}
-                                rows={4}
-                                className="w-full rounded-lg border border-white/10 bg-[#171522] px-3 py-2 text-white outline-none focus:border-purple-500"
-                            />
-                        </div>
-
-                        <div className="sm:col-span-2">
-                            <label className="mb-1 block text-sm text-gray-300">
-                                Event image
-                            </label>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageChange}
-                                className="block w-full text-sm text-gray-400 file:mr-3 file:rounded-lg file:border-0 file:bg-white/10 file:px-4 file:py-2 file:text-white"
-                            />
-
-                            {imagePreview && (
-                                <img
-                                    src={imagePreview}
-                                    alt="Event preview"
-                                    className="mt-3 h-48 w-full rounded-lg object-cover sm:w-80"
-                                />
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-3">
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            className="rounded-lg bg-purple-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-purple-700 disabled:opacity-50"
-                        >
-                            {saving
-                                ? "Saving..."
-                                : editingEvent
-                                    ? "Update Event"
-                                    : "Create Event"}
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={closeForm}
-                            disabled={saving}
-                            className="rounded-lg border border-white/10 px-5 py-2 text-sm text-gray-300 transition hover:bg-white/10 disabled:opacity-50"
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                </form>
-            )}
-
-            <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-                <p className="text-sm text-gray-400">Total events</p>
-                <p className="mt-2 text-3xl font-bold text-white">
-                    {events.length}
-                </p>
-            </div>
+            </header>
 
             {error && (
-                <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-300">
+                <div className="admin-events-alert is-error" role="alert">
                     {error}
                 </div>
             )}
 
             {actionError && (
-                <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-300">
+                <div className="admin-events-alert is-error" role="alert">
                     {actionError}
+
+                    <button
+                        type="button"
+                        onClick={() => setActionError("")}
+                        aria-label="Dismiss error"
+                    >
+                        ×
+                    </button>
                 </div>
             )}
 
-            {loading ? (
-                <div className="py-12 text-center text-sm text-gray-400">
-                    Loading events...
+            <section className="admin-events-summary">
+                <div>
+                    <span>Total events</span>
+                    <strong>{events.length}</strong>
                 </div>
-            ) : events.length === 0 ? (
-                <div className="rounded-xl border border-white/10 bg-white/5 p-10 text-center">
-                    <p className="font-medium text-white">No events found</p>
-                    <p className="mt-1 text-sm text-gray-400">
-                        Events will appear here once they are created.
-                    </p>
-                </div>
-            ) : (
-                <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                    {events.map((event) => (
-                        <article
-                            key={event._id}
-                            className="overflow-hidden rounded-xl border border-white/10 bg-white/5"
+
+                <span className="admin-events-summary-icon">
+                    <span />
+                </span>
+            </section>
+
+            {showForm && (
+                <section className="admin-event-form-card">
+                    <div className="admin-event-form-heading">
+                        <div>
+                            <span className="admin-events-eyebrow">
+                                {editingEvent ? "UPDATE EVENT" : "NEW EVENT"}
+                            </span>
+
+                            <h2>
+                                {editingEvent ? "Edit event" : "Create event"}
+                            </h2>
+
+                            <p>
+                                {editingEvent
+                                    ? "Update the event information below."
+                                    : "Enter the details for your new event."}
+                            </p>
+                        </div>
+
+                        <button
+                            type="button"
+                            className="admin-event-close-button"
+                            onClick={closeForm}
+                            disabled={saving}
+                            aria-label="Close form"
                         >
-                            {event.imageUrl ? (
-                                <img
-                                    src={event.imageUrl}
-                                    alt={event.title}
-                                    className="h-48 w-full object-cover"
+                            ×
+                        </button>
+                    </div>
+
+                    {formError && (
+                        <div
+                            className="admin-events-alert is-error"
+                            role="alert"
+                        >
+                            {formError}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleFormSubmit}>
+                        <div className="admin-event-form-grid">
+                            <div className="admin-event-field">
+                                <label htmlFor="event-title">
+                                    Event title <span>*</span>
+                                </label>
+
+                                <input
+                                    id="event-title"
+                                    name="title"
+                                    value={formData.title}
+                                    onChange={handleInputChange}
+                                    required
+                                    placeholder="Enter event title"
                                 />
-                            ) : (
-                                <div className="flex h-48 items-center justify-center bg-white/5 text-sm text-gray-500">
-                                    No event image
-                                </div>
-                            )}
+                            </div>
 
-                            <div className="space-y-3 p-5">
-                                <h2 className="text-lg font-semibold text-white">
-                                    {event.title}
-                                </h2>
+                            <div className="admin-event-field">
+                                <label htmlFor="event-day">
+                                    Day <span>*</span>
+                                </label>
 
-                                <div className="space-y-1 text-sm text-gray-400">
-                                    <p>{event.day} · {event.date}</p>
-                                    <p>{event.time}</p>
-                                    <p>{event.location}</p>
-                                </div>
+                                <input
+                                    id="event-day"
+                                    name="day"
+                                    value={formData.day}
+                                    onChange={handleInputChange}
+                                    required
+                                    placeholder="e.g. Day 1"
+                                />
+                            </div>
 
-                                {event.description && (
-                                    <p className="line-clamp-2 text-sm text-gray-400">
-                                        {event.description}
+                            <div className="admin-event-field">
+                                <label htmlFor="event-date">
+                                    Date <span>*</span>
+                                </label>
+
+                                <input
+                                    id="event-date"
+                                    name="date"
+                                    value={formData.date}
+                                    onChange={handleInputChange}
+                                    required
+                                    placeholder="Use the existing event date format"
+                                />
+                            </div>
+
+                            <div className="admin-event-field">
+                                <label htmlFor="event-time">
+                                    Time <span>*</span>
+                                </label>
+
+                                <input
+                                    id="event-time"
+                                    name="time"
+                                    value={formData.time}
+                                    onChange={handleInputChange}
+                                    required
+                                    placeholder="e.g. 10:00 AM"
+                                />
+                            </div>
+
+                            <div className="admin-event-field full-width">
+                                <label htmlFor="event-location">
+                                    Location <span>*</span>
+                                </label>
+
+                                <input
+                                    id="event-location"
+                                    name="location"
+                                    value={formData.location}
+                                    onChange={handleInputChange}
+                                    required
+                                    placeholder="Enter event location"
+                                />
+                            </div>
+
+                            <div className="admin-event-field full-width">
+                                <label htmlFor="event-description">
+                                    Description
+                                </label>
+
+                                <textarea
+                                    id="event-description"
+                                    name="description"
+                                    value={formData.description}
+                                    onChange={handleInputChange}
+                                    rows={4}
+                                    placeholder="Add details about this event..."
+                                />
+                            </div>
+
+                            <div className="admin-event-field full-width">
+                                <label htmlFor="event-image">
+                                    Event image
+                                </label>
+
+                                <div className="admin-event-upload-area">
+                                    <input
+                                        ref={imageInputRef}
+                                        id="event-image"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageChange}
+                                    />
+
+                                    <p>
+                                        {selectedImage
+                                            ? selectedImage.name
+                                            : editingEvent
+                                                ? "Choose a replacement image (optional)"
+                                                : "Choose an event image (optional)"}
                                     </p>
+                                </div>
+
+                                {editingEvent && (
+                                    <small className="admin-event-field-hint">
+                                        Leave this empty to keep the current
+                                        image.
+                                    </small>
                                 )}
 
-                                <div className="flex flex-wrap gap-2 border-t border-white/10 pt-4">
-                                    <button
-                                        type="button"
-                                        onClick={() => openEditForm(event)}
-                                        className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
-                                    >
-                                        Edit
-                                    </button>
+                                {imagePreview && (
+                                    <div className="admin-event-image-preview">
+                                        <span>
+                                            {selectedImage
+                                                ? "Selected image preview"
+                                                : "Current image"}
+                                        </span>
 
-                                    <button
-                                        type="button"
-                                        onClick={() => handleDelete(event)}
-                                        disabled={deletingId === event._id}
-                                        className="rounded-lg border border-red-500/20 px-4 py-2 text-sm font-medium text-red-300 transition hover:bg-red-500/10 disabled:opacity-50"
-                                    >
-                                        {deletingId === event._id
-                                            ? "Deleting..."
-                                            : "Delete"}
-                                    </button>
-                                </div>
+                                        <img
+                                            src={imagePreview}
+                                            alt="Event preview"
+                                        />
+                                    </div>
+                                )}
                             </div>
-                        </article>
-                    ))}
-                </div>
+                        </div>
+
+                        <div className="admin-event-form-actions">
+                            <button
+                                type="submit"
+                                className="admin-events-create-button"
+                                disabled={saving}
+                            >
+                                {saving
+                                    ? "Saving..."
+                                    : editingEvent
+                                        ? "Save changes"
+                                        : "Create event"}
+                            </button>
+
+                            <button
+                                type="button"
+                                className="admin-events-cancel-button"
+                                onClick={closeForm}
+                                disabled={saving}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </section>
             )}
-        </section>
+
+            <section className="admin-event-list-section">
+                <div className="admin-event-list-heading">
+                    <div>
+                        <span className="admin-events-eyebrow">
+                            EVENT DIRECTORY
+                        </span>
+
+                        <h2>All events</h2>
+
+                        <p>
+                            {events.length}{" "}
+                            {events.length === 1 ? "event" : "events"} in your
+                            event directory
+                        </p>
+                    </div>
+                </div>
+
+                {loading ? (
+                    <div className="admin-events-state">
+                        Loading events...
+                    </div>
+                ) : events.length === 0 ? (
+                    <div className="admin-events-state">
+                        <strong>No events found</strong>
+
+                        <p>
+                            Events will appear here once they are created.
+                        </p>
+
+                        <button
+                            type="button"
+                            className="admin-events-create-button"
+                            onClick={openCreateForm}
+                        >
+                            Create your first event
+                        </button>
+                    </div>
+                ) : (
+                    <div className="admin-event-grid">
+                        {events.map((event) => (
+                            <article
+                                key={event._id}
+                                className="admin-event-card"
+                            >
+                                <div className="admin-event-card-image">
+                                    {event.imageUrl ? (
+                                        <img
+                                            src={event.imageUrl}
+                                            alt={event.title}
+                                            loading="lazy"
+                                        />
+                                    ) : (
+                                        <div className="admin-event-no-image">
+                                            <span>
+                                                {event.title?.charAt(0) || "E"}
+                                            </span>
+                                            <small>No event image</small>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="admin-event-card-content">
+                                    <div className="admin-event-card-heading">
+                                        <span className="admin-event-day">
+                                            {event.day}
+                                        </span>
+                                    </div>
+
+                                    <h3>{event.title}</h3>
+
+                                    <div className="admin-event-information">
+                                        <div>
+                                            <span className="admin-event-info-mark" />
+                                            <p>{event.date}</p>
+                                        </div>
+
+                                        <div>
+                                            <span className="admin-event-info-mark" />
+                                            <p>{event.time}</p>
+                                        </div>
+
+                                        <div>
+                                            <span className="admin-event-info-mark" />
+                                            <p>{event.location}</p>
+                                        </div>
+                                    </div>
+
+                                    {event.description && (
+                                        <p className="admin-event-description">
+                                            {event.description}
+                                        </p>
+                                    )}
+
+                                    <div className="admin-event-card-actions">
+                                        <button
+                                            type="button"
+                                            onClick={() => openEditForm(event)}
+                                            disabled={deletingId === event._id}
+                                        >
+                                            Edit event
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className="admin-event-delete-button"
+                                            onClick={() => handleDelete(event)}
+                                            disabled={deletingId === event._id}
+                                        >
+                                            {deletingId === event._id
+                                                ? "Deleting..."
+                                                : "Delete"}
+                                        </button>
+                                    </div>
+                                </div>
+                            </article>
+                        ))}
+                    </div>
+                )}
+            </section>
+        </main>
     );
 }
 

@@ -1,32 +1,44 @@
-import { useCallback, useEffect, useState } from 'react'
-import {
-    getMyStalls,
-} from '../../services/api/stallService.js'
-import {
-    getStallOrders,
-} from '../../services/api/stallPaymentService.js'
+import { useCallback, useEffect, useState } from "react";
+import { getMyStalls } from "../../services/api/stallService.js";
+import { getStallOrders } from "../../services/api/stallPaymentService.js";
+import "./AdminStallOrdersPage.css";
 
 const formatPrice = (value) => {
-    const amount = Number(value)
+    const amount = Number(value);
 
-    if (!Number.isFinite(amount)) return '₹0'
-
-    return `₹${amount.toLocaleString('en-IN')}`
-}
-
-const formatDate = (value) => {
-    if (!value) return 'Date unavailable'
-
-    const date = new Date(value)
-
-    if (Number.isNaN(date.getTime())) {
-        return 'Date unavailable'
+    if (!Number.isFinite(amount)) {
+        return "₹0";
     }
 
-    return new Intl.DateTimeFormat('en-IN', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-    }).format(date)
+    return new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 2,
+    }).format(amount);
+};
+
+const formatDate = (value) => {
+    if (!value) return "Date unavailable";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return "Date unavailable";
+    }
+
+    return new Intl.DateTimeFormat("en-IN", {
+        dateStyle: "medium",
+        timeStyle: "short",
+    }).format(date);
+};
+
+function getErrorMessage(error, fallback) {
+    return (
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        fallback
+    );
 }
 
 function AdminStallOrdersPage() {
@@ -35,50 +47,48 @@ function AdminStallOrdersPage() {
         orders: [],
         totalSales: 0,
         orderCount: 0,
-    })
+    });
 
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState('')
-    const [partialErrors, setPartialErrors] = useState([])
-    const [refreshKey, setRefreshKey] = useState(0)
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [partialErrors, setPartialErrors] = useState([]);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     const refreshOrders = useCallback(() => {
-        setRefreshKey((previousKey) => previousKey + 1)
-    }, [])
+        setRefreshKey((previousKey) => previousKey + 1);
+    }, []);
 
     useEffect(() => {
-        let isActive = true
+        let isActive = true;
 
         const fetchOrders = async () => {
             try {
-                setLoading(true)
-                setError('')
-                setPartialErrors([])
+                setLoading(true);
+                setError("");
+                setPartialErrors([]);
 
-                // Step 1: Retrieve all stalls accessible to the admin.
-                const stallResponse = await getMyStalls()
+                const stallResponse = await getMyStalls();
 
                 if (!stallResponse?.success) {
                     throw new Error(
                         stallResponse?.message ||
-                        'Failed to fetch stalls.'
-                    )
+                        "Failed to fetch stalls."
+                    );
                 }
 
                 const stalls = Array.isArray(stallResponse.stalls)
                     ? stallResponse.stalls
-                    : []
+                    : [];
 
-                // Step 2: Fetch successful orders for every stall.
                 const results = await Promise.allSettled(
                     stalls.map(async (stall) => {
-                        const response = await getStallOrders(stall._id)
+                        const response = await getStallOrders(stall._id);
 
                         if (!response?.success) {
                             throw new Error(
                                 response?.error ||
                                 `Failed to fetch orders for ${stall.name}.`
-                            )
+                            );
                         }
 
                         return {
@@ -91,44 +101,51 @@ function AdminStallOrdersPage() {
                                 : [],
                             totalSales: Number(response.totalSales) || 0,
                             orderCount: Number(response.orderCount) || 0,
-                        }
+                        };
                     })
-                )
+                );
 
                 const successfulResults = results
-                    .filter((result) => result.status === 'fulfilled')
-                    .map((result) => result.value)
+                    .filter((result) => result.status === "fulfilled")
+                    .map((result) => result.value);
 
-                const failedResults = results
-                    .filter((result) => result.status === 'rejected')
-                    .map((result, index) => ({
-                        message:
-                            result.reason?.response?.data?.error ||
-                            result.reason?.message ||
-                            `Unable to fetch orders for one stall.`,
-                        // The corresponding stall is identified separately below.
-                        index,
-                    }))
+                const failedResults = results.flatMap(
+                    (result, index) => {
+                        if (result.status !== "rejected") {
+                            return [];
+                        }
+
+                        const stall = stalls[index];
+
+                        return [{
+                            stallName: stall?.name || "Unknown stall",
+                            message: getErrorMessage(
+                                result.reason,
+                                "Unable to fetch orders."
+                            ),
+                        }];
+                    }
+                );
 
                 const orders = successfulResults.flatMap(
                     (result) => result.orders
-                )
+                );
 
                 orders.sort(
                     (a, b) =>
                         new Date(b.createdAt).getTime() -
                         new Date(a.createdAt).getTime()
-                )
+                );
 
                 const totalSales = successfulResults.reduce(
                     (total, result) => total + result.totalSales,
                     0
-                )
+                );
 
                 const orderCount = successfulResults.reduce(
                     (total, result) => total + result.orderCount,
                     0
-                )
+                );
 
                 if (isActive) {
                     setDashboardData({
@@ -136,259 +153,329 @@ function AdminStallOrdersPage() {
                         orders,
                         totalSales,
                         orderCount,
-                    })
+                    });
 
-                    setPartialErrors(failedResults)
+                    setPartialErrors(failedResults);
                 }
-            } catch (error) {
+            } catch (err) {
                 if (isActive) {
                     setError(
-                        error.response?.data?.message ||
-                        error.response?.data?.error ||
-                        error.message ||
-                        'Failed to fetch stall orders.'
-                    )
+                        getErrorMessage(
+                            err,
+                            "Failed to fetch stall orders."
+                        )
+                    );
                 }
             } finally {
                 if (isActive) {
-                    setLoading(false)
+                    setLoading(false);
                 }
             }
-        }
+        };
 
-        fetchOrders()
+        fetchOrders();
 
         return () => {
-            isActive = false
-        }
-    }, [refreshKey])
+            isActive = false;
+        };
+    }, [refreshKey]);
 
     const {
         stalls,
         orders,
         totalSales,
         orderCount,
-    } = dashboardData
+    } = dashboardData;
 
     const pendingCompletion = orders.filter(
-        (order) => order.orderStatus === 'PENDING'
-    ).length
+        (order) => order.orderStatus === "PENDING"
+    ).length;
+
+    const stats = [
+        {
+            label: "Total stalls",
+            value: stalls.length.toLocaleString("en-IN"),
+        },
+        {
+            label: "Successful orders",
+            value: orderCount.toLocaleString("en-IN"),
+        },
+        {
+            label: "Confirmed sales",
+            value: formatPrice(totalSales),
+        },
+        {
+            label: "Awaiting completion",
+            value: pendingCompletion.toLocaleString("en-IN"),
+        },
+    ];
 
     if (loading) {
         return (
-            <div className="py-20 text-center text-gray-400">
-                Loading stall orders...
-            </div>
-        )
+            <main className="admin-stall-orders-page">
+                <div className="admin-stall-orders-state">
+                    Loading stall orders...
+                </div>
+            </main>
+        );
     }
 
     if (error) {
         return (
-            <div className="py-16 text-center">
-                <h1 className="text-2xl font-bold">
-                    Unable to load stall orders
-                </h1>
+            <main className="admin-stall-orders-page">
+                <header className="admin-stall-orders-header">
+                    <div>
+                        <span className="admin-stall-orders-eyebrow">
+                            SALES MANAGEMENT
+                        </span>
 
-                <p className="mt-3 text-sm text-red-400">
-                    {error}
-                </p>
+                        <h1>Stall Orders</h1>
+                    </div>
+                </header>
 
-                <button
-                    type="button"
-                    onClick={refreshOrders}
-                    className="mt-5 rounded-lg bg-purple-600 px-5 py-2.5 text-sm hover:bg-purple-700"
-                >
-                    Try Again
-                </button>
-            </div>
-        )
+                <div className="admin-stall-orders-state is-error">
+                    <strong>Unable to load stall orders</strong>
+                    <p>{error}</p>
+
+                    <button
+                        type="button"
+                        onClick={refreshOrders}
+                        className="admin-stall-orders-refresh"
+                    >
+                        Try again
+                    </button>
+                </div>
+            </main>
+        );
     }
 
     return (
-        <div className="space-y-8">
-
-            {/* Page heading */}
-            <div className="flex flex-wrap items-center justify-between gap-4">
+        <main className="admin-stall-orders-page">
+            <header className="admin-stall-orders-header">
                 <div>
-                    <h1 className="text-2xl font-bold">
-                        Stall Orders
-                    </h1>
+                    <span className="admin-stall-orders-eyebrow">
+                        SALES MANAGEMENT
+                    </span>
 
-                    <p className="mt-2 text-sm text-gray-400">
-                        Monitor customer purchases across all stalls.
+                    <h1>Stall Orders</h1>
+
+                    <p>
+                        Monitor customer purchases and order completion across
+                        all festival stalls.
                     </p>
                 </div>
 
                 <button
                     type="button"
                     onClick={refreshOrders}
-                    className="rounded-lg border border-white/20 px-4 py-2 text-sm hover:bg-white/5"
+                    className="admin-stall-orders-refresh"
                 >
-                    Refresh Orders
+                    Refresh orders
                 </button>
-            </div>
+            </header>
 
-            {/* Partial loading warning */}
             {partialErrors.length > 0 && (
                 <div
+                    className="admin-stall-orders-warning"
                     role="alert"
-                    className="rounded-lg border border-yellow-500/20 bg-yellow-500/5 p-4"
                 >
-                    <p className="font-medium text-yellow-400">
-                        Some stall orders could not be loaded.
-                    </p>
+                    <div>
+                        <strong>
+                            Some stall orders could not be loaded.
+                        </strong>
 
-                    <p className="mt-1 text-sm text-gray-400">
-                        The sales and order totals below are incomplete.
-                    </p>
+                        <p>
+                            Sales and order totals below are incomplete.
+                        </p>
+                    </div>
+
+                    <div className="admin-stall-orders-warning-list">
+                        {partialErrors.map((item, index) => (
+                            <p key={`${item.stallName}-${index}`}>
+                                <strong>{item.stallName}:</strong>{" "}
+                                {item.message}
+                            </p>
+                        ))}
+                    </div>
                 </div>
             )}
 
-            {/* Statistics */}
-            <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {[
-                    {
-                        label: 'Total Stalls',
-                        value: stalls.length,
-                    },
-                    {
-                        label: 'Successful Orders',
-                        value: orderCount,
-                    },
-                    {
-                        label: 'Confirmed Sales',
-                        value: formatPrice(totalSales),
-                    },
-                    {
-                        label: 'Awaiting Completion',
-                        value: pendingCompletion,
-                    },
-                ].map((stat) => (
+            <section className="admin-stall-orders-stats">
+                {stats.map((stat) => (
                     <article
                         key={stat.label}
-                        className="rounded-xl border border-white/10 bg-white/5 p-5"
+                        className="admin-stall-orders-stat-card"
                     >
-                        <p className="text-sm text-gray-400">
-                            {stat.label}
-                        </p>
-
-                        <p className="mt-3 text-2xl font-bold">
-                            {stat.value}
-                        </p>
+                        <span>{stat.label}</span>
+                        <strong>{stat.value}</strong>
                     </article>
                 ))}
             </section>
 
-            {/* Orders */}
-            <section>
-                <div className="mb-5">
-                    <h2 className="text-xl font-semibold">
-                        All Stall Orders ({orders.length})
-                    </h2>
+            <section className="admin-stall-orders-list-section">
+                <div className="admin-stall-orders-list-heading">
+                    <div>
+                        <span className="admin-stall-orders-eyebrow">
+                            TRANSACTION RECORDS
+                        </span>
 
-                    <p className="mt-2 text-sm text-gray-400">
-                        Only successfully paid orders are displayed.
-                    </p>
+                        <h2>All stall orders</h2>
+
+                        <p>
+                            Only successfully paid orders are displayed.
+                        </p>
+                    </div>
+
+                    <span className="admin-stall-orders-count">
+                        {orders.length}{" "}
+                        {orders.length === 1 ? "order" : "orders"}
+                    </span>
                 </div>
 
                 {orders.length === 0 ? (
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-10 text-center">
-                        <h3 className="font-semibold">
-                            No successful stall orders
-                        </h3>
+                    <div className="admin-stall-orders-state">
+                        <strong>No successful stall orders</strong>
 
-                        <p className="mt-2 text-sm text-gray-400">
+                        <p>
                             Successful customer purchases will appear here.
                         </p>
                     </div>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="admin-stall-orders-list">
                         {orders.map((order) => {
                             const completed =
-                                order.orderStatus === 'COMPLETED'
+                                order.orderStatus === "COMPLETED";
+
+                            const paymentStatus = String(
+                                order.paymentStatus || "UNKNOWN"
+                            ).toUpperCase();
 
                             return (
                                 <article
                                     key={order._id}
-                                    className="rounded-xl border border-white/10 bg-white/5 p-5"
+                                    className="admin-stall-order-card"
                                 >
-                                    <div className="flex flex-wrap justify-between gap-4">
-                                        <div>
-                                            <p className="text-xs text-gray-500">
-                                                Stall
-                                            </p>
+                                    <div className="admin-stall-order-header">
+                                        <div className="admin-stall-order-identity">
+                                            <span>Stall</span>
 
-                                            <h3 className="mt-1 text-lg font-semibold">
-                                                {order.stallName}
+                                            <h3>
+                                                {order.stallName ||
+                                                    "Unknown stall"}
                                             </h3>
 
-                                            <p className="mt-2 text-sm text-gray-400">
-                                                Customer: {order.userName || 'Customer'}
+                                            <p>
+                                                Customer:{" "}
+                                                {order.userName || "Customer"}
                                             </p>
 
-                                            <p className="mt-1 text-sm text-gray-400">
-                                                Token Number: #{order.tokenNumber}
-                                            </p>
+                                            <strong className="admin-stall-order-token">
+                                                Token #{order.tokenNumber}
+                                            </strong>
 
-                                            <p className="mt-1 text-xs text-gray-500">
+                                            <time>
                                                 {formatDate(order.createdAt)}
-                                            </p>
+                                            </time>
                                         </div>
 
-                                        <div className="text-right">
-                                            <p className="text-xl font-bold">
+                                        <div className="admin-stall-order-status">
+                                            <strong>
                                                 {formatPrice(order.totalAmount)}
-                                            </p>
+                                            </strong>
 
-                                            <span className="mt-2 inline-block rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1 text-xs text-green-400">
-                                                {order.paymentStatus}
+                                            <span className="admin-stall-payment-badge">
+                                                {paymentStatus}
                                             </span>
 
-                                            <p className={`mt-2 text-xs ${completed
-                                                    ? 'text-green-400'
-                                                    : 'text-yellow-400'
-                                                }`}>
-                                                Order: {order.orderStatus}
-                                            </p>
+                                            <span
+                                                className={`admin-stall-completion-badge ${completed
+                                                    ? "is-completed"
+                                                    : "is-pending"
+                                                    }`}
+                                            >
+                                                {completed
+                                                    ? "Completed"
+                                                    : "Awaiting completion"}
+                                            </span>
                                         </div>
                                     </div>
 
-                                    <div className="mt-5 border-t border-white/10 pt-4">
-                                        <h4 className="mb-3 text-sm font-semibold">
-                                            Purchased Items
-                                        </h4>
+                                    <div className="admin-stall-order-items">
+                                        <div className="admin-stall-order-items-heading">
+                                            <h4>Purchased items</h4>
 
-                                        <div className="space-y-2">
-                                            {order.items?.map((item, index) => (
-                                                <div
-                                                    key={
-                                                        item._id ||
-                                                        `${order._id}-${index}`
-                                                    }
-                                                    className="flex justify-between gap-3 text-sm"
-                                                >
-                                                    <span className="text-gray-400">
-                                                        {item.name} × {item.quantity}
-                                                    </span>
-
-                                                    <span>
-                                                        {formatPrice(
-                                                            Number(item.price) *
-                                                            Number(item.quantity)
-                                                        )}
-                                                    </span>
-                                                </div>
-                                            ))}
+                                            <span>
+                                                {order.items?.length || 0}{" "}
+                                                {order.items?.length === 1
+                                                    ? "item"
+                                                    : "items"}
+                                            </span>
                                         </div>
+
+                                        {order.items?.length > 0 ? (
+                                            <div className="admin-stall-order-item-list">
+                                                {order.items.map((item, index) => (
+                                                    <div
+                                                        key={
+                                                            item._id ||
+                                                            `${order._id}-${index}`
+                                                        }
+                                                        className="admin-stall-order-item"
+                                                    >
+                                                        <div className="admin-stall-order-item-info">
+                                                            <strong>
+                                                                {item.name ||
+                                                                    "Unnamed item"}
+                                                            </strong>
+
+                                                            <span>
+                                                                {formatPrice(
+                                                                    item.price
+                                                                )}{" "}
+                                                                ×{" "}
+                                                                {item.quantity}
+                                                            </span>
+                                                        </div>
+
+                                                        <strong className="admin-stall-order-item-total">
+                                                            {formatPrice(
+                                                                Number(item.price) *
+                                                                Number(item.quantity)
+                                                            )}
+                                                        </strong>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="admin-stall-order-no-items">
+                                                No purchased items available.
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="admin-stall-order-footer">
+                                        <span>
+                                            Payment: {paymentStatus}
+                                        </span>
+
+                                        <span
+                                            className={
+                                                completed
+                                                    ? "is-completed"
+                                                    : "is-pending"
+                                            }
+                                        >
+                                            Order: {order.orderStatus || "PENDING"}
+                                        </span>
                                     </div>
                                 </article>
-                            )
+                            );
                         })}
                     </div>
                 )}
             </section>
-        </div>
-    )
+        </main>
+    );
 }
 
-export default AdminStallOrdersPage
+export default AdminStallOrdersPage;

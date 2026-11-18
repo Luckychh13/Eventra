@@ -1,67 +1,76 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from "react";
 import {
     getAllEventOrders,
     allotEventTicket,
-} from '../../services/api/eventPaymentService.js'
+} from "../../services/api/eventPaymentService.js";
+import "./AdminEventOrdersPage.css";
 
 const formatPrice = (value) => {
-    const amount = Number(value)
+    const amount = Number(value);
 
-    if (!Number.isFinite(amount)) return '₹0'
-
-    return `₹${amount.toLocaleString('en-IN')}`
-}
-
-const formatDate = (value) => {
-    if (!value) return 'Date unavailable'
-
-    const date = new Date(value)
-
-    if (Number.isNaN(date.getTime())) {
-        return 'Date unavailable'
+    if (!Number.isFinite(amount)) {
+        return "₹0";
     }
 
-    return new Intl.DateTimeFormat('en-IN', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-    }).format(date)
-}
+    return new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 2,
+    }).format(amount);
+};
+
+const formatDate = (value) => {
+    if (!value) return "Date unavailable";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return "Date unavailable";
+    }
+
+    return new Intl.DateTimeFormat("en-IN", {
+        dateStyle: "medium",
+        timeStyle: "short",
+    }).format(date);
+};
 
 function AdminEventOrdersPage() {
-    const [orders, setOrders] = useState([])
+    const [orders, setOrders] = useState([]);
+
     const [summary, setSummary] = useState({
         totalOrders: 0,
         totalTickets: 0,
         totalRevenue: 0,
-    })
+    });
 
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState('')
-    const [refreshKey, setRefreshKey] = useState(0)
-    const [updatingOrderId, setUpdatingOrderId] = useState(null)
-    const [actionError, setActionError] = useState('')
-    const [successMessage, setSuccessMessage] = useState('')
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    const [updatingOrderId, setUpdatingOrderId] = useState(null);
+    const [actionError, setActionError] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
 
     const refreshOrders = useCallback(() => {
-        setRefreshKey((previousKey) => previousKey + 1)
-    }, [])
+        setRefreshKey((previousKey) => previousKey + 1);
+    }, []);
 
     useEffect(() => {
-        let isActive = true
+        let isActive = true;
 
         const fetchOrders = async () => {
             try {
-                setLoading(true)
-                setError('')
+                setLoading(true);
+                setError("");
 
-                const response = await getAllEventOrders()
+                const response = await getAllEventOrders();
 
                 if (!response?.success) {
                     throw new Error(
                         response?.error ||
                         response?.message ||
-                        'Failed to fetch event orders.'
-                    )
+                        "Failed to fetch event orders."
+                    );
                 }
 
                 if (isActive) {
@@ -69,57 +78,57 @@ function AdminEventOrdersPage() {
                         Array.isArray(response.orders)
                             ? response.orders
                             : []
-                    )
+                    );
 
                     setSummary({
                         totalOrders: Number(response.totalOrders) || 0,
                         totalTickets: Number(response.totalTickets) || 0,
                         totalRevenue: Number(response.totalRevenue) || 0,
-                    })
+                    });
                 }
-            } catch (error) {
+            } catch (err) {
                 if (isActive) {
                     setError(
-                        error.response?.data?.error ||
-                        error.response?.data?.message ||
-                        error.message ||
-                        'Failed to fetch event orders.'
-                    )
+                        err.response?.data?.error ||
+                        err.response?.data?.message ||
+                        err.message ||
+                        "Failed to fetch event orders."
+                    );
                 }
             } finally {
                 if (isActive) {
-                    setLoading(false)
+                    setLoading(false);
                 }
             }
-        }
+        };
 
-        fetchOrders()
+        fetchOrders();
 
         return () => {
-            isActive = false
-        }
-    }, [refreshKey])
+            isActive = false;
+        };
+    }, [refreshKey]);
 
     const handleAllotTicket = async (order) => {
         const confirmed = window.confirm(
-            'Are you sure you want to mark this order as allotted?'
-        )
+            `Are you sure you want to mark order "${order.ticketOrderId || order.orderId}" as allotted?`
+        );
 
-        if (!confirmed) return
+        if (!confirmed) return;
 
         try {
-            setUpdatingOrderId(order.orderId)
-            setActionError('')
-            setSuccessMessage('')
+            setUpdatingOrderId(order.orderId);
+            setActionError("");
+            setSuccessMessage("");
 
-            const response = await allotEventTicket(order.orderId)
+            const response = await allotEventTicket(order.orderId);
 
             if (!response?.success) {
                 throw new Error(
                     response?.error ||
                     response?.message ||
-                    'Failed to allot ticket.'
-                )
+                    "Failed to allot ticket."
+                );
             }
 
             setOrders((previousOrders) =>
@@ -128,311 +137,350 @@ function AdminEventOrdersPage() {
                         ? { ...item, isAlloted: true }
                         : item
                 )
-            )
+            );
 
             setSuccessMessage(
-                response.message || 'Ticket allotted successfully.'
-            )
-        } catch (error) {
+                response.message || "Ticket allotted successfully."
+            );
+        } catch (err) {
             setActionError(
-                error.response?.data?.error ||
-                error.response?.data?.message ||
-                error.message ||
-                'Failed to allot ticket.'
-            )
+                err.response?.data?.error ||
+                err.response?.data?.message ||
+                err.message ||
+                "Failed to allot ticket."
+            );
         } finally {
-            setUpdatingOrderId(null)
+            setUpdatingOrderId(null);
         }
-    }
+    };
 
     const pendingOrders = orders.filter(
-        (order) => order.paymentStatus === 'PENDING'
-    ).length
+        (order) => order.paymentStatus === "PENDING"
+    ).length;
 
     const successfulOrders = orders.filter(
-        (order) => order.paymentStatus === 'SUCCESS'
-    ).length
+        (order) => order.paymentStatus === "SUCCESS"
+    ).length;
+
+    const failedOrders = orders.filter(
+        (order) => order.paymentStatus === "FAILED"
+    ).length;
 
     const allottedOrders = orders.filter(
-        (order) => order.isAlloted
-    ).length
+        (order) => order.isAlloted === true
+    ).length;
 
-    if (loading) {
-        return (
-            <div className="py-20 text-center text-gray-400">
-                Loading event orders...
-            </div>
-        )
-    }
-
-    if (error) {
-        return (
-            <div className="py-16 text-center">
-                <h1 className="text-2xl font-bold">
-                    Unable to load event orders
-                </h1>
-
-                <p className="mt-3 text-sm text-red-400">
-                    {error}
-                </p>
-
-                <button
-                    type="button"
-                    onClick={refreshOrders}
-                    className="mt-5 rounded-lg bg-purple-600 px-5 py-2.5 text-sm hover:bg-purple-700"
-                >
-                    Try Again
-                </button>
-            </div>
-        )
-    }
+    const stats = [
+        {
+            label: "Total orders",
+            value: summary.totalOrders.toLocaleString("en-IN"),
+        },
+        {
+            label: "Tickets purchased",
+            value: summary.totalTickets.toLocaleString("en-IN"),
+        },
+        {
+            label: "Successful payments",
+            value: successfulOrders.toLocaleString("en-IN"),
+        },
+        {
+            label: "Pending payments",
+            value: pendingOrders.toLocaleString("en-IN"),
+        },
+        {
+            label: "Failed payments",
+            value: failedOrders.toLocaleString("en-IN"),
+        },
+        {
+            label: "Allotted orders",
+            value: allottedOrders.toLocaleString("en-IN"),
+        },
+        {
+            label: "Recorded order amount",
+            value: formatPrice(summary.totalRevenue),
+        },
+    ];
 
     return (
-        <div className="space-y-8">
-            {/* Page heading */}
-            <div className="flex flex-wrap items-center justify-between gap-4">
+        <main className="admin-event-orders-page">
+            <header className="admin-event-orders-header">
                 <div>
-                    <h1 className="text-2xl font-bold">
-                        Event Orders
-                    </h1>
+                    <span className="admin-event-orders-eyebrow">
+                        SALES MANAGEMENT
+                    </span>
 
-                    <p className="mt-2 text-sm text-gray-400">
-                        Monitor event ticket purchases and allotment status.
+                    <h1>Event Orders</h1>
+
+                    <p>
+                        Monitor ticket purchases, payment statuses, and ticket
+                        allotment.
                     </p>
                 </div>
 
                 <button
                     type="button"
+                    className="admin-event-orders-refresh"
                     onClick={refreshOrders}
-                    className="rounded-lg border border-white/20 px-4 py-2 text-sm hover:bg-white/5"
+                    disabled={loading}
                 >
-                    Refresh Orders
+                    {loading ? "Loading..." : "Refresh orders"}
                 </button>
-            </div>
+            </header>
 
-            {/* Action feedback */}
-            {actionError && (
+            {(actionError || successMessage) && (
                 <div
-                    role="alert"
-                    className="rounded-lg border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-400"
+                    className={`admin-event-orders-alert ${actionError ? "is-error" : "is-success"
+                        }`}
+                    role={actionError ? "alert" : "status"}
                 >
-                    {actionError}
+                    <span>{actionError || successMessage}</span>
+
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setActionError("");
+                            setSuccessMessage("");
+                        }}
+                        aria-label="Dismiss message"
+                    >
+                        ×
+                    </button>
                 </div>
             )}
 
-            {successMessage && (
-                <div
-                    role="status"
-                    className="rounded-lg border border-green-500/20 bg-green-500/5 p-4 text-sm text-green-400"
-                >
-                    {successMessage}
-                </div>
-            )}
-
-            {/* Statistics */}
-            <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {[
-                    {
-                        label: 'Total Orders',
-                        value: summary.totalOrders,
-                    },
-                    {
-                        label: 'Tickets Purchased',
-                        value: summary.totalTickets,
-                    },
-                    {
-                        label: 'Successful Orders',
-                        value: successfulOrders,
-                    },
-                    {
-                        label: 'Pending Payments',
-                        value: pendingOrders,
-                    },
-                    {
-                        label: 'Allotted Orders',
-                        value: allottedOrders,
-                    },
-                    {
-                        label: 'Reported Order Amount',
-                        value: formatPrice(summary.totalRevenue),
-                    },
-                ].map((stat) => (
+            <section className="admin-event-orders-stats">
+                {stats.map((stat) => (
                     <article
                         key={stat.label}
-                        className="rounded-xl border border-white/10 bg-white/5 p-5"
+                        className="admin-event-orders-stat-card"
                     >
-                        <p className="text-sm text-gray-400">
-                            {stat.label}
-                        </p>
-
-                        <p className="mt-3 text-2xl font-bold">
-                            {stat.value}
-                        </p>
+                        <span>{stat.label}</span>
+                        <strong>{stat.value}</strong>
                     </article>
                 ))}
             </section>
 
-            {/* Orders list */}
-            <section>
-                <div className="mb-5">
-                    <h2 className="text-xl font-semibold">
-                        All Event Orders ({orders.length})
-                    </h2>
+            <section className="admin-event-orders-list-section">
+                <div className="admin-event-orders-list-heading">
+                    <div>
+                        <span className="admin-event-orders-eyebrow">
+                            TRANSACTION RECORDS
+                        </span>
 
-                    <p className="mt-2 text-sm text-gray-400">
-                        Each order can contain tickets for multiple events.
-                    </p>
+                        <h2>All event orders</h2>
+
+                        <p>
+                            Each order may contain tickets for multiple events.
+                        </p>
+                    </div>
+
+                    <span className="admin-event-orders-count">
+                        {orders.length}{" "}
+                        {orders.length === 1 ? "order" : "orders"}
+                    </span>
                 </div>
 
-                {orders.length === 0 ? (
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-10 text-center">
-                        <h3 className="font-semibold">
-                            No event orders found
-                        </h3>
+                {loading ? (
+                    <div className="admin-event-orders-state">
+                        Loading event orders...
+                    </div>
+                ) : error ? (
+                    <div className="admin-event-orders-state">
+                        <strong>Unable to load event orders</strong>
 
-                        <p className="mt-2 text-sm text-gray-400">
+                        <p>{error}</p>
+
+                        <button
+                            type="button"
+                            className="admin-event-orders-retry"
+                            onClick={refreshOrders}
+                        >
+                            Try again
+                        </button>
+                    </div>
+                ) : orders.length === 0 ? (
+                    <div className="admin-event-orders-state">
+                        <strong>No event orders found</strong>
+
+                        <p>
                             Customer ticket purchases will appear here.
                         </p>
                     </div>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="admin-event-orders-list">
                         {orders.map((order) => {
-                            const successful =
-                                order.paymentStatus === 'SUCCESS'
+                            const paymentStatus = String(
+                                order.paymentStatus || "UNKNOWN"
+                            ).toUpperCase();
 
-                            const allotted = order.isAlloted
+                            const statusClass = [
+                                "SUCCESS",
+                                "PENDING",
+                                "FAILED",
+                            ].includes(paymentStatus)
+                                ? paymentStatus.toLowerCase()
+                                : "unknown";
+
+                            const successful = paymentStatus === "SUCCESS";
+                            const allotted = order.isAlloted === true;
 
                             return (
                                 <article
                                     key={order.orderId}
-                                    className="rounded-xl border border-white/10 bg-white/5 p-5"
+                                    className="admin-event-order-card"
                                 >
-                                    {/* Order header */}
-                                    <div className="flex flex-wrap justify-between gap-4">
-                                        <div className="min-w-0">
-                                            <p className="text-xs text-gray-500">
-                                                Ticket Order ID
-                                            </p>
+                                    <div className="admin-event-order-header">
+                                        <div className="admin-event-order-identity">
+                                            <span>Ticket order ID</span>
 
-                                            <h3 className="mt-1 break-all font-semibold">
-                                                {order.ticketOrderId || order.orderId}
+                                            <h3>
+                                                {order.ticketOrderId ||
+                                                    order.orderId}
                                             </h3>
 
-                                            <p className="mt-2 text-sm text-gray-400">
-                                                User ID: {order.userId || 'Unavailable'}
+                                            <p>
+                                                User ID:{" "}
+                                                {order.userId || "Unavailable"}
                                             </p>
 
-                                            <p className="mt-1 text-xs text-gray-500">
+                                            <time>
                                                 {formatDate(order.createdAt)}
-                                            </p>
+                                            </time>
                                         </div>
 
-                                        <div className="text-left sm:text-right">
-                                            <p className="text-xl font-bold">
+                                        <div className="admin-event-order-payment">
+                                            <strong>
                                                 {formatPrice(order.amount)}
-                                            </p>
+                                            </strong>
 
                                             <span
-                                                className={`mt-2 inline-block rounded-full border px-3 py-1 text-xs ${successful
-                                                        ? 'border-green-500/20 bg-green-500/10 text-green-400'
-                                                        : 'border-yellow-500/20 bg-yellow-500/10 text-yellow-400'
-                                                    }`}
+                                                className={`admin-event-payment-badge is-${statusClass}`}
                                             >
-                                                {order.paymentStatus || 'UNKNOWN'}
+                                                {paymentStatus}
                                             </span>
 
-                                            <p
-                                                className={`mt-2 text-xs ${allotted
-                                                        ? 'text-green-400'
-                                                        : 'text-yellow-400'
+                                            <span
+                                                className={`admin-event-allotment-badge ${allotted
+                                                    ? "is-allotted"
+                                                    : "is-not-allotted"
                                                     }`}
                                             >
                                                 {allotted
-                                                    ? 'Ticket Allotted'
-                                                    : 'Not Allotted'}
-                                            </p>
+                                                    ? "Ticket allotted"
+                                                    : "Not allotted"}
+                                            </span>
                                         </div>
                                     </div>
 
-                                    {/* Purchased items */}
-                                    <div className="mt-5 border-t border-white/10 pt-4">
-                                        <h4 className="mb-3 text-sm font-semibold">
-                                            Purchased Tickets
-                                        </h4>
+                                    <div className="admin-event-order-items">
+                                        <div className="admin-event-order-items-heading">
+                                            <h4>Purchased tickets</h4>
 
-                                        <div className="space-y-3">
-                                            {order.items?.map((item, index) => (
-                                                <div
-                                                    key={`${order.orderId}-${item.eventId}-${index}`}
-                                                    className="rounded-lg bg-black/10 p-3"
-                                                >
-                                                    <div className="flex flex-wrap justify-between gap-3">
-                                                        <div>
-                                                            <p className="font-medium">
-                                                                {item.title || 'Unknown Event'}
-                                                            </p>
+                                            <span>
+                                                {order.items?.length || 0}{" "}
+                                                {order.items?.length === 1
+                                                    ? "item"
+                                                    : "items"}
+                                            </span>
+                                        </div>
 
-                                                            <p className="mt-1 text-xs text-gray-400">
-                                                                {item.ticketName || 'General'} × {item.quantity}
-                                                            </p>
+                                        {order.items?.length > 0 ? (
+                                            <div className="admin-event-order-item-list">
+                                                {order.items.map((item, index) => (
+                                                    <div
+                                                        key={`${order.orderId}-${item.eventId || item.title}-${index}`}
+                                                        className="admin-event-order-item"
+                                                    >
+                                                        <div className="admin-event-order-item-details">
+                                                            <strong>
+                                                                {item.title ||
+                                                                    "Unknown event"}
+                                                            </strong>
 
-                                                            <p className="mt-1 text-xs text-gray-500">
-                                                                {item.date || 'Date unavailable'}
-                                                                {' · '}
-                                                                {item.location || 'Location unavailable'}
-                                                            </p>
+                                                            <span>
+                                                                {item.ticketName ||
+                                                                    "General"}{" "}
+                                                                × {item.quantity}
+                                                            </span>
+
+                                                            <small>
+                                                                {item.date ||
+                                                                    "Date unavailable"}
+                                                                {" · "}
+                                                                {item.location ||
+                                                                    "Location unavailable"}
+                                                            </small>
                                                         </div>
 
-                                                        <div className="text-right text-sm">
-                                                            <p>
-                                                                {formatPrice(item.price)} each
-                                                            </p>
+                                                        <div className="admin-event-order-item-prices">
+                                                            <span>
+                                                                {formatPrice(
+                                                                    item.price
+                                                                )}{" "}
+                                                                each
+                                                            </span>
 
-                                                            <p className="mt-1 font-semibold">
-                                                                {formatPrice(item.subtotal)}
-                                                            </p>
+                                                            <strong>
+                                                                {formatPrice(
+                                                                    item.subtotal
+                                                                )}
+                                                            </strong>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            ))}
-                                        </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <p className="admin-event-order-no-items">
+                                                No ticket items available.
+                                            </p>
+                                        )}
                                     </div>
 
-                                    {/* Allotment action */}
-                                    <div className="mt-5 flex justify-end border-t border-white/10 pt-4">
+                                    <div className="admin-event-order-footer">
                                         {successful && !allotted && (
                                             <button
                                                 type="button"
-                                                onClick={() => handleAllotTicket(order)}
-                                                disabled={updatingOrderId === order.orderId}
-                                                className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                                onClick={() =>
+                                                    handleAllotTicket(order)
+                                                }
+                                                disabled={
+                                                    updatingOrderId !== null
+                                                }
+                                                className="admin-event-allot-button"
                                             >
                                                 {updatingOrderId === order.orderId
-                                                    ? 'Allotting...'
-                                                    : 'Allot Ticket'}
+                                                    ? "Allotting..."
+                                                    : "Allot ticket"}
                                             </button>
                                         )}
 
                                         {allotted && (
-                                            <span className="text-sm text-green-400">
+                                            <span className="admin-event-allotted-note">
+                                                <span />
                                                 Already allotted
                                             </span>
                                         )}
 
                                         {!successful && !allotted && (
-                                            <span className="text-sm text-gray-500">
-                                                Payment must succeed before allotment
+                                            <span className="admin-event-pending-note">
+                                                Payment must succeed before
+                                                allotment.
                                             </span>
                                         )}
                                     </div>
                                 </article>
-                            )
+                            );
                         })}
                     </div>
                 )}
             </section>
-        </div>
-    )
+
+            <p className="admin-event-orders-footnote">
+                Recorded order amount is the sum of stored order amounts,
+                including orders with pending or failed payment statuses.
+            </p>
+        </main>
+    );
 }
 
-export default AdminEventOrdersPage
+export default AdminEventOrdersPage;

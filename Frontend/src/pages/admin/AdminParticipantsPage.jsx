@@ -1,10 +1,36 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
     createParticipant,
     getParticipants,
     updateParticipant,
     deleteParticipant,
 } from "../../services/api/participantService.js";
+import "./AdminParticipantsPage.css";
+
+function getErrorMessage(error, fallback) {
+    return (
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        fallback
+    );
+}
+
+function formatDate(value) {
+    if (!value) return "—";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return "—";
+    }
+
+    return date.toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+    });
+}
 
 function AdminParticipantsPage() {
     const [participants, setParticipants] = useState([]);
@@ -12,17 +38,24 @@ function AdminParticipantsPage() {
     const [search, setSearch] = useState("");
 
     const [editingId, setEditingId] = useState(null);
+
     const [formData, setFormData] = useState({
         name: "",
         tagNumber: "",
         details: "",
     });
+
     const [photo, setPhoto] = useState(null);
+    const photoInputRef = useRef(null);
 
     const [saving, setSaving] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+
+    const editingParticipant = participants.find(
+        (participant) => participant._id === editingId
+    );
 
     const loadParticipants = useCallback(async () => {
         try {
@@ -30,9 +63,7 @@ function AdminParticipantsPage() {
             setParticipants(data.participants || []);
         } catch (err) {
             setError(
-                err.response?.data?.message ||
-                err.message ||
-                "Failed to load participants."
+                getErrorMessage(err, "Failed to load participants.")
             );
         } finally {
             setLoading(false);
@@ -51,9 +82,7 @@ function AdminParticipantsPage() {
             .catch((err) => {
                 if (isActive) {
                     setError(
-                        err.response?.data?.message ||
-                        err.message ||
-                        "Failed to load participants."
+                        getErrorMessage(err, "Failed to load participants.")
                     );
                 }
             })
@@ -79,25 +108,42 @@ function AdminParticipantsPage() {
 
     const resetForm = () => {
         setEditingId(null);
+
         setFormData({
             name: "",
             tagNumber: "",
             details: "",
         });
+
         setPhoto(null);
+
+        if (photoInputRef.current) {
+            photoInputRef.current.value = "";
+        }
     };
 
     const handleEdit = (participant) => {
         setEditingId(participant._id);
+
         setFormData({
             name: participant.name || "",
             tagNumber: participant.tagNumber || "",
             details: participant.details || "",
         });
+
         setPhoto(null);
+
+        if (photoInputRef.current) {
+            photoInputRef.current.value = "";
+        }
+
         setError("");
         setSuccess("");
-        window.scrollTo({ top: 0, behavior: "smooth" });
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
     };
 
     const handleSubmit = async (event) => {
@@ -109,6 +155,7 @@ function AdminParticipantsPage() {
         }
 
         const payload = new FormData();
+
         payload.append("name", formData.name.trim());
         payload.append("tagNumber", formData.tagNumber.trim());
         payload.append("details", formData.details.trim());
@@ -134,9 +181,7 @@ function AdminParticipantsPage() {
             await loadParticipants();
         } catch (err) {
             setError(
-                err.response?.data?.message ||
-                err.message ||
-                "Failed to save participant."
+                getErrorMessage(err, "Failed to save participant.")
             );
         } finally {
             setSaving(false);
@@ -165,248 +210,359 @@ function AdminParticipantsPage() {
             await loadParticipants();
         } catch (err) {
             setError(
-                err.response?.data?.message ||
-                err.message ||
-                "Failed to delete participant."
+                getErrorMessage(err, "Failed to delete participant.")
             );
         } finally {
             setDeletingId(null);
         }
     };
 
-    const filteredParticipants = participants.filter((participant) => {
-        const searchValue = search.toLowerCase();
+    const searchValue = search.trim().toLowerCase();
 
-        return (
-            participant.name?.toLowerCase().includes(searchValue) ||
-            participant.tagNumber?.toLowerCase().includes(searchValue)
-        );
-    });
+    const filteredParticipants = participants.filter((participant) => (
+        participant.name?.toLowerCase().includes(searchValue) ||
+        participant.tagNumber?.toLowerCase().includes(searchValue)
+    ));
+
+    const totalVotes = participants.reduce(
+        (total, participant) => total + (participant.votes || 0),
+        0
+    );
 
     return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-2xl font-semibold text-white">
-                    Participants
-                </h1>
-                <p className="mt-1 text-sm text-gray-400">
-                    Create, update, and manage event participants.
-                </p>
-            </div>
+        <main className="admin-participants-page">
+            <header className="admin-participants-header">
+                <div>
+                    <span className="admin-participants-eyebrow">
+                        EVENT MANAGEMENT
+                    </span>
 
-            {error && (
-                <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
-                    {error}
+                    <h1>Participants</h1>
+
+                    <p>
+                        Manage participant profiles, photos, and registration
+                        details.
+                    </p>
                 </div>
-            )}
 
-            {success && (
-                <div className="rounded-lg border border-green-500/30 bg-green-500/10 p-3 text-sm text-green-300">
-                    {success}
-                </div>
-            )}
-
-            <form
-                onSubmit={handleSubmit}
-                className="space-y-4 rounded-xl border border-white/10 bg-white/5 p-5"
-            >
-                <h2 className="text-lg font-medium text-white">
-                    {editingId ? "Edit Participant" : "Add Participant"}
-                </h2>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                        <label
-                            htmlFor="participant-name"
-                            className="mb-1 block text-sm text-gray-300"
-                        >
-                            Name *
-                        </label>
-                        <input
-                            id="participant-name"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleInputChange}
-                            required
-                            className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-white outline-none focus:border-purple-500"
-                            placeholder="Participant name"
-                        />
+                <div className="admin-participants-stats">
+                    <div className="admin-participant-stat">
+                        <span>Total participants</span>
+                        <strong>{participants.length}</strong>
                     </div>
 
-                    <div>
-                        <label
-                            htmlFor="participant-tag"
-                            className="mb-1 block text-sm text-gray-300"
-                        >
-                            Tag Number *
-                        </label>
-                        <input
-                            id="participant-tag"
-                            name="tagNumber"
-                            value={formData.tagNumber}
-                            onChange={handleInputChange}
-                            required
-                            className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-white outline-none focus:border-purple-500"
-                            placeholder="e.g. EVT-001"
-                        />
+                    <div className="admin-participant-stat">
+                        <span>Total votes</span>
+                        <strong>{totalVotes.toLocaleString("en-IN")}</strong>
                     </div>
                 </div>
+            </header>
 
-                <div>
-                    <label
-                        htmlFor="participant-details"
-                        className="mb-1 block text-sm text-gray-300"
-                    >
-                        Details
-                    </label>
-                    <textarea
-                        id="participant-details"
-                        name="details"
-                        value={formData.details}
-                        onChange={handleInputChange}
-                        rows={3}
-                        className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-white outline-none focus:border-purple-500"
-                        placeholder="Participant details"
-                    />
-                </div>
+            {(error || success) && (
+                <div
+                    className={`admin-participants-alert ${error ? "is-error" : "is-success"
+                        }`}
+                    role={error ? "alert" : "status"}
+                >
+                    <span>{error || success}</span>
 
-                <div>
-                    <label
-                        htmlFor="participant-photo"
-                        className="mb-1 block text-sm text-gray-300"
-                    >
-                        Photo {editingId ? "(optional replacement)" : "(optional)"}
-                    </label>
-                    <input
-                        id="participant-photo"
-                        type="file"
-                        accept="image/*"
-                        onChange={(event) =>
-                            setPhoto(event.target.files?.[0] || null)
-                        }
-                        className="block w-full text-sm text-gray-400 file:mr-3 file:rounded-lg file:border-0 file:bg-white/10 file:px-3 file:py-2 file:text-white"
-                    />
-                    {photo && (
-                        <p className="mt-1 text-xs text-gray-400">
-                            Selected: {photo.name}
-                        </p>
-                    )}
-                </div>
-
-                <div className="flex flex-wrap gap-3">
                     <button
-                        type="submit"
-                        disabled={saving}
-                        className="rounded-lg bg-purple-600 px-5 py-2 text-sm font-medium text-white hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
+                        type="button"
+                        onClick={() => {
+                            setError("");
+                            setSuccess("");
+                        }}
+                        aria-label="Dismiss message"
                     >
-                        {saving
-                            ? "Saving..."
-                            : editingId
-                                ? "Update Participant"
-                                : "Add Participant"}
+                        ×
                     </button>
-
-                    {editingId && (
-                        <button
-                            type="button"
-                            onClick={resetForm}
-                            className="rounded-lg border border-white/20 px-5 py-2 text-sm text-gray-300 hover:bg-white/10"
-                        >
-                            Cancel
-                        </button>
-                    )}
                 </div>
-            </form>
+            )}
 
-            <section className="space-y-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <h2 className="text-lg font-medium text-white">
-                        All Participants ({participants.length})
-                    </h2>
+            <div className="admin-participants-layout">
+                <section className="admin-participant-form-card">
+                    <div className="admin-participant-section-heading">
+                        <div>
+                            <span className="admin-participants-eyebrow">
+                                {editingId ? "UPDATE PROFILE" : "NEW REGISTRATION"}
+                            </span>
 
-                    <input
-                        type="search"
-                        value={search}
-                        onChange={(event) => setSearch(event.target.value)}
-                        placeholder="Search name or tag number..."
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-purple-500 sm:max-w-xs"
-                    />
-                </div>
+                            <h2>
+                                {editingId
+                                    ? "Edit participant"
+                                    : "Add participant"}
+                            </h2>
+                        </div>
 
-                {loading ? (
-                    <p className="py-8 text-center text-gray-400">
-                        Loading participants...
-                    </p>
-                ) : filteredParticipants.length === 0 ? (
-                    <p className="rounded-xl border border-white/10 p-8 text-center text-gray-400">
-                        No participants found.
-                    </p>
-                ) : (
-                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                        {filteredParticipants.map((participant) => (
-                            <article
-                                key={participant._id}
-                                className="overflow-hidden rounded-xl border border-white/10 bg-white/5"
-                            >
-                                {participant.photoUrl ? (
-                                    <img
-                                        src={participant.photoUrl}
-                                        alt={participant.name}
-                                        className="h-48 w-full object-cover"
-                                    />
-                                ) : (
-                                    <div className="flex h-48 items-center justify-center bg-white/5 text-sm text-gray-500">
-                                        No photo available
-                                    </div>
-                                )}
-
-                                <div className="space-y-3 p-4">
-                                    <div>
-                                        <h3 className="font-medium text-white">
-                                            {participant.name}
-                                        </h3>
-                                        <p className="text-sm text-gray-400">
-                                            Tag: {participant.tagNumber}
-                                        </p>
-                                    </div>
-
-                                    {participant.details && (
-                                        <p className="text-sm text-gray-300">
-                                            {participant.details}
-                                        </p>
-                                    )}
-
-                                    <p className="text-sm text-gray-400">
-                                        Votes: {participant.votes ?? 0}
-                                    </p>
-
-                                    <div className="flex gap-3 border-t border-white/10 pt-3">
-                                        <button
-                                            type="button"
-                                            onClick={() => handleEdit(participant)}
-                                            className="rounded-lg border border-white/20 px-3 py-2 text-sm text-gray-200 hover:bg-white/10"
-                                        >
-                                            Edit
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => handleDelete(participant)}
-                                            disabled={deletingId === participant._id}
-                                            className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300 hover:bg-red-500/10 disabled:opacity-50"
-                                        >
-                                            {deletingId === participant._id
-                                                ? "Deleting..."
-                                                : "Delete"}
-                                        </button>
-                                    </div>
-                                </div>
-                            </article>
-                        ))}
+                        {editingId && (
+                            <span className="admin-participant-edit-badge">
+                                Editing
+                            </span>
+                        )}
                     </div>
-                )}
-            </section>
-        </div>
+
+                    <form onSubmit={handleSubmit}>
+                        <div className="admin-participant-form-fields">
+                            <div className="admin-participant-field">
+                                <label htmlFor="participant-name">
+                                    Participant name <span>*</span>
+                                </label>
+
+                                <input
+                                    id="participant-name"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleInputChange}
+                                    required
+                                    placeholder="Enter participant name"
+                                />
+                            </div>
+
+                            <div className="admin-participant-field">
+                                <label htmlFor="participant-tag">
+                                    Tag number <span>*</span>
+                                </label>
+
+                                <input
+                                    id="participant-tag"
+                                    name="tagNumber"
+                                    value={formData.tagNumber}
+                                    onChange={handleInputChange}
+                                    required
+                                    placeholder="e.g. EVT-001"
+                                />
+
+                                <small>
+                                    Each participant must have a unique tag
+                                    number.
+                                </small>
+                            </div>
+
+                            <div className="admin-participant-field">
+                                <label htmlFor="participant-details">
+                                    Details
+                                </label>
+
+                                <textarea
+                                    id="participant-details"
+                                    name="details"
+                                    value={formData.details}
+                                    onChange={handleInputChange}
+                                    rows={4}
+                                    placeholder="Add participant details..."
+                                />
+                            </div>
+
+                            <div className="admin-participant-field">
+                                <label htmlFor="participant-photo">
+                                    Participant photo
+                                </label>
+
+                                <div className="admin-participant-upload">
+                                    <input
+                                        ref={photoInputRef}
+                                        id="participant-photo"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(event) =>
+                                            setPhoto(
+                                                event.target.files?.[0] || null
+                                            )
+                                        }
+                                    />
+
+                                    <p>
+                                        {photo
+                                            ? photo.name
+                                            : editingId
+                                                ? "Choose a replacement photo (optional)"
+                                                : "Choose a photo (optional)"}
+                                    </p>
+                                </div>
+
+                                {editingId && (
+                                    <small>
+                                        Leave the file field empty to keep the
+                                        existing photo.
+                                    </small>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="admin-participant-form-actions">
+                            <button
+                                type="submit"
+                                className="admin-participant-primary-button"
+                                disabled={saving}
+                            >
+                                {saving
+                                    ? "Saving..."
+                                    : editingId
+                                        ? "Save changes"
+                                        : "Add participant"}
+                            </button>
+
+                            {editingId && (
+                                <button
+                                    type="button"
+                                    className="admin-participant-secondary-button"
+                                    onClick={resetForm}
+                                    disabled={saving}
+                                >
+                                    Cancel
+                                </button>
+                            )}
+                        </div>
+                    </form>
+
+                    {editingParticipant?.photoUrl && (
+                        <div className="admin-participant-current-photo">
+                            <span>Current photo</span>
+
+                            <img
+                                src={editingParticipant.photoUrl}
+                                alt={editingParticipant.name}
+                            />
+                        </div>
+                    )}
+                </section>
+
+                <section className="admin-participant-list-section">
+                    <div className="admin-participant-list-heading">
+                        <div>
+                            <span className="admin-participants-eyebrow">
+                                PARTICIPANT DIRECTORY
+                            </span>
+
+                            <h2>All participants</h2>
+
+                            <p>
+                                Showing {filteredParticipants.length} of{" "}
+                                {participants.length} participants
+                            </p>
+                        </div>
+
+                        <div className="admin-participant-search">
+                            <input
+                                type="search"
+                                value={search}
+                                onChange={(event) =>
+                                    setSearch(event.target.value)
+                                }
+                                placeholder="Search name or tag..."
+                                aria-label="Search participants"
+                            />
+                        </div>
+                    </div>
+
+                    {loading ? (
+                        <div className="admin-participants-state">
+                            Loading participants...
+                        </div>
+                    ) : error && participants.length === 0 ? (
+                        <div className="admin-participants-state">
+                            Unable to load participants.
+                        </div>
+                    ) : filteredParticipants.length === 0 ? (
+                        <div className="admin-participants-state">
+                            {participants.length === 0
+                                ? "No participants have been added yet."
+                                : "No participants match your search."}
+                        </div>
+                    ) : (
+                        <div className="admin-participant-grid">
+                            {filteredParticipants.map((participant) => (
+                                <article
+                                    key={participant._id}
+                                    className="admin-participant-card"
+                                >
+                                    <div className="admin-participant-photo">
+                                        {participant.photoUrl ? (
+                                            <img
+                                                src={participant.photoUrl}
+                                                alt={participant.name}
+                                                loading="lazy"
+                                            />
+                                        ) : (
+                                            <div className="admin-participant-no-photo">
+                                                <span>
+                                                    {participant.name
+                                                        ?.charAt(0)
+                                                        .toUpperCase() || "?"}
+                                                </span>
+
+                                                <small>No photo available</small>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="admin-participant-card-content">
+                                        <div className="admin-participant-card-title">
+                                            <div>
+                                                <h3>{participant.name}</h3>
+
+                                                <span className="admin-participant-tag">
+                                                    {participant.tagNumber}
+                                                </span>
+                                            </div>
+
+                                            <div className="admin-participant-votes">
+                                                <strong>
+                                                    {(participant.votes || 0)
+                                                        .toLocaleString("en-IN")}
+                                                </strong>
+                                                <span>Votes</span>
+                                            </div>
+                                        </div>
+
+                                        {participant.details && (
+                                            <p className="admin-participant-details">
+                                                {participant.details}
+                                            </p>
+                                        )}
+
+                                        <div className="admin-participant-card-meta">
+                                            <span>
+                                                Added {formatDate(participant.createdAt)}
+                                            </span>
+                                        </div>
+
+                                        <div className="admin-participant-card-actions">
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    handleEdit(participant)
+                                                }
+                                                disabled={
+                                                    deletingId === participant._id
+                                                }
+                                            >
+                                                Edit
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                className="admin-participant-delete-button"
+                                                onClick={() =>
+                                                    handleDelete(participant)
+                                                }
+                                                disabled={
+                                                    deletingId === participant._id
+                                                }
+                                            >
+                                                {deletingId === participant._id
+                                                    ? "Deleting..."
+                                                    : "Delete"}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+                    )}
+                </section>
+            </div>
+        </main>
     );
 }
 

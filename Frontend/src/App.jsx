@@ -39,6 +39,7 @@ import AboutPage from "./pages/public/AboutPage.jsx";
 import ContactPage from "./pages/public/ContactPage.jsx";
 import PaymentSuccessPage from './pages/user/PaymentSuccessPage.jsx';
 import PaymentCancelPage from './pages/user/PaymentCancelPage.jsx';
+import LeaderboardPage from './pages/public/LeaderboardPage.jsx'
 
 function App() {
   return (
@@ -56,6 +57,7 @@ function App() {
         <Route path="pricing/:eventId" element={<EventPricingPage />} />
         <Route path="success" element={<PaymentSuccessPage />} />
         <Route path="cancel" element={<PaymentCancelPage />} />
+        <Route path="leaderboard" element={<LeaderboardPage />} />
 
         {/* Guest-only pages */}
         <Route element={<PublicRoute />}>

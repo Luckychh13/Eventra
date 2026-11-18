@@ -1,0 +1,590 @@
+.admin-performers-page {
+    display: grid;
+    gap: 24px;
+    min-width: 0;
+    color: var(--admin-text);
+}
+
+/* Header */
+
+.admin-performers-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.admin-performers-eyebrow {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--admin-accent);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.7px;
+}
+
+.admin-performers-header h1 {
+    margin: 0;
+    font-size: clamp(25px, 3vw, 32px);
+    font-weight: 750;
+    letter-spacing: -1px;
+}
+
+.admin-performers-header>div:first-child p,
+.admin-performer-list-heading p {
+    margin: 7px 0 0;
+    color: var(--admin-muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.admin-performers-stats {
+    display: flex;
+    gap: 10px;
+}
+
+.admin-performer-stat {
+    display: grid;
+    gap: 5px;
+    min-width: 120px;
+    padding: 13px 15px;
+    border: 1px solid var(--admin-border);
+    border-radius: 13px;
+    background: var(--admin-surface);
+}
+
+.admin-performer-stat span {
+    color: var(--admin-muted);
+    font-size: 10px;
+}
+
+.admin-performer-stat strong {
+    font-size: 23px;
+    line-height: 1.2;
+}
+
+/* Alerts */
+
+.admin-performers-alert {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 15px;
+    border: 1px solid var(--admin-border);
+    border-radius: 11px;
+    font-size: 13px;
+}
+
+.admin-performers-alert.is-error {
+    border-color: rgba(220, 85, 85, 0.3);
+    background: rgba(220, 85, 85, 0.08);
+    color: #dc5555;
+}
+
+.admin-performers-alert.is-success {
+    border-color: rgba(33, 150, 107, 0.3);
+    background: rgba(33, 150, 107, 0.08);
+    color: #21966b;
+}
+
+.admin-performers-alert button {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 21px;
+    cursor: pointer;
+}
+
+/* Main layout */
+
+.admin-performers-layout {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.78fr) minmax(0, 1.7fr);
+    align-items: start;
+    gap: 22px;
+}
+
+.admin-performer-form-card,
+.admin-performer-list-section {
+    min-width: 0;
+    padding: 21px;
+    border: 1px solid var(--admin-border);
+    border-radius: 17px;
+    background: var(--admin-surface);
+}
+
+.admin-performer-section-heading,
+.admin-performer-list-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 21px;
+}
+
+.admin-performer-section-heading h2,
+.admin-performer-list-heading h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+
+.admin-performer-edit-badge {
+    padding: 5px 9px;
+    border-radius: 20px;
+    background: rgba(26, 143, 156, 0.12);
+    color: var(--admin-accent);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* Form */
+
+.admin-performer-form-fields {
+    display: grid;
+    gap: 17px;
+}
+
+.admin-performer-field {
+    display: grid;
+    min-width: 0;
+    gap: 8px;
+}
+
+.admin-performer-field label {
+    color: var(--admin-text);
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.admin-performer-field label span {
+    color: var(--admin-coral);
+}
+
+.admin-performer-field input:not([type="file"]),
+.admin-performer-field select,
+.admin-performer-search input {
+    width: 100%;
+    min-width: 0;
+    min-height: 41px;
+    padding: 10px 12px;
+    border: 1px solid var(--admin-border);
+    border-radius: 9px;
+    outline: none;
+    background: var(--admin-surface-soft);
+    color: var(--admin-text);
+    font: inherit;
+    font-size: 12px;
+    transition:
+        border-color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.admin-performer-field input::placeholder,
+.admin-performer-search input::placeholder {
+    color: var(--admin-muted);
+    opacity: 0.75;
+}
+
+.admin-performer-field input:focus,
+.admin-performer-field select:focus,
+.admin-performer-search input:focus {
+    border-color: var(--admin-accent);
+    box-shadow: 0 0 0 3px rgba(26, 143, 156, 0.1);
+}
+
+.admin-performer-field select option {
+    background: var(--admin-surface);
+    color: var(--admin-text);
+}
+
+.admin-performer-field select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.admin-performer-field small {
+    color: var(--admin-muted);
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.admin-performer-upload {
+    display: grid;
+    gap: 9px;
+    padding: 15px;
+    border: 1px dashed var(--admin-border);
+    border-radius: 11px;
+    background: var(--admin-surface-soft);
+}
+
+.admin-performer-upload input {
+    width: 100%;
+    max-width: 100%;
+    color: var(--admin-muted);
+    font-size: 11px;
+}
+
+.admin-performer-upload input::file-selector-button {
+    margin-right: 10px;
+    padding: 7px 10px;
+    border: 0;
+    border-radius: 7px;
+    background: var(--admin-accent);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.admin-performer-upload p {
+    margin: 0;
+    overflow-wrap: anywhere;
+    color: var(--admin-muted);
+    font-size: 11px;
+}
+
+.admin-performer-image-preview {
+    display: grid;
+    gap: 9px;
+    margin-top: 17px;
+}
+
+.admin-performer-image-preview span {
+    color: var(--admin-muted);
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.admin-performer-image-preview img {
+    width: 100%;
+    max-height: 190px;
+    border: 1px solid var(--admin-border);
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.admin-performer-no-events {
+    margin: 16px 0 0;
+    padding: 11px 12px;
+    border: 1px solid rgba(232, 160, 67, 0.3);
+    border-radius: 9px;
+    background: rgba(232, 160, 67, 0.08);
+    color: #c88b35;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.admin-performer-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 22px;
+}
+
+.admin-performer-primary-button,
+.admin-performer-secondary-button {
+    min-height: 39px;
+    padding: 0 15px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        transform 180ms ease,
+        background 180ms ease,
+        opacity 180ms ease;
+}
+
+.admin-performer-primary-button {
+    background: var(--admin-accent);
+    color: #fff;
+}
+
+.admin-performer-primary-button:hover:not(:disabled) {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+
+.admin-performer-secondary-button {
+    border-color: var(--admin-border);
+    background: transparent;
+    color: var(--admin-text);
+}
+
+.admin-performer-secondary-button:hover:not(:disabled) {
+    background: var(--admin-surface-soft);
+}
+
+.admin-performer-primary-button:disabled,
+.admin-performer-secondary-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* List heading and search */
+
+.admin-performer-list-heading {
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.admin-performer-search {
+    width: min(100%, 220px);
+}
+
+.admin-performer-search input {
+    min-height: 39px;
+}
+
+/* Performer cards */
+
+.admin-performer-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+}
+
+.admin-performer-card {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--admin-border);
+    border-radius: 13px;
+    background: var(--admin-surface-soft);
+    transition:
+        transform 180ms ease,
+        border-color 180ms ease,
+        box-shadow 180ms ease;
+}
+
+.admin-performer-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--admin-accent);
+    box-shadow: 0 8px 22px rgba(15, 40, 55, 0.08);
+}
+
+.admin-performer-photo {
+    height: 180px;
+    overflow: hidden;
+    background: var(--admin-surface);
+}
+
+.admin-performer-photo>img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 250ms ease;
+}
+
+.admin-performer-card:hover .admin-performer-photo>img {
+    transform: scale(1.035);
+}
+
+.admin-performer-no-photo {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+    color: var(--admin-muted);
+}
+
+.admin-performer-no-photo>span {
+    display: grid;
+    width: 55px;
+    height: 55px;
+    place-items: center;
+    border: 1px solid var(--admin-border);
+    border-radius: 50%;
+    background: var(--admin-surface-soft);
+    color: var(--admin-accent);
+    font-size: 22px;
+    font-weight: 750;
+}
+
+.admin-performer-no-photo small {
+    font-size: 10px;
+}
+
+.admin-performer-card-content {
+    display: grid;
+    gap: 13px;
+    padding: 13px;
+}
+
+.admin-performer-card-title {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.admin-performer-card-title h3 {
+    margin: 0;
+    overflow-wrap: anywhere;
+    color: var(--admin-text);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.admin-performer-card-title>div>span {
+    display: inline-block;
+    margin-top: 5px;
+    color: var(--admin-muted);
+    font-size: 10px;
+}
+
+.admin-performer-day {
+    flex-shrink: 0;
+    padding: 5px 8px;
+    border-radius: 20px;
+    background: rgba(26, 143, 156, 0.1);
+    color: var(--admin-accent);
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.admin-performer-event-info {
+    display: grid;
+    gap: 5px;
+    padding: 10px 11px;
+    border: 1px solid var(--admin-border);
+    border-radius: 9px;
+    background: var(--admin-surface);
+}
+
+.admin-performer-event-info>span {
+    color: var(--admin-muted);
+    font-size: 9px;
+}
+
+.admin-performer-event-info strong {
+    overflow-wrap: anywhere;
+    color: var(--admin-text);
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1.5;
+}
+
+.admin-performer-card-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--admin-border);
+}
+
+.admin-performer-card-actions button {
+    min-height: 32px;
+    padding: 0 11px;
+    border: 1px solid var(--admin-border);
+    border-radius: 7px;
+    background: transparent;
+    color: var(--admin-text);
+    font-size: 10px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background 160ms ease;
+}
+
+.admin-performer-card-actions button:hover:not(:disabled) {
+    background: var(--admin-surface);
+}
+
+.admin-performer-card-actions .admin-performer-delete-button {
+    border-color: rgba(220, 85, 85, 0.28);
+    color: #d85a5a;
+}
+
+.admin-performer-card-actions .admin-performer-delete-button:hover:not(:disabled) {
+    background: rgba(220, 85, 85, 0.08);
+}
+
+.admin-performer-card-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Loading and empty states */
+
+.admin-performers-state {
+    display: grid;
+    min-height: 220px;
+    place-items: center;
+    padding: 25px;
+    border: 1px dashed var(--admin-border);
+    border-radius: 12px;
+    color: var(--admin-muted);
+    font-size: 12px;
+    text-align: center;
+}
+
+/* Responsive */
+
+@media (max-width: 1100px) {
+    .admin-performers-layout {
+        grid-template-columns: minmax(260px, 0.85fr) minmax(0, 1.4fr);
+        gap: 16px;
+    }
+
+    .admin-performer-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .admin-performers-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .admin-performers-stats {
+        width: 100%;
+    }
+
+    .admin-performer-stat {
+        flex: 1;
+    }
+
+    .admin-performers-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-performer-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 520px) {
+
+    .admin-performer-form-card,
+    .admin-performer-list-section {
+        padding: 15px;
+    }
+
+    .admin-performer-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-performer-list-heading {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .admin-performer-search {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .admin-performer-card,
+    .admin-performer-photo>img,
+    .admin-performer-primary-button,
+    .admin-performer-secondary-button {
+        transition: none;
+    }
+}

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-
 import {
     getAnnouncements,
     createAnnouncement,
     updateAnnouncement,
     deleteAnnouncement,
 } from "../../services/api/announcementService.js";
+import "./AdminAnnouncementsPage.css";
 
 function getErrorMessage(error, fallback) {
     return (
@@ -225,208 +225,256 @@ function AdminAnnouncementsPage() {
     };
 
     return (
-        <div className="space-y-6">
-
-            {/* Page heading */}
-            <div>
-                <h1 className="text-2xl font-semibold text-white">
-                    Manage Announcements
-                </h1>
-
-                <p className="mt-1 text-sm text-gray-400">
-                    Create and manage announcements for Eventra users.
-                </p>
-            </div>
-
-            {/* Error message */}
-            {error && (
-                <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
-                    {error}
-                </div>
-            )}
-
-            {/* Success message */}
-            {successMessage && (
-                <div className="rounded-lg border border-green-500/30 bg-green-500/10 p-3 text-sm text-green-300">
-                    {successMessage}
-                </div>
-            )}
-
-            {/* Create / Edit form */}
-            <form
-                onSubmit={handleSubmit}
-                className="space-y-4 rounded-xl border border-white/10 bg-white/5 p-5"
-            >
-                <h2 className="text-lg font-medium text-white">
-                    {editingAnnouncementId
-                        ? "Edit Announcement"
-                        : "Create Announcement"}
-                </h2>
-
-                {/* Title */}
+        <main className="admin-announcements-page">
+            <header className="admin-announcements-header">
                 <div>
-                    <label
-                        htmlFor="announcement-title"
-                        className="mb-1 block text-sm text-gray-300"
-                    >
-                        Title *
-                    </label>
+                    <span className="admin-announcements-eyebrow">
+                        CONTENT MANAGEMENT
+                    </span>
 
-                    <input
-                        id="announcement-title"
-                        name="title"
-                        value={formData.title}
-                        onChange={handleInputChange}
-                        required
-                        placeholder="Enter announcement title"
-                        className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-white outline-none focus:border-purple-500"
-                    />
+                    <h1>Announcements</h1>
+
+                    <p>
+                        Publish updates and important information for
+                        Eventra users.
+                    </p>
                 </div>
 
-                {/* Message */}
-                <div>
-                    <label
-                        htmlFor="announcement-message"
-                        className="mb-1 block text-sm text-gray-300"
-                    >
-                        Message *
-                    </label>
-
-                    <textarea
-                        id="announcement-message"
-                        name="message"
-                        value={formData.message}
-                        onChange={handleInputChange}
-                        required
-                        rows={5}
-                        placeholder="Write your announcement..."
-                        className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-white outline-none focus:border-purple-500"
-                    />
+                <div className="admin-announcements-total">
+                    <span>Total announcements</span>
+                    <strong>{announcements.length}</strong>
                 </div>
+            </header>
 
-                {/* Form actions */}
-                <div className="flex flex-wrap gap-3">
+            {(error || successMessage) && (
+                <div
+                    className={`admin-announcements-alert ${error ? "is-error" : "is-success"
+                        }`}
+                    role={error ? "alert" : "status"}
+                >
+                    <span>{error || successMessage}</span>
+
                     <button
-                        type="submit"
-                        disabled={saving}
-                        className="rounded-lg bg-purple-600 px-5 py-2 text-sm font-medium text-white hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
+                        type="button"
+                        onClick={() => {
+                            setError("");
+                            setSuccessMessage("");
+                        }}
+                        aria-label="Dismiss message"
                     >
-                        {saving
-                            ? "Saving..."
-                            : editingAnnouncementId
-                                ? "Update Announcement"
-                                : "Publish Announcement"}
+                        ×
                     </button>
-
-                    {editingAnnouncementId && (
-                        <button
-                            type="button"
-                            onClick={resetForm}
-                            className="rounded-lg border border-white/20 px-5 py-2 text-sm text-gray-300 hover:bg-white/10"
-                        >
-                            Cancel
-                        </button>
-                    )}
                 </div>
-            </form>
+            )}
 
-            {/* Announcement listing */}
-            <section className="space-y-4">
+            <div className="admin-announcements-layout">
+                <section className="admin-announcement-form-card">
+                    <div className="admin-announcement-section-heading">
+                        <div>
+                            <span className="admin-announcements-eyebrow">
+                                {editingAnnouncementId
+                                    ? "EDIT CONTENT"
+                                    : "NEW MESSAGE"}
+                            </span>
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <h2 className="text-lg font-medium text-white">
-                        All Announcements ({announcements.length})
-                    </h2>
+                            <h2>
+                                {editingAnnouncementId
+                                    ? "Edit announcement"
+                                    : "Create announcement"}
+                            </h2>
+                        </div>
 
-                    <input
-                        type="search"
-                        value={search}
-                        onChange={(event) =>
-                            setSearch(event.target.value)
-                        }
-                        placeholder="Search announcements..."
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-purple-500 sm:max-w-xs"
-                    />
-                </div>
-
-                {/* Loading, error, and empty states */}
-                {loading ? (
-                    <p className="py-8 text-center text-gray-400">
-                        Loading announcements...
-                    </p>
-                ) : error && announcements.length === 0 ? (
-                    <p className="py-8 text-center text-gray-400">
-                        Unable to load announcements.
-                    </p>
-                ) : filteredAnnouncements.length === 0 ? (
-                    <p className="rounded-xl border border-white/10 p-8 text-center text-gray-400">
-                        {announcements.length === 0
-                            ? "No announcements have been published yet."
-                            : "No announcements match your search."}
-                    </p>
-                ) : (
-                    <div className="space-y-4">
-
-                        {filteredAnnouncements.map((announcement) => (
-                            <article
-                                key={announcement._id}
-                                className="space-y-3 rounded-xl border border-white/10 bg-white/5 p-5"
-                            >
-                                {/* Announcement details */}
-                                <div>
-                                    <h3 className="text-lg font-medium text-white">
-                                        {announcement.title}
-                                    </h3>
-
-                                    <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-gray-300">
-                                        {announcement.message}
-                                    </p>
-                                </div>
-
-                                {/* Metadata */}
-                                <div className="flex flex-wrap gap-x-4 gap-y-1 border-t border-white/10 pt-3 text-xs text-gray-500">
-                                    <span>
-                                        By: {announcement.createdBy || "Admin"}
-                                    </span>
-
-                                    <span>
-                                        Published: {formatDate(announcement.createdAt)}
-                                    </span>
-                                </div>
-
-                                {/* Actions */}
-                                <div className="flex gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => handleEdit(announcement)}
-                                        disabled={
-                                            deletingAnnouncementId === announcement._id
-                                        }
-                                        className="rounded-lg border border-white/20 px-3 py-2 text-sm text-gray-200 hover:bg-white/10 disabled:opacity-50"
-                                    >
-                                        Edit
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => handleDelete(announcement)}
-                                        disabled={
-                                            deletingAnnouncementId === announcement._id
-                                        }
-                                        className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
-                                    >
-                                        {deletingAnnouncementId === announcement._id
-                                            ? "Deleting..."
-                                            : "Delete"}
-                                    </button>
-                                </div>
-                            </article>
-                        ))}
-
+                        {editingAnnouncementId && (
+                            <span className="admin-announcement-edit-badge">
+                                Editing
+                            </span>
+                        )}
                     </div>
-                )}
-            </section>
-        </div>
+
+                    <form onSubmit={handleSubmit}>
+                        <div className="admin-announcement-form-fields">
+                            <div className="admin-announcement-field">
+                                <label htmlFor="announcement-title">
+                                    Announcement title <span>*</span>
+                                </label>
+
+                                <input
+                                    id="announcement-title"
+                                    name="title"
+                                    value={formData.title}
+                                    onChange={handleInputChange}
+                                    required
+                                    placeholder="Enter a clear title"
+                                />
+                            </div>
+
+                            <div className="admin-announcement-field">
+                                <label htmlFor="announcement-message">
+                                    Message <span>*</span>
+                                </label>
+
+                                <textarea
+                                    id="announcement-message"
+                                    name="message"
+                                    value={formData.message}
+                                    onChange={handleInputChange}
+                                    required
+                                    rows={8}
+                                    placeholder="Write your announcement..."
+                                />
+
+                                <small>
+                                    This message will be visible to Eventra
+                                    users.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div className="admin-announcement-form-actions">
+                            <button
+                                type="submit"
+                                className="admin-announcement-primary-button"
+                                disabled={saving}
+                            >
+                                {saving
+                                    ? "Saving..."
+                                    : editingAnnouncementId
+                                        ? "Save changes"
+                                        : "Publish announcement"}
+                            </button>
+
+                            {editingAnnouncementId && (
+                                <button
+                                    type="button"
+                                    className="admin-announcement-secondary-button"
+                                    onClick={resetForm}
+                                    disabled={saving}
+                                >
+                                    Cancel
+                                </button>
+                            )}
+                        </div>
+                    </form>
+                </section>
+
+                <section className="admin-announcement-list-section">
+                    <div className="admin-announcement-list-heading">
+                        <div>
+                            <span className="admin-announcements-eyebrow">
+                                PUBLISHED CONTENT
+                            </span>
+
+                            <h2>All announcements</h2>
+
+                            <p>
+                                Showing {filteredAnnouncements.length} of{" "}
+                                {announcements.length} announcements
+                            </p>
+                        </div>
+
+                        <div className="admin-announcement-search">
+                            <input
+                                type="search"
+                                value={search}
+                                onChange={(event) =>
+                                    setSearch(event.target.value)
+                                }
+                                placeholder="Search announcements..."
+                                aria-label="Search announcements"
+                            />
+                        </div>
+                    </div>
+
+                    {loading ? (
+                        <div className="admin-announcements-state">
+                            Loading announcements...
+                        </div>
+                    ) : error && announcements.length === 0 ? (
+                        <div className="admin-announcements-state">
+                            Unable to load announcements.
+                        </div>
+                    ) : filteredAnnouncements.length === 0 ? (
+                        <div className="admin-announcements-state">
+                            {announcements.length === 0
+                                ? "No announcements have been published yet."
+                                : "No announcements match your search."}
+                        </div>
+                    ) : (
+                        <div className="admin-announcement-list">
+                            {filteredAnnouncements.map((announcement) => (
+                                <article
+                                    key={announcement._id}
+                                    className="admin-announcement-card"
+                                >
+                                    <div className="admin-announcement-card-top">
+                                        <span className="admin-announcement-indicator">
+                                            <span />
+                                            Published
+                                        </span>
+
+                                        <span className="admin-announcement-date">
+                                            {formatDate(
+                                                announcement.createdAt
+                                            )}
+                                        </span>
+                                    </div>
+
+                                    <div className="admin-announcement-card-body">
+                                        <h3>{announcement.title}</h3>
+
+                                        <p>
+                                            {announcement.message}
+                                        </p>
+                                    </div>
+
+                                    <div className="admin-announcement-card-footer">
+                                        <span className="admin-announcement-author">
+                                            By{" "}
+                                            <strong>
+                                                {announcement.createdBy ||
+                                                    "Admin"}
+                                            </strong>
+                                        </span>
+
+                                        <div className="admin-announcement-card-actions">
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    handleEdit(announcement)
+                                                }
+                                                disabled={
+                                                    deletingAnnouncementId ===
+                                                    announcement._id
+                                                }
+                                            >
+                                                Edit
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                className="admin-announcement-delete-button"
+                                                onClick={() =>
+                                                    handleDelete(announcement)
+                                                }
+                                                disabled={
+                                                    deletingAnnouncementId ===
+                                                    announcement._id
+                                                }
+                                            >
+                                                {deletingAnnouncementId ===
+                                                    announcement._id
+                                                    ? "Deleting..."
+                                                    : "Delete"}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+                    )}
+                </section>
+            </div>
+        </main>
     );
 }
 

@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     getPerformers,
     createPerformer,
     updatePerformer,
     deletePerformer,
 } from "../../services/api/performerService.js";
-
 import { getEvents } from "../../services/api/eventService.js";
+import "./AdminPerformersPage.css";
 
 function getErrorMessage(error, fallback) {
     return (
@@ -24,13 +24,16 @@ function AdminPerformersPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [deletingPerformerId, setDeletingPerformerId] = useState(null);
+
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
-
     const [search, setSearch] = useState("");
 
     const [editingPerformerId, setEditingPerformerId] = useState(null);
     const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState("");
+
+    const imageInputRef = useRef(null);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -38,6 +41,7 @@ function AdminPerformersPage() {
         role: "Performer",
         day: "",
     });
+
 
     useEffect(() => {
         let isActive = true;
@@ -49,7 +53,10 @@ function AdminPerformersPage() {
             .then(([performersData, eventsData]) => {
                 if (!isActive) return;
 
-                setPerformers(performersData);
+                setPerformers(
+                    Array.isArray(performersData) ? performersData : []
+                );
+
                 setEvents(
                     Array.isArray(eventsData)
                         ? eventsData
@@ -59,7 +66,10 @@ function AdminPerformersPage() {
             .catch((err) => {
                 if (isActive) {
                     setError(
-                        getErrorMessage(err, "Failed to load initial data.")
+                        getErrorMessage(
+                            err,
+                            "Failed to load performers and events."
+                        )
                     );
                 }
             })
@@ -74,10 +84,19 @@ function AdminPerformersPage() {
         };
     }, []);
 
+    // Release temporary preview URLs when they are replaced or the page unmounts.
+    useEffect(() => {
+        return () => {
+            if (imagePreview.startsWith("blob:")) {
+                URL.revokeObjectURL(imagePreview);
+            }
+        };
+    }, [imagePreview]);
+
     const refreshPerformers = async () => {
         try {
             const data = await getPerformers();
-            setPerformers(data);
+            setPerformers(Array.isArray(data) ? data : []);
         } catch (err) {
             setError(
                 getErrorMessage(
@@ -89,7 +108,7 @@ function AdminPerformersPage() {
     };
 
     const filteredPerformers = performers.filter((performer) =>
-        performer.name?.toLowerCase().includes(search.toLowerCase())
+        performer.name?.toLowerCase().includes(search.trim().toLowerCase())
     );
 
     const handleInputChange = (event) => {
@@ -101,9 +120,16 @@ function AdminPerformersPage() {
         }));
     };
 
+    const clearImageInput = () => {
+        if (imageInputRef.current) {
+            imageInputRef.current.value = "";
+        }
+    };
+
     const resetForm = () => {
         setEditingPerformerId(null);
         setImageFile(null);
+        setImagePreview("");
 
         setFormData({
             name: "",
@@ -111,6 +137,8 @@ function AdminPerformersPage() {
             role: "Performer",
             day: "",
         });
+
+        clearImageInput();
     };
 
     const handleEdit = (performer) => {
@@ -127,6 +155,9 @@ function AdminPerformersPage() {
         });
 
         setImageFile(null);
+        setImagePreview(performer.image || "");
+        clearImageInput();
+
         setError("");
         setSuccessMessage("");
 
@@ -134,6 +165,15 @@ function AdminPerformersPage() {
             top: 0,
             behavior: "smooth",
         });
+    };
+
+    const handleImageChange = (event) => {
+        const file = event.target.files?.[0];
+
+        if (!file) return;
+
+        setImageFile(file);
+        setImagePreview(URL.createObjectURL(file));
     };
 
     const handleSubmit = async (event) => {
@@ -207,9 +247,7 @@ function AdminPerformersPage() {
                 resetForm();
             }
 
-            setSuccessMessage(
-                "Performer deleted successfully."
-            );
+            setSuccessMessage("Performer deleted successfully.");
 
             await refreshPerformers();
         } catch (err) {
@@ -221,322 +259,386 @@ function AdminPerformersPage() {
         }
     };
 
+    const getEventTitle = (performer) => {
+        if (
+            performer.eventId &&
+            typeof performer.eventId === "object"
+        ) {
+            return performer.eventId.title || "Unknown event";
+        }
+
+        return (
+            events.find((event) => event._id === performer.eventId)?.title ||
+            "Unknown event"
+        );
+    };
+
     return (
-        <div className="space-y-6">
-
-            {/* Page heading */}
-            <div>
-                <h1 className="text-2xl font-semibold text-white">
-                    Manage Performers
-                </h1>
-
-                <p className="mt-1 text-sm text-gray-400">
-                    Add, edit, and manage event performers.
-                </p>
-            </div>
-
-            {/* Error message */}
-            {error && (
-                <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
-                    {error}
-                </div>
-            )}
-
-            {/* Success message */}
-            {successMessage && (
-                <div className="rounded-lg border border-green-500/30 bg-green-500/10 p-3 text-sm text-green-300">
-                    {successMessage}
-                </div>
-            )}
-
-            {/* Add / Edit form */}
-            <form
-                onSubmit={handleSubmit}
-                className="space-y-4 rounded-xl border border-white/10 bg-white/5 p-5"
-            >
-                <h2 className="text-lg font-medium text-white">
-                    {editingPerformerId
-                        ? "Edit Performer"
-                        : "Add Performer"}
-                </h2>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-
-                    {/* Performer name */}
-                    <div>
-                        <label
-                            htmlFor="performer-name"
-                            className="mb-1 block text-sm text-gray-300"
-                        >
-                            Performer Name *
-                        </label>
-
-                        <input
-                            id="performer-name"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleInputChange}
-                            required
-                            placeholder="Enter performer name"
-                            className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-white outline-none focus:border-purple-500"
-                        />
-                    </div>
-
-                    {/* Event dropdown */}
-                    <div>
-                        <label
-                            htmlFor="performer-event"
-                            className="mb-1 block text-sm text-gray-300"
-                        >
-                            Event *
-                        </label>
-
-                        <select
-                            id="performer-event"
-                            name="eventId"
-                            value={formData.eventId}
-                            onChange={handleInputChange}
-                            required
-                            className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-white outline-none focus:border-purple-500"
-                        >
-                            <option value="">
-                                Select an event
-                            </option>
-
-                            {events.map((event) => (
-                                <option
-                                    key={event._id}
-                                    value={event._id}
-                                    className="bg-gray-900"
-                                >
-                                    {event.title}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Role */}
-                    <div>
-                        <label
-                            htmlFor="performer-role"
-                            className="mb-1 block text-sm text-gray-300"
-                        >
-                            Role
-                        </label>
-
-                        <input
-                            id="performer-role"
-                            name="role"
-                            value={formData.role}
-                            onChange={handleInputChange}
-                            placeholder="e.g. Singer, DJ, Dancer"
-                            className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-white outline-none focus:border-purple-500"
-                        />
-                    </div>
-
-                    {/* Day */}
-                    <div>
-                        <label
-                            htmlFor="performer-day"
-                            className="mb-1 block text-sm text-gray-300"
-                        >
-                            Performance Day *
-                        </label>
-
-                        <input
-                            id="performer-day"
-                            name="day"
-                            value={formData.day}
-                            onChange={handleInputChange}
-                            required
-                            placeholder="e.g. Day 1"
-                            className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-white outline-none focus:border-purple-500"
-                        />
-                    </div>
-
-                </div>
-
-                {/* Image upload */}
+        <main className="admin-performers-page">
+            <header className="admin-performers-header">
                 <div>
-                    <label
-                        htmlFor="performer-image"
-                        className="mb-1 block text-sm text-gray-300"
-                    >
-                        Performer Image (optional)
-                    </label>
+                    <span className="admin-performers-eyebrow">
+                        EVENT MANAGEMENT
+                    </span>
 
-                    <input
-                        id="performer-image"
-                        type="file"
-                        accept="image/*"
-                        onChange={(event) =>
-                            setImageFile(event.target.files?.[0] || null)
-                        }
-                        className="block w-full text-sm text-gray-400 file:mr-3 file:rounded-lg file:border-0 file:bg-white/10 file:px-3 file:py-2 file:text-white"
-                    />
+                    <h1>Performers</h1>
 
-                    {imageFile && (
-                        <p className="mt-1 text-xs text-gray-400">
-                            Selected: {imageFile.name}
-                        </p>
-                    )}
-
-                    {editingPerformerId && (
-                        <p className="mt-1 text-xs text-gray-400">
-                            Leave the image field empty to keep the existing image.
-                        </p>
-                    )}
+                    <p>
+                        Manage performer profiles and associate them with
+                        scheduled events.
+                    </p>
                 </div>
 
-                {/* Form actions */}
-                <div className="flex flex-wrap gap-3">
-                    <button
-                        type="submit"
-                        disabled={saving || events.length === 0}
-                        className="rounded-lg bg-purple-600 px-5 py-2 text-sm font-medium text-white hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        {saving
-                            ? "Saving..."
-                            : editingPerformerId
-                                ? "Update Performer"
-                                : "Add Performer"}
-                    </button>
-
-                    {editingPerformerId && (
-                        <button
-                            type="button"
-                            onClick={resetForm}
-                            className="rounded-lg border border-white/20 px-5 py-2 text-sm text-gray-300 hover:bg-white/10"
-                        >
-                            Cancel
-                        </button>
-                    )}
-                </div>
-
-                {events.length === 0 && !loading && (
-                    <p className="text-sm text-yellow-400">
-                        No events are available. Create an event before adding performers.
-                    </p>
-                )}
-            </form>
-
-            {/* Performer listing */}
-            <section className="space-y-4">
-
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <h2 className="text-lg font-medium text-white">
-                        All Performers ({performers.length})
-                    </h2>
-
-                    <input
-                        type="search"
-                        value={search}
-                        onChange={(event) =>
-                            setSearch(event.target.value)
-                        }
-                        placeholder="Search performers..."
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-purple-500 sm:max-w-xs"
-                    />
-                </div>
-
-                {/* Loading, error, empty and success states */}
-                {loading ? (
-                    <p className="py-8 text-center text-gray-400">
-                        Loading performers...
-                    </p>
-                ) : error && performers.length === 0 ? (
-                    <p className="py-8 text-center text-gray-400">
-                        Unable to load performers.
-                    </p>
-                ) : filteredPerformers.length === 0 ? (
-                    <p className="rounded-xl border border-white/10 p-8 text-center text-gray-400">
-                        {performers.length === 0
-                            ? "No performers have been added yet."
-                            : "No performers match your search."}
-                    </p>
-                ) : (
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-
-                        {filteredPerformers.map((performer) => (
-                            <article
-                                key={performer._id}
-                                className="overflow-hidden rounded-xl border border-white/10 bg-white/5"
-                            >
-
-                                {/* Performer image */}
-                                {performer.image ? (
-                                    <img
-                                        src={performer.image}
-                                        alt={performer.name}
-                                        loading="lazy"
-                                        className="h-48 w-full object-cover"
-                                    />
-                                ) : (
-                                    <div className="flex h-48 items-center justify-center bg-white/5 text-sm text-gray-500">
-                                        No image available
-                                    </div>
-                                )}
-
-                                <div className="space-y-3 p-4">
-
-                                    {/* Performer details */}
-                                    <div>
-                                        <h3 className="font-medium text-white">
-                                            {performer.name}
-                                        </h3>
-
-                                        <p className="text-sm text-gray-400">
-                                            Role: {performer.role || "Performer"}
-                                        </p>
-
-                                        <p className="text-sm text-gray-400">
-                                            Day: {performer.day}
-                                        </p>
-
-                                        <p className="text-sm text-gray-400">
-                                            Event: {
-                                                performer.eventId?.title ||
-                                                events.find(
-                                                    (event) =>
-                                                        event._id === performer.eventId
-                                                )?.title ||
-                                                "Unknown event"
-                                            }
-                                        </p>
-                                    </div>
-
-                                    {/* Edit and delete actions */}
-                                    <div className="flex gap-3 border-t border-white/10 pt-3">
-
-                                        <button
-                                            type="button"
-                                            onClick={() => handleEdit(performer)}
-                                            disabled={deletingPerformerId === performer._id}
-                                            className="rounded-lg border border-white/20 px-3 py-2 text-sm text-gray-200 hover:bg-white/10 disabled:opacity-50"
-                                        >
-                                            Edit
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => handleDelete(performer)}
-                                            disabled={deletingPerformerId === performer._id}
-                                            className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
-                                        >
-                                            {deletingPerformerId === performer._id
-                                                ? "Deleting..."
-                                                : "Delete"}
-                                        </button>
-
-                                    </div>
-                                </div>
-                            </article>
-                        ))}
-
+                <div className="admin-performers-stats">
+                    <div className="admin-performer-stat">
+                        <span>Total performers</span>
+                        <strong>{performers.length}</strong>
                     </div>
-                )}
-            </section>
-        </div>
+
+                    <div className="admin-performer-stat">
+                        <span>Available events</span>
+                        <strong>{events.length}</strong>
+                    </div>
+                </div>
+            </header>
+
+            {(error || successMessage) && (
+                <div
+                    className={`admin-performers-alert ${error ? "is-error" : "is-success"
+                        }`}
+                    role={error ? "alert" : "status"}
+                >
+                    <span>{error || successMessage}</span>
+
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setError("");
+                            setSuccessMessage("");
+                        }}
+                        aria-label="Dismiss message"
+                    >
+                        ×
+                    </button>
+                </div>
+            )}
+
+            <div className="admin-performers-layout">
+                <section className="admin-performer-form-card">
+                    <div className="admin-performer-section-heading">
+                        <div>
+                            <span className="admin-performers-eyebrow">
+                                {editingPerformerId
+                                    ? "UPDATE PROFILE"
+                                    : "NEW PERFORMER"}
+                            </span>
+
+                            <h2>
+                                {editingPerformerId
+                                    ? "Edit performer"
+                                    : "Add performer"}
+                            </h2>
+                        </div>
+
+                        {editingPerformerId && (
+                            <span className="admin-performer-edit-badge">
+                                Editing
+                            </span>
+                        )}
+                    </div>
+
+                    <form onSubmit={handleSubmit}>
+                        <div className="admin-performer-form-fields">
+                            <div className="admin-performer-field">
+                                <label htmlFor="performer-name">
+                                    Performer name <span>*</span>
+                                </label>
+
+                                <input
+                                    id="performer-name"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleInputChange}
+                                    required
+                                    placeholder="Enter performer name"
+                                />
+                            </div>
+
+                            <div className="admin-performer-field">
+                                <label htmlFor="performer-event">
+                                    Associated event <span>*</span>
+                                </label>
+
+                                <select
+                                    id="performer-event"
+                                    name="eventId"
+                                    value={formData.eventId}
+                                    onChange={handleInputChange}
+                                    required
+                                    disabled={loading || events.length === 0}
+                                >
+                                    <option value="">
+                                        Select an event
+                                    </option>
+
+                                    {events.map((event) => (
+                                        <option
+                                            key={event._id}
+                                            value={event._id}
+                                        >
+                                            {event.title}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="admin-performer-field">
+                                <label htmlFor="performer-role">
+                                    Performer role
+                                </label>
+
+                                <input
+                                    id="performer-role"
+                                    name="role"
+                                    value={formData.role}
+                                    onChange={handleInputChange}
+                                    placeholder="e.g. Singer, DJ, Dancer"
+                                />
+                            </div>
+
+                            <div className="admin-performer-field">
+                                <label htmlFor="performer-day">
+                                    Performance day <span>*</span>
+                                </label>
+
+                                <input
+                                    id="performer-day"
+                                    name="day"
+                                    value={formData.day}
+                                    onChange={handleInputChange}
+                                    required
+                                    placeholder="e.g. Day 1"
+                                />
+                            </div>
+
+                            <div className="admin-performer-field">
+                                <label htmlFor="performer-image">
+                                    Performer image
+                                </label>
+
+                                <div className="admin-performer-upload">
+                                    <input
+                                        ref={imageInputRef}
+                                        id="performer-image"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageChange}
+                                    />
+
+                                    <p>
+                                        {imageFile
+                                            ? imageFile.name
+                                            : editingPerformerId
+                                                ? "Choose a replacement image (optional)"
+                                                : "Choose an image (optional)"}
+                                    </p>
+                                </div>
+
+                                {editingPerformerId && (
+                                    <small>
+                                        Leave this empty to keep the existing
+                                        image.
+                                    </small>
+                                )}
+                            </div>
+                        </div>
+
+                        {imagePreview && (
+                            <div className="admin-performer-image-preview">
+                                <span>
+                                    {imageFile
+                                        ? "Selected image preview"
+                                        : "Current performer image"}
+                                </span>
+
+                                <img
+                                    src={imagePreview}
+                                    alt={
+                                        formData.name ||
+                                        "Performer preview"
+                                    }
+                                />
+                            </div>
+                        )}
+
+                        {events.length === 0 && !loading && (
+                            <p className="admin-performer-no-events">
+                                No events are available. Create an event
+                                before adding performers.
+                            </p>
+                        )}
+
+                        <div className="admin-performer-form-actions">
+                            <button
+                                type="submit"
+                                className="admin-performer-primary-button"
+                                disabled={
+                                    saving ||
+                                    loading ||
+                                    events.length === 0
+                                }
+                            >
+                                {saving
+                                    ? "Saving..."
+                                    : editingPerformerId
+                                        ? "Save changes"
+                                        : "Add performer"}
+                            </button>
+
+                            {editingPerformerId && (
+                                <button
+                                    type="button"
+                                    className="admin-performer-secondary-button"
+                                    onClick={resetForm}
+                                    disabled={saving}
+                                >
+                                    Cancel
+                                </button>
+                            )}
+                        </div>
+                    </form>
+                </section>
+
+                <section className="admin-performer-list-section">
+                    <div className="admin-performer-list-heading">
+                        <div>
+                            <span className="admin-performers-eyebrow">
+                                PERFORMER DIRECTORY
+                            </span>
+
+                            <h2>All performers</h2>
+
+                            <p>
+                                Showing {filteredPerformers.length} of{" "}
+                                {performers.length} performers
+                            </p>
+                        </div>
+
+                        <div className="admin-performer-search">
+                            <input
+                                type="search"
+                                value={search}
+                                onChange={(event) =>
+                                    setSearch(event.target.value)
+                                }
+                                placeholder="Search performers..."
+                                aria-label="Search performers"
+                            />
+                        </div>
+                    </div>
+
+                    {loading ? (
+                        <div className="admin-performers-state">
+                            Loading performers...
+                        </div>
+                    ) : error && performers.length === 0 ? (
+                        <div className="admin-performers-state">
+                            Unable to load performers.
+                        </div>
+                    ) : filteredPerformers.length === 0 ? (
+                        <div className="admin-performers-state">
+                            {performers.length === 0
+                                ? "No performers have been added yet."
+                                : "No performers match your search."}
+                        </div>
+                    ) : (
+                        <div className="admin-performer-grid">
+                            {filteredPerformers.map((performer) => (
+                                <article
+                                    key={performer._id}
+                                    className="admin-performer-card"
+                                >
+                                    <div className="admin-performer-photo">
+                                        {performer.image ? (
+                                            <img
+                                                src={performer.image}
+                                                alt={performer.name}
+                                                loading="lazy"
+                                            />
+                                        ) : (
+                                            <div className="admin-performer-no-photo">
+                                                <span>
+                                                    {performer.name
+                                                        ?.charAt(0)
+                                                        .toUpperCase() || "?"}
+                                                </span>
+
+                                                <small>No image available</small>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="admin-performer-card-content">
+                                        <div className="admin-performer-card-title">
+                                            <div>
+                                                <h3>{performer.name}</h3>
+
+                                                <span>
+                                                    {performer.role || "Performer"}
+                                                </span>
+                                            </div>
+
+                                            <span className="admin-performer-day">
+                                                {performer.day}
+                                            </span>
+                                        </div>
+
+                                        <div className="admin-performer-event-info">
+                                            <span>Associated event</span>
+                                            <strong>
+                                                {getEventTitle(performer)}
+                                            </strong>
+                                        </div>
+
+                                        <div className="admin-performer-card-actions">
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    handleEdit(performer)
+                                                }
+                                                disabled={
+                                                    deletingPerformerId ===
+                                                    performer._id
+                                                }
+                                            >
+                                                Edit
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                className="admin-performer-delete-button"
+                                                onClick={() =>
+                                                    handleDelete(performer)
+                                                }
+                                                disabled={
+                                                    deletingPerformerId ===
+                                                    performer._id
+                                                }
+                                            >
+                                                {deletingPerformerId ===
+                                                    performer._id
+                                                    ? "Deleting..."
+                                                    : "Delete"}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+                    )}
+                </section>
+            </div>
+        </main>
     );
 }
 

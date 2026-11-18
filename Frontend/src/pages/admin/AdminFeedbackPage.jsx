@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import {
-    getAllFeedback,
-} from "../../services/api/feedbackService.js";
+import { getAllFeedback } from "../../services/api/feedbackService.js";
+import "./AdminFeedbackPage.css";
 
 function getErrorMessage(error, fallback) {
     return (
@@ -27,12 +26,18 @@ function formatDate(value) {
     });
 }
 
+function getValidRating(value) {
+    const rating = Number(value);
+
+    if (!Number.isFinite(rating)) return 0;
+
+    return Math.min(5, Math.max(0, Math.round(rating)));
+}
+
 function AdminFeedbackPage() {
     const [feedbacks, setFeedbacks] = useState([]);
-
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-
     const [search, setSearch] = useState("");
 
     useEffect(() => {
@@ -41,16 +46,13 @@ function AdminFeedbackPage() {
         getAllFeedback()
             .then((data) => {
                 if (isActive) {
-                    setFeedbacks(data);
+                    setFeedbacks(Array.isArray(data) ? data : []);
                 }
             })
             .catch((err) => {
                 if (isActive) {
                     setError(
-                        getErrorMessage(
-                            err,
-                            "Failed to load feedback."
-                        )
+                        getErrorMessage(err, "Failed to load feedback.")
                     );
                 }
             })
@@ -67,187 +69,193 @@ function AdminFeedbackPage() {
 
     const searchTerm = search.trim().toLowerCase();
 
-    const filteredFeedbacks = feedbacks.filter((item) => {
-        return (
-            item.name?.toLowerCase().includes(searchTerm) ||
-            item.email?.toLowerCase().includes(searchTerm) ||
-            item.feedback?.toLowerCase().includes(searchTerm)
-        );
-    });
+    const filteredFeedbacks = feedbacks.filter((item) => (
+        item.name?.toLowerCase().includes(searchTerm) ||
+        item.email?.toLowerCase().includes(searchTerm) ||
+        item.feedback?.toLowerCase().includes(searchTerm)
+    ));
 
     const averageRating = feedbacks.length > 0
         ? (
             feedbacks.reduce(
-                (total, item) => total + Number(item.rating || 0),
+                (total, item) => total + (Number(item.rating) || 0),
                 0
             ) / feedbacks.length
         ).toFixed(1)
         : "0.0";
 
     return (
-        <div className="space-y-6">
+        <main className="admin-feedback-page">
+            <header className="admin-feedback-header">
+                <div>
+                    <span className="admin-feedback-eyebrow">
+                        USER EXPERIENCE
+                    </span>
 
-            {/* Page heading */}
-            <div>
-                <h1 className="text-2xl font-semibold text-white">
-                    Feedback Management
-                </h1>
+                    <h1>Feedback</h1>
 
-                <p className="mt-1 text-sm text-gray-400">
-                    Review feedback submitted by Eventra users.
-                </p>
-            </div>
+                    <p>
+                        Review ratings and comments submitted by Eventra users.
+                    </p>
+                </div>
 
-            {/* Error message */}
+                <div className="admin-feedback-header-count">
+                    <span>Total submissions</span>
+                    <strong>{feedbacks.length}</strong>
+                </div>
+            </header>
+
             {error && (
-                <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
-                    {error}
+                <div className="admin-feedback-alert" role="alert">
+                    <span>{error}</span>
+
+                    <button
+                        type="button"
+                        onClick={() => setError("")}
+                        aria-label="Dismiss error"
+                    >
+                        ×
+                    </button>
                 </div>
             )}
 
-            {/* Feedback statistics */}
             {!loading && !error && (
-                <div className="grid gap-4 sm:grid-cols-2">
+                <section className="admin-feedback-stats">
+                    <div className="admin-feedback-stat-card">
+                        <div>
+                            <span>Total feedback</span>
+                            <strong>{feedbacks.length}</strong>
+                            <p>Submissions received</p>
+                        </div>
 
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-                        <p className="text-sm text-gray-400">
-                            Total Feedback
-                        </p>
-
-                        <h2 className="mt-2 text-3xl font-semibold text-white">
-                            {feedbacks.length}
-                        </h2>
+                        <div className="admin-feedback-stat-icon">
+                            <span />
+                        </div>
                     </div>
 
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-                        <p className="text-sm text-gray-400">
-                            Average Rating
-                        </p>
+                    <div className="admin-feedback-stat-card">
+                        <div>
+                            <span>Average rating</span>
 
-                        <h2 className="mt-2 text-3xl font-semibold text-white">
-                            {averageRating}
-                            <span className="ml-2 text-lg text-yellow-400">
-                                ★
-                            </span>
-                            <span className="ml-1 text-sm font-normal text-gray-400">
-                                / 5
-                            </span>
-                        </h2>
+                            <div className="admin-feedback-average">
+                                <strong>{averageRating}</strong>
+                                <span className="admin-feedback-average-star">
+                                    ★
+                                </span>
+                                <small>/ 5</small>
+                            </div>
+
+                            <p>Across all submissions</p>
+                        </div>
+
+                        <div className="admin-feedback-stat-icon rating-icon">
+                            ★
+                        </div>
                     </div>
-
-                </div>
+                </section>
             )}
 
-            {/* Feedback listing */}
-            <section className="space-y-4">
+            <section className="admin-feedback-list-section">
+                <div className="admin-feedback-list-heading">
+                    <div>
+                        <span className="admin-feedback-eyebrow">
+                            CUSTOMER REVIEWS
+                        </span>
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <h2>All feedback</h2>
 
-                    <h2 className="text-lg font-medium text-white">
-                        All Feedback ({feedbacks.length})
-                    </h2>
+                        <p>
+                            Showing {filteredFeedbacks.length} of{" "}
+                            {feedbacks.length} submissions
+                        </p>
+                    </div>
 
-                    <input
-                        type="search"
-                        value={search}
-                        onChange={(event) =>
-                            setSearch(event.target.value)
-                        }
-                        placeholder="Search name, email, or feedback..."
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-purple-500 sm:max-w-sm"
-                    />
-
+                    <div className="admin-feedback-search">
+                        <input
+                            type="search"
+                            value={search}
+                            onChange={(event) =>
+                                setSearch(event.target.value)
+                            }
+                            placeholder="Search name, email, or message..."
+                            aria-label="Search feedback"
+                        />
+                    </div>
                 </div>
 
-                {/* Loading, error, and empty states */}
                 {loading ? (
-                    <p className="py-8 text-center text-gray-400">
+                    <div className="admin-feedback-state">
                         Loading feedback...
-                    </p>
+                    </div>
                 ) : error ? (
-                    <p className="py-8 text-center text-gray-400">
+                    <div className="admin-feedback-state">
                         Unable to load feedback.
-                    </p>
+                    </div>
                 ) : filteredFeedbacks.length === 0 ? (
-                    <p className="rounded-xl border border-white/10 p-8 text-center text-gray-400">
+                    <div className="admin-feedback-state">
                         {feedbacks.length === 0
                             ? "No feedback has been submitted yet."
                             : "No feedback matches your search."}
-                    </p>
+                    </div>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="admin-feedback-list">
+                        {filteredFeedbacks.map((item) => {
+                            const rating = getValidRating(item.rating);
 
-                        {filteredFeedbacks.map((item) => (
-                            <article
-                                key={item._id}
-                                className="space-y-4 rounded-xl border border-white/10 bg-white/5 p-5"
-                            >
+                            return (
+                                <article
+                                    key={item._id}
+                                    className="admin-feedback-card"
+                                >
+                                    <div className="admin-feedback-card-header">
+                                        <div className="admin-feedback-user">
+                                            <div className="admin-feedback-avatar">
+                                                {item.name
+                                                    ?.trim()
+                                                    .charAt(0)
+                                                    .toUpperCase() || "?"}
+                                            </div>
 
-                                {/* User information */}
-                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                            <div className="admin-feedback-user-info">
+                                                <h3>{item.name}</h3>
+                                                <p>{item.email}</p>
+                                            </div>
+                                        </div>
 
-                                    <div>
-                                        <h3 className="font-medium text-white">
-                                            {item.name}
-                                        </h3>
+                                        <div className="admin-feedback-rating">
+                                            <div
+                                                className="admin-feedback-stars"
+                                                aria-label={`${rating} out of 5 stars`}
+                                            >
+                                                <span className="filled">
+                                                    {"★".repeat(rating)}
+                                                </span>
 
-                                        <p className="mt-1 text-sm text-gray-400">
-                                            {item.email}
-                                        </p>
+                                                <span className="empty">
+                                                    {"★".repeat(5 - rating)}
+                                                </span>
+                                            </div>
+
+                                            <strong>{rating}/5</strong>
+                                        </div>
                                     </div>
 
-                                    {/* Rating */}
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-lg tracking-wide text-yellow-400">
-                                            {"★".repeat(
-                                                Math.min(
-                                                    5,
-                                                    Math.max(
-                                                        0,
-                                                        Number(item.rating) || 0
-                                                    )
-                                                )
-                                            )}
-                                            {"☆".repeat(
-                                                5 - Math.min(
-                                                    5,
-                                                    Math.max(
-                                                        0,
-                                                        Number(item.rating) || 0
-                                                    )
-                                                )
-                                            )}
-                                        </span>
-
-                                        <span className="text-sm text-gray-400">
-                                            {item.rating}/5
-                                        </span>
+                                    <div className="admin-feedback-message">
+                                        <p>{item.feedback}</p>
                                     </div>
 
-                                </div>
-
-                                {/* Feedback message */}
-                                <div className="rounded-lg bg-black/20 p-4">
-                                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-300">
-                                        {item.feedback}
-                                    </p>
-                                </div>
-
-                                {/* Submission date */}
-                                <div className="border-t border-white/10 pt-3">
-                                    <p className="text-xs text-gray-500">
-                                        Submitted: {formatDate(item.createdAt)}
-                                    </p>
-                                </div>
-
-                            </article>
-                        ))}
-
+                                    <footer className="admin-feedback-card-footer">
+                                        <span>
+                                            Submitted {formatDate(item.createdAt)}
+                                        </span>
+                                    </footer>
+                                </article>
+                            );
+                        })}
                     </div>
                 )}
-
             </section>
-        </div>
+        </main>
     );
 }
 

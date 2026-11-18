@@ -1,5 +1,9 @@
 import Participant from "../models/Participant.js";
 import AppConfig from "../models/AppConfig.js";
+import {
+    clearLeaderboardRevealTimer,
+    scheduleLeaderboardReveal,
+} from "../services/leaderboardScheduler.js";
 
 const LEADERBOARD_CONFIG_KEY = "leaderboard";
 
@@ -49,6 +53,8 @@ export const getLeaderboardStatus = async (req, res) => {
             isLeaderboardLive: config?.value?.isLive === true,
             leaderboardRevealTime:
                 config?.value?.revealTime ?? null,
+            isRevealScheduled:
+                config?.value?.revealScheduled === true,
         });
     } catch (error) {
         console.error("Error fetching leaderboard status:", error);
@@ -69,28 +75,27 @@ export const toggleLeaderboard = async (req, res) => {
             });
         }
 
-        let config = await AppConfig.findOne({
-            key: LEADERBOARD_CONFIG_KEY,
-        });
-
-        if (!config) {
-            config = new AppConfig({
+        await AppConfig.findOneAndUpdate(
+            {
                 key: LEADERBOARD_CONFIG_KEY,
-                value: {},
-            });
-        }
+            },
+            {
+                $set: {
+                    "value.isLive": isLive,
+                    "value.revealScheduled": false,
+                },
+            },
+            {
+                new: true,
+                upsert: true,
+            }
+        );
 
-        config.value = {
-            ...(config.value ?? {}),
-            isLive,
-        };
-
-        await config.save();
+        clearLeaderboardRevealTimer();
 
         return res.status(200).json({
             success: true,
-            message: `Leaderboard ${isLive ? "Activated" : "Deactivated"
-                }`,
+            message: `Leaderboard ${isLive ? "Activated" : "Deactivated"}`,
         });
     } catch (error) {
         console.error("Error toggling leaderboard:", error);
@@ -119,31 +124,38 @@ export const scheduleLeaderboard = async (req, res) => {
             });
         }
 
-        let config = await AppConfig.findOne({
-            key: LEADERBOARD_CONFIG_KEY,
-        });
-
-        if (!config) {
-            config = new AppConfig({
-                key: LEADERBOARD_CONFIG_KEY,
-                value: {},
+        if (parsedRevealTime <= new Date()) {
+            return res.status(400).json({
+                error: "Reveal time must be in the future",
             });
         }
 
-        config.value = {
-            ...(config.value ?? {}),
-            revealTime: parsedRevealTime,
-        };
+        await AppConfig.findOneAndUpdate(
+            {
+                key: LEADERBOARD_CONFIG_KEY,
+            },
+            {
+                $set: {
+                    "value.isLive": false,
+                    "value.revealTime": parsedRevealTime,
+                    "value.revealScheduled": true,
+                },
+            },
+            {
+                new: true,
+                upsert: true,
+            }
+        );
 
-        await config.save();
+        scheduleLeaderboardReveal(parsedRevealTime);
 
         return res.status(200).json({
-            message: "Leaderboard reveal scheduled",
+            success: true,
+            message: "Leaderboard reveal scheduled successfully",
             config: {
-                isLeaderboardLive:
-                    config.value.isLive === true,
-                leaderboardRevealTime:
-                    config.value.revealTime,
+                isLeaderboardLive: false,
+                leaderboardRevealTime: parsedRevealTime,
+                isRevealScheduled: true,
             },
         });
     } catch (error) {

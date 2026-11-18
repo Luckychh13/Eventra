@@ -5,6 +5,7 @@ import {
     updateImage,
     deleteImage,
 } from "../../services/api/imageService.js";
+import "./AdminImagesPage.css";
 
 function getErrorMessage(error, fallback) {
     return (
@@ -15,16 +16,24 @@ function getErrorMessage(error, fallback) {
     );
 }
 
+function formatDate(date) {
+    if (!date) return "—";
+
+    return new Date(date).toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+    });
+}
+
 function AdminImagesPage() {
     const [images, setImages] = useState([]);
-
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [deletingImageId, setDeletingImageId] = useState(null);
 
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
-
     const [search, setSearch] = useState("");
 
     const [editingImageId, setEditingImageId] = useState(null);
@@ -38,6 +47,10 @@ function AdminImagesPage() {
         tags: "",
     });
 
+    const editingImage = images.find(
+        (image) => image._id === editingImageId
+    );
+
     useEffect(() => {
         let isActive = true;
 
@@ -50,10 +63,7 @@ function AdminImagesPage() {
             .catch((err) => {
                 if (isActive) {
                     setError(
-                        getErrorMessage(
-                            err,
-                            "Failed to load images."
-                        )
+                        getErrorMessage(err, "Failed to load images.")
                     );
                 }
             })
@@ -85,9 +95,7 @@ function AdminImagesPage() {
     const searchTerm = search.trim().toLowerCase();
 
     const filteredImages = images.filter((image) => {
-        const tags = Array.isArray(image.tags)
-            ? image.tags
-            : [];
+        const tags = Array.isArray(image.tags) ? image.tags : [];
 
         return (
             image.title?.toLowerCase().includes(searchTerm) ||
@@ -178,24 +186,16 @@ function AdminImagesPage() {
 
             if (editingImageId) {
                 await updateImage(editingImageId, payload);
-
-                setSuccessMessage(
-                    "Image updated successfully."
-                );
+                setSuccessMessage("Image updated successfully.");
             } else {
                 await createImage(payload);
-
-                setSuccessMessage(
-                    "Image uploaded successfully."
-                );
+                setSuccessMessage("Image uploaded successfully.");
             }
 
             resetForm();
             await refreshImages();
         } catch (err) {
-            setError(
-                getErrorMessage(err, "Failed to save image.")
-            );
+            setError(getErrorMessage(err, "Failed to save image."));
         } finally {
             setSaving(false);
         }
@@ -219,297 +219,326 @@ function AdminImagesPage() {
                 resetForm();
             }
 
-            setSuccessMessage(
-                "Image deleted successfully."
-            );
-
+            setSuccessMessage("Image deleted successfully.");
             await refreshImages();
         } catch (err) {
-            setError(
-                getErrorMessage(err, "Failed to delete image.")
-            );
+            setError(getErrorMessage(err, "Failed to delete image."));
         } finally {
             setDeletingImageId(null);
         }
     };
 
     return (
-        <div className="space-y-6">
-
-            {/* Page heading */}
-            <div>
-                <h1 className="text-2xl font-semibold text-white">
-                    Manage Images
-                </h1>
-
-                <p className="mt-1 text-sm text-gray-400">
-                    Upload, organize, edit, and manage event gallery images.
-                </p>
-            </div>
-
-            {/* Error message */}
-            {error && (
-                <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
-                    {error}
-                </div>
-            )}
-
-            {/* Success message */}
-            {successMessage && (
-                <div className="rounded-lg border border-green-500/30 bg-green-500/10 p-3 text-sm text-green-300">
-                    {successMessage}
-                </div>
-            )}
-
-            {/* Upload / Edit form */}
-            <form
-                onSubmit={handleSubmit}
-                className="space-y-4 rounded-xl border border-white/10 bg-white/5 p-5"
-            >
-                <h2 className="text-lg font-medium text-white">
-                    {editingImageId
-                        ? "Edit Image"
-                        : "Upload New Image"}
-                </h2>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-
-                    {/* Title */}
-                    <div>
-                        <label
-                            htmlFor="image-title"
-                            className="mb-1 block text-sm text-gray-300"
-                        >
-                            Image Title *
-                        </label>
-
-                        <input
-                            id="image-title"
-                            name="title"
-                            value={formData.title}
-                            onChange={handleInputChange}
-                            required
-                            placeholder="Enter image title"
-                            className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-white outline-none focus:border-purple-500"
-                        />
-                    </div>
-
-                    {/* Tags */}
-                    <div>
-                        <label
-                            htmlFor="image-tags"
-                            className="mb-1 block text-sm text-gray-300"
-                        >
-                            Tags
-                        </label>
-
-                        <input
-                            id="image-tags"
-                            name="tags"
-                            value={formData.tags}
-                            onChange={handleInputChange}
-                            placeholder="festival, music, stage"
-                            className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-white outline-none focus:border-purple-500"
-                        />
-
-                        <p className="mt-1 text-xs text-gray-500">
-                            Separate tags with commas.
-                        </p>
-                    </div>
-                </div>
-
-                {/* Description */}
+        <main className="admin-images-page">
+            <header className="admin-images-header">
                 <div>
-                    <label
-                        htmlFor="image-description"
-                        className="mb-1 block text-sm text-gray-300"
-                    >
-                        Description
-                    </label>
+                    <span className="admin-images-eyebrow">
+                        CONTENT MANAGEMENT
+                    </span>
 
-                    <textarea
-                        id="image-description"
-                        name="description"
-                        value={formData.description}
-                        onChange={handleInputChange}
-                        rows={3}
-                        placeholder="Enter image description"
-                        className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-white outline-none focus:border-purple-500"
-                    />
+                    <h1>Image Gallery</h1>
+
+                    <p>
+                        Upload and manage the images displayed across your
+                        event platform.
+                    </p>
                 </div>
 
-                {/* Image file */}
-                <div>
-                    <label
-                        htmlFor="image-file"
-                        className="mb-1 block text-sm text-gray-300"
-                    >
-                        Image File {editingImageId ? "(optional replacement)" : "*"}
-                    </label>
-
-                    <input
-                        ref={imageInputRef}
-                        id="image-file"
-                        type="file"
-                        accept="image/*"
-                        required={!editingImageId}
-                        onChange={(event) =>
-                            setImageFile(event.target.files?.[0] || null)
-                        }
-                        className="block w-full text-sm text-gray-400 file:mr-3 file:rounded-lg file:border-0 file:bg-white/10 file:px-3 file:py-2 file:text-white"
-                    />
-
-                    {imageFile && (
-                        <p className="mt-1 text-xs text-gray-400">
-                            Selected: {imageFile.name}
-                        </p>
-                    )}
-
-                    {editingImageId && (
-                        <p className="mt-1 text-xs text-gray-400">
-                            Leave the file field empty to keep the existing image.
-                        </p>
-                    )}
+                <div className="admin-images-total">
+                    <span>Total images</span>
+                    <strong>{images.length}</strong>
                 </div>
+            </header>
 
-                {/* Form actions */}
-                <div className="flex flex-wrap gap-3">
+            {(error || successMessage) && (
+                <div
+                    className={`admin-images-alert ${error ? "is-error" : "is-success"
+                        }`}
+                    role="status"
+                >
+                    <span>{error || successMessage}</span>
+
                     <button
-                        type="submit"
-                        disabled={saving}
-                        className="rounded-lg bg-purple-600 px-5 py-2 text-sm font-medium text-white hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
+                        type="button"
+                        onClick={() => {
+                            setError("");
+                            setSuccessMessage("");
+                        }}
+                        aria-label="Dismiss message"
                     >
-                        {saving
-                            ? "Saving..."
-                            : editingImageId
-                                ? "Update Image"
-                                : "Upload Image"}
+                        ×
                     </button>
-
-                    {editingImageId && (
-                        <button
-                            type="button"
-                            onClick={resetForm}
-                            className="rounded-lg border border-white/20 px-5 py-2 text-sm text-gray-300 hover:bg-white/10"
-                        >
-                            Cancel
-                        </button>
-                    )}
                 </div>
-            </form>
+            )}
 
-            {/* Image listing */}
-            <section className="space-y-4">
+            <div className="admin-images-layout">
+                <section className="admin-image-form-card">
+                    <div className="admin-image-section-heading">
+                        <div>
+                            <span className="admin-images-eyebrow">
+                                {editingImageId ? "EDIT DETAILS" : "NEW UPLOAD"}
+                            </span>
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <h2 className="text-lg font-medium text-white">
-                        All Images ({images.length})
-                    </h2>
+                            <h2>
+                                {editingImageId
+                                    ? "Update image"
+                                    : "Add an image"}
+                            </h2>
+                        </div>
 
-                    <input
-                        type="search"
-                        value={search}
-                        onChange={(event) =>
-                            setSearch(event.target.value)
-                        }
-                        placeholder="Search title or tags..."
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-purple-500 sm:max-w-xs"
-                    />
-                </div>
+                        {editingImageId && (
+                            <span className="admin-image-edit-badge">
+                                Editing
+                            </span>
+                        )}
+                    </div>
 
-                {/* Loading, empty and error states */}
-                {loading ? (
-                    <p className="py-8 text-center text-gray-400">
-                        Loading images...
-                    </p>
-                ) : error && images.length === 0 ? (
-                    <p className="py-8 text-center text-gray-400">
-                        Unable to load images.
-                    </p>
-                ) : filteredImages.length === 0 ? (
-                    <p className="rounded-xl border border-white/10 p-8 text-center text-gray-400">
-                        {images.length === 0
-                            ? "No images have been uploaded yet."
-                            : "No images match your search."}
-                    </p>
-                ) : (
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    <form onSubmit={handleSubmit}>
+                        <div className="admin-image-form-fields">
+                            <div className="admin-image-field">
+                                <label htmlFor="image-title">
+                                    Image title <span>*</span>
+                                </label>
 
-                        {filteredImages.map((image) => (
-                            <article
-                                key={image._id}
-                                className="overflow-hidden rounded-xl border border-white/10 bg-white/5"
-                            >
+                                <input
+                                    id="image-title"
+                                    name="title"
+                                    value={formData.title}
+                                    onChange={handleInputChange}
+                                    placeholder="e.g. Main stage performance"
+                                    required
+                                />
+                            </div>
 
-                                {/* Image preview */}
-                                <img
-                                    src={image.imageUrl}
-                                    alt={image.title}
-                                    loading="lazy"
-                                    className="h-52 w-full object-cover"
+                            <div className="admin-image-field">
+                                <label htmlFor="image-tags">
+                                    Tags
+                                </label>
+
+                                <input
+                                    id="image-tags"
+                                    name="tags"
+                                    value={formData.tags}
+                                    onChange={handleInputChange}
+                                    placeholder="music, festival, stage"
                                 />
 
-                                <div className="space-y-3 p-4">
+                                <small>
+                                    Separate multiple tags with commas.
+                                </small>
+                            </div>
 
-                                    {/* Image information */}
-                                    <div>
-                                        <h3 className="font-medium text-white">
-                                            {image.title}
-                                        </h3>
+                            <div className="admin-image-field">
+                                <label htmlFor="image-description">
+                                    Description
+                                </label>
+
+                                <textarea
+                                    id="image-description"
+                                    name="description"
+                                    value={formData.description}
+                                    onChange={handleInputChange}
+                                    rows={4}
+                                    placeholder="Add a short description..."
+                                />
+                            </div>
+
+                            <div className="admin-image-field">
+                                <label htmlFor="image-file">
+                                    Image file{" "}
+                                    {!editingImageId && <span>*</span>}
+                                </label>
+
+                                <div className="admin-image-upload-area">
+                                    <input
+                                        ref={imageInputRef}
+                                        id="image-file"
+                                        type="file"
+                                        accept="image/*"
+                                        required={!editingImageId}
+                                        onChange={(event) =>
+                                            setImageFile(
+                                                event.target.files?.[0] || null
+                                            )
+                                        }
+                                    />
+
+                                    <p>
+                                        {imageFile
+                                            ? imageFile.name
+                                            : editingImageId
+                                                ? "Choose a replacement image (optional)"
+                                                : "Choose an image from your device"}
+                                    </p>
+                                </div>
+
+                                {editingImageId && (
+                                    <small>
+                                        Leave this empty to keep the current
+                                        image.
+                                    </small>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="admin-image-form-actions">
+                            <button
+                                type="submit"
+                                className="admin-image-primary-button"
+                                disabled={saving}
+                            >
+                                {saving
+                                    ? "Saving..."
+                                    : editingImageId
+                                        ? "Save changes"
+                                        : "Upload image"}
+                            </button>
+
+                            {editingImageId && (
+                                <button
+                                    type="button"
+                                    className="admin-image-secondary-button"
+                                    onClick={resetForm}
+                                    disabled={saving}
+                                >
+                                    Cancel
+                                </button>
+                            )}
+                        </div>
+                    </form>
+
+                    {editingImage?.imageUrl && (
+                        <div className="admin-image-current-preview">
+                            <span>Current image</span>
+
+                            <img
+                                src={editingImage.imageUrl}
+                                alt={editingImage.title}
+                            />
+                        </div>
+                    )}
+                </section>
+
+                <section className="admin-image-gallery-section">
+                    <div className="admin-image-gallery-heading">
+                        <div>
+                            <span className="admin-images-eyebrow">
+                                YOUR LIBRARY
+                            </span>
+
+                            <h2>Uploaded images</h2>
+
+                            <p>
+                                Showing {filteredImages.length} of{" "}
+                                {images.length} images
+                            </p>
+                        </div>
+
+                        <div className="admin-image-search">
+                            <input
+                                type="search"
+                                value={search}
+                                onChange={(event) =>
+                                    setSearch(event.target.value)
+                                }
+                                placeholder="Search images..."
+                                aria-label="Search images"
+                            />
+                        </div>
+                    </div>
+
+                    {loading ? (
+                        <div className="admin-images-state">
+                            Loading images...
+                        </div>
+                    ) : error && images.length === 0 ? (
+                        <div className="admin-images-state">
+                            Unable to load images.
+                        </div>
+                    ) : filteredImages.length === 0 ? (
+                        <div className="admin-images-state">
+                            {images.length === 0
+                                ? "No images have been uploaded yet."
+                                : "No images match your search."}
+                        </div>
+                    ) : (
+                        <div className="admin-image-grid">
+                            {filteredImages.map((image) => (
+                                <article
+                                    key={image._id}
+                                    className="admin-image-card"
+                                >
+                                    <div className="admin-image-preview">
+                                        <img
+                                            src={image.imageUrl}
+                                            alt={image.title}
+                                            loading="lazy"
+                                        />
+                                    </div>
+
+                                    <div className="admin-image-card-content">
+                                        <div className="admin-image-card-title">
+                                            <h3>{image.title}</h3>
+
+                                            <span>
+                                                {formatDate(image.createdAt)}
+                                            </span>
+                                        </div>
 
                                         {image.description && (
-                                            <p className="mt-1 text-sm text-gray-400">
+                                            <p className="admin-image-description">
                                                 {image.description}
                                             </p>
                                         )}
-                                    </div>
 
-                                    {/* Tags */}
-                                    {image.tags?.length > 0 && (
-                                        <div className="flex flex-wrap gap-2">
-                                            {image.tags.map((tag, index) => (
-                                                <span
-                                                    key={`${tag}-${index}`}
-                                                    className="rounded-full bg-purple-500/10 px-2 py-1 text-xs text-purple-300"
-                                                >
-                                                    {tag}
-                                                </span>
-                                            ))}
+                                        {image.tags?.length > 0 && (
+                                            <div className="admin-image-tags">
+                                                {image.tags.map((tag, index) => (
+                                                    <span
+                                                        key={`${tag}-${index}`}
+                                                    >
+                                                        {tag}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        <div className="admin-image-card-actions">
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    handleEdit(image)
+                                                }
+                                                disabled={
+                                                    deletingImageId === image._id
+                                                }
+                                            >
+                                                Edit
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                className="admin-image-delete-button"
+                                                onClick={() =>
+                                                    handleDelete(image)
+                                                }
+                                                disabled={
+                                                    deletingImageId === image._id
+                                                }
+                                            >
+                                                {deletingImageId === image._id
+                                                    ? "Deleting..."
+                                                    : "Delete"}
+                                            </button>
                                         </div>
-                                    )}
-
-                                    {/* Actions */}
-                                    <div className="flex gap-3 border-t border-white/10 pt-3">
-
-                                        <button
-                                            type="button"
-                                            onClick={() => handleEdit(image)}
-                                            disabled={deletingImageId === image._id}
-                                            className="rounded-lg border border-white/20 px-3 py-2 text-sm text-gray-200 hover:bg-white/10 disabled:opacity-50"
-                                        >
-                                            Edit
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => handleDelete(image)}
-                                            disabled={deletingImageId === image._id}
-                                            className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300 hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
-                                        >
-                                            {deletingImageId === image._id
-                                                ? "Deleting..."
-                                                : "Delete"}
-                                        </button>
-
                                     </div>
-                                </div>
-                            </article>
-                        ))}
-
-                    </div>
-                )}
-            </section>
-        </div>
+                                </article>
+                            ))}
+                        </div>
+                    )}
+                </section>
+            </div>
+        </main>
     );
 }
 

@@ -1,5 +1,7 @@
+
 import { Link } from 'react-router-dom'
 import useAdminDashboard from '../../hooks/useAdminDashboard.js'
+import './AdminDashboard.css'
 
 const formatPrice = (value) => {
     return new Intl.NumberFormat('en-IN', {
@@ -13,36 +15,41 @@ function AdminDashboard() {
     const {
         summary,
         loading,
+        refreshing,
         error,
         refreshSummary,
     } = useAdminDashboard()
 
     if (loading) {
         return (
-            <div className="py-20 text-center text-gray-400">
-                Loading admin dashboard...
+            <div className="admin-dashboard-state">
+                <div className="admin-loading-spinner" />
+                <p>Loading your dashboard...</p>
             </div>
         )
     }
 
     if (error) {
         return (
-            <div className="py-16 text-center">
-                <h1 className="text-2xl font-bold">
-                    Unable to load dashboard
-                </h1>
-
-                <p className="mt-3 text-sm text-red-400">
-                    {error}
-                </p>
-
+            <div className="admin-dashboard-state admin-error-state">
+                <div className="admin-state-icon">!</div>
+                <h2>Unable to load dashboard</h2>
+                <p>{error}</p>
                 <button
                     type="button"
                     onClick={refreshSummary}
-                    className="mt-5 rounded-lg bg-purple-600 px-5 py-2.5 text-sm hover:bg-purple-700"
+                    className="admin-primary-button"
                 >
                     Try Again
                 </button>
+            </div>
+        )
+    }
+
+    if (!summary) {
+        return (
+            <div className="admin-dashboard-state">
+                <p>Dashboard data is currently unavailable.</p>
             </div>
         )
     }
@@ -53,35 +60,52 @@ function AdminDashboard() {
     const statistics = [
         {
             label: 'Total Users',
-            value: summary.totalUsers,
+            value: summary.totalUsers.toLocaleString('en-IN'),
+            abbreviation: 'US',
+            category: 'Community',
         },
         {
             label: 'Total Participants',
-            value: summary.totalParticipants,
+            value: summary.totalParticipants.toLocaleString('en-IN'),
+            abbreviation: 'PA',
+            category: 'Community',
         },
         {
             label: 'Total Votes',
-            value: summary.totalVotes,
+            value: summary.totalVotes.toLocaleString('en-IN'),
+            abbreviation: 'VT',
+            category: 'Engagement',
         },
         {
             label: 'Event Orders',
-            value: summary.eventOrders,
+            value: summary.eventOrders.toLocaleString('en-IN'),
+            abbreviation: 'EO',
+            category: 'Orders',
         },
         {
             label: 'Stall Orders',
-            value: summary.stallOrders,
+            value: summary.stallOrders.toLocaleString('en-IN'),
+            abbreviation: 'SO',
+            category: 'Orders',
         },
         {
             label: 'Successful Event Revenue',
             value: formatPrice(summary.eventEarnings),
+            abbreviation: 'ER',
+            category: 'Revenue',
         },
         {
             label: 'Successful Stall Revenue',
             value: formatPrice(summary.stallEarnings),
+            abbreviation: 'SR',
+            category: 'Revenue',
         },
         {
             label: 'Total Successful Revenue',
             value: formatPrice(totalRevenue),
+            abbreviation: 'TR',
+            category: 'Revenue',
+            featured: true,
         },
     ]
 
@@ -90,181 +114,217 @@ function AdminDashboard() {
             label: 'Manage Events',
             description: 'Create and manage festival events.',
             path: '/dashboard/events',
+            abbreviation: 'EV',
         },
         {
             label: 'Manage Stalls',
             description: 'Create, edit, and manage stalls.',
             path: '/dashboard/stalls',
+            abbreviation: 'ST',
         },
         {
             label: 'Manage Users',
             description: 'View registered users.',
             path: '/dashboard/users',
+            abbreviation: 'US',
         },
         {
             label: 'Event Orders',
             description: 'Review event ticket orders.',
             path: '/dashboard/eventOrder',
+            abbreviation: 'EO',
         },
         {
             label: 'Stall Orders',
             description: 'Review stall purchases.',
             path: '/dashboard/stallsOrder',
+            abbreviation: 'SO',
         },
         {
             label: 'Pricing Management',
             description: 'Manage event ticket pricing.',
             path: '/dashboard/pricingSet',
+            abbreviation: 'PR',
         },
     ]
 
     return (
-        <div className="space-y-10">
-
-            {/* Dashboard heading */}
-            <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="admin-dashboard">
+            <section className="admin-dashboard-heading">
                 <div>
-                    <h1 className="text-2xl font-bold">
-                        Admin Dashboard
-                    </h1>
-
-                    <p className="mt-2 text-sm text-gray-400">
-                        Overview of Eventra activities and performance.
+                    <span className="admin-eyebrow">OVERVIEW</span>
+                    <h1>Dashboard</h1>
+                    <p>
+                        Here's what's happening across your Eventra platform.
                     </p>
                 </div>
 
                 <button
                     type="button"
                     onClick={refreshSummary}
-                    className="rounded-lg border border-white/20 px-4 py-2 text-sm transition hover:bg-white/5"
+                    disabled={refreshing}
+                    className="admin-refresh-button"
                 >
-                    Refresh Dashboard
+                    <span aria-hidden="true" className={refreshing ? 'is-refreshing' : ''}>
+                        ↻
+                    </span>
+                    {refreshing ? 'Refreshing...' : 'Refresh data'}
                 </button>
-            </div>
+            </section>
 
-            {/* Statistics */}
-            <section>
-                <h2 className="mb-5 text-xl font-semibold">
-                    Platform Overview
-                </h2>
+            <section className="admin-dashboard-section">
+                <div className="admin-section-heading">
+                    <div>
+                        <h2>Platform overview</h2>
+                        <p>Key numbers from across your platform.</p>
+                    </div>
+                    <span className="admin-section-caption">
+                        ALL-TIME SUMMARY
+                    </span>
+                </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="admin-stat-grid">
                     {statistics.map((statistic) => (
                         <article
                             key={statistic.label}
-                            className="rounded-xl border border-white/10 bg-white/5 p-5"
+                            className={`admin-stat-card ${statistic.featured ? 'featured' : ''
+                                }`}
                         >
-                            <p className="text-sm text-gray-400">
+                            <div className="admin-stat-card-top">
+                                <span className="admin-stat-category">
+                                    {statistic.category}
+                                </span>
+                                <span className="admin-stat-icon">
+                                    {statistic.abbreviation}
+                                </span>
+                            </div>
+
+                            <p className="admin-stat-label">
                                 {statistic.label}
                             </p>
 
-                            <p className="mt-3 text-2xl font-bold">
+                            <h3 className="admin-stat-value">
                                 {statistic.value}
-                            </p>
+                            </h3>
                         </article>
                     ))}
                 </div>
 
-                <p className="mt-3 text-xs text-gray-500">
-                    Order counts include all payment statuses.
-                    Revenue includes only successfully paid orders.
+                <p className="admin-dashboard-note">
+                    Order counts include all payment statuses. Revenue
+                    includes only successfully paid orders.
                 </p>
             </section>
 
-            {/* Participant leaderboard */}
-            <section>
-                <div className="mb-5">
-                    <h2 className="text-xl font-semibold">
-                        Participant Voting Leaderboard
-                    </h2>
+            <section className="admin-dashboard-section">
+                <div className="admin-section-heading">
+                    <div>
+                        <h2>Participant leaderboard</h2>
+                        <p>
+                            Participants ranked by their recorded vote counts.
+                        </p>
+                    </div>
 
-                    <p className="mt-2 text-sm text-gray-400">
-                        Participants ranked by their recorded vote counts.
-                    </p>
+                    <Link
+                        to="/dashboard/leaderboard"
+                        className="admin-text-link"
+                    >
+                        Full leaderboard <span aria-hidden="true">→</span>
+                    </Link>
                 </div>
 
                 {summary.participantVotes.length === 0 ? (
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-8 text-center">
-                        <p className="text-gray-400">
-                            No participant voting data available.
+                    <div className="admin-empty-state">
+                        <div className="admin-empty-icon">LB</div>
+                        <h3>No voting data yet</h3>
+                        <p>
+                            Participant rankings will appear here once votes
+                            have been recorded.
                         </p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto rounded-xl border border-white/10">
-                        <table className="w-full min-w-[400px] text-left">
-                            <thead className="bg-white/5 text-sm text-gray-400">
-                                <tr>
-                                    <th className="px-5 py-4">Rank</th>
-                                    <th className="px-5 py-4">Participant</th>
-                                    <th className="px-5 py-4 text-right">
-                                        Votes
-                                    </th>
-                                </tr>
-                            </thead>
+                    <div className="admin-leaderboard-card">
+                        <div className="admin-table-wrapper">
+                            <table className="admin-leaderboard-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Participant</th>
+                                        <th className="admin-votes-column">
+                                            Votes
+                                        </th>
+                                    </tr>
+                                </thead>
 
-                            <tbody>
-                                {summary.participantVotes
-                                    .slice(0, 10)
-                                    .map((participant, index) => (
-                                        <tr
-                                            key={`${participant.name}-${index}`}
-                                            className="border-t border-white/10"
-                                        >
-                                            <td className="px-5 py-4 font-medium">
-                                                #{index + 1}
-                                            </td>
-
-                                            <td className="px-5 py-4">
-                                                {participant.name}
-                                            </td>
-
-                                            <td className="px-5 py-4 text-right font-semibold text-purple-300">
-                                                {participant.votes}
-                                            </td>
-                                        </tr>
-                                    ))}
-                            </tbody>
-                        </table>
+                                <tbody>
+                                    {summary.participantVotes
+                                        .slice(0, 10)
+                                        .map((participant, index) => (
+                                            <tr
+                                                key={`${participant.name}-${index}`}
+                                            >
+                                                <td>
+                                                    <span
+                                                        className={`admin-rank ${index < 3
+                                                            ? `rank-${index + 1}`
+                                                            : ''
+                                                            }`}
+                                                    >
+                                                        {String(index + 1).padStart(
+                                                            2,
+                                                            '0'
+                                                        )}
+                                                    </span>
+                                                </td>
+                                                <td className="admin-participant-name">
+                                                    {participant.name}
+                                                </td>
+                                                <td className="admin-votes-column">
+                                                    <span className="admin-vote-count">
+                                                        {participant.votes.toLocaleString(
+                                                            'en-IN'
+                                                        )}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )}
-
-                <Link
-                    to="/dashboard/leaderboard"
-                    className="mt-4 inline-block text-sm text-purple-300 transition hover:text-purple-200"
-                >
-                    View Full Leaderboard →
-                </Link>
             </section>
 
-            {/* Quick navigation */}
-            <section>
-                <h2 className="mb-5 text-xl font-semibold">
-                    Quick Management Access
-                </h2>
+            <section className="admin-dashboard-section">
+                <div className="admin-section-heading">
+                    <div>
+                        <h2>Quick management</h2>
+                        <p>Jump straight into the areas you manage most.</p>
+                    </div>
+                </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="admin-quick-links-grid">
                     {quickLinks.map((item) => (
                         <Link
                             key={item.path}
                             to={item.path}
-                            className="rounded-xl border border-white/10 bg-white/5 p-5 transition hover:border-purple-500/50 hover:bg-white/[0.07]"
+                            className="admin-quick-link-card"
                         >
-                            <h3 className="font-semibold">
-                                {item.label}
-                            </h3>
+                            <div className="admin-quick-link-top">
+                                <span className="admin-quick-link-icon">
+                                    {item.abbreviation}
+                                </span>
+                                <span className="admin-quick-link-arrow">
+                                    ↗
+                                </span>
+                            </div>
 
-                            <p className="mt-2 text-sm text-gray-400">
-                                {item.description}
-                            </p>
-
-                            <span className="mt-4 inline-block text-sm text-purple-300">
-                                Open →
-                            </span>
+                            <h3>{item.label}</h3>
+                            <p>{item.description}</p>
                         </Link>
                     ))}
                 </div>
             </section>
-
         </div>
     )
 }

@@ -1,0 +1,414 @@
+.account-page {
+    position: relative;
+    isolation: isolate;
+    min-height: 85vh;
+    overflow: hidden;
+    padding: 90px 24px 110px;
+    background:
+        radial-gradient(ellipse at 80% 10%, rgba(26, 143, 156, 0.15), transparent 40%),
+        linear-gradient(145deg, #071824 0%, #0d2a38 55%, #082d47 100%);
+    color: #ffffff;
+}
+
+.account-container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.account-page__glow {
+    position: absolute;
+    z-index: -1;
+    width: 420px;
+    height: 420px;
+    border: 1px solid rgba(159, 227, 234, 0.08);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.account-page__glow--one {
+    top: -250px;
+    right: -120px;
+}
+
+.account-page__glow--two {
+    bottom: -280px;
+    left: -180px;
+    width: 520px;
+    height: 520px;
+}
+
+.account-header {
+    margin-bottom: 38px;
+}
+
+.account-eyebrow,
+.account-profile-label,
+.account-section-label {
+    color: #9fe3ea;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.account-header h1 {
+    margin-top: 15px;
+    color: #ffffff;
+    font-family: var(--font-display);
+    font-size: clamp(38px, 6vw, 54px);
+    font-weight: 750;
+    letter-spacing: -1.8px;
+}
+
+.account-header h1 span {
+    color: #ff6a45;
+}
+
+.account-header>p {
+    margin-top: 10px;
+    color: #b5c8d0;
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.account-profile-card {
+    overflow: hidden;
+    border: 1px solid rgba(159, 227, 234, 0.2);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.97);
+    color: #0c1f2b;
+    box-shadow: 0 30px 80px rgba(3, 24, 36, 0.25);
+}
+
+.account-profile-top {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    min-height: 190px;
+    overflow: hidden;
+    padding: 38px;
+    background:
+        radial-gradient(circle at 90% 20%, rgba(159, 227, 234, 0.2), transparent 35%),
+        linear-gradient(120deg, #0d2a38, #104b6b);
+    color: #ffffff;
+}
+
+.account-avatar {
+    display: flex;
+    flex-shrink: 0;
+    width: 76px;
+    height: 76px;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(159, 227, 234, 0.65);
+    border-radius: 22px;
+    background: linear-gradient(145deg, #1a8f9c, #127582);
+    color: #ffffff;
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 700;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.account-profile-heading {
+    min-width: 0;
+}
+
+.account-profile-heading h2 {
+    margin-top: 9px;
+    overflow-wrap: anywhere;
+    color: #ffffff;
+    font-family: var(--font-display);
+    font-size: clamp(17px, 3vw, 22px);
+    font-weight: 650;
+}
+
+.account-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    color: #bce9e7;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.account-status>span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #75d9a7;
+    box-shadow: 0 0 10px rgba(117, 217, 167, 0.6);
+}
+
+.account-profile-decoration {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-end;
+    margin-left: auto;
+    color: rgba(255, 255, 255, 0.2);
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.account-profile-decoration span:first-child {
+    font-size: 35px;
+}
+
+.account-profile-decoration span:last-child {
+    font-size: 8px;
+    letter-spacing: 1px;
+}
+
+.account-details {
+    padding: 36px 38px;
+}
+
+.account-details-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.account-details-heading h3 {
+    margin-top: 7px;
+    color: #0c1f2b;
+    font-family: var(--font-display);
+    font-size: 25px;
+    font-weight: 700;
+}
+
+.account-details-count {
+    padding: 7px 11px;
+    border-radius: 8px;
+    background: #e7f4f6;
+    color: #127582;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.account-details-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.account-detail-row {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+    padding: 21px 0;
+    border-bottom: 1px solid #e6eef1;
+}
+
+.account-detail-row:last-child {
+    border-bottom: none;
+}
+
+.account-detail-icon {
+    display: flex;
+    flex-shrink: 0;
+    width: 45px;
+    height: 45px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d8ebed;
+    border-radius: 13px;
+    background: #eaf6f7;
+    color: #127582;
+    font-size: 20px;
+}
+
+.account-detail-content {
+    min-width: 0;
+}
+
+.account-detail-content>span {
+    color: #71838c;
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.5px;
+}
+
+.account-detail-content p {
+    margin-top: 5px;
+    color: #0c1f2b;
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.6;
+}
+
+.account-break-all {
+    overflow-wrap: anywhere;
+}
+
+.account-capitalize {
+    text-transform: capitalize;
+}
+
+.account-card-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 17px 38px;
+    background: #f1f7f8;
+    color: #71838c;
+    font-size: 9px;
+    font-weight: 750;
+    letter-spacing: 1.2px;
+}
+
+.account-footer-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #ff6a45;
+}
+
+.account-card-footer span:last-child {
+    margin-left: auto;
+    color: #127582;
+}
+
+.account-page--state {
+    display: flex;
+    min-height: 75vh;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.account-state-card {
+    width: 100%;
+    max-width: 460px;
+    padding: 42px 30px;
+    border: 1px solid rgba(159, 227, 234, 0.2);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.97);
+    color: #0c1f2b;
+    text-align: center;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.2);
+}
+
+.account-state-icon {
+    display: flex;
+    width: 52px;
+    height: 52px;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 18px;
+    border-radius: 16px;
+    background: #e7f4f6;
+    color: #127582;
+    font-size: 25px;
+    font-weight: 800;
+}
+
+.account-state-card h1 {
+    font-family: var(--font-display);
+    font-size: 23px;
+    font-weight: 700;
+}
+
+.account-state-card p {
+    margin-top: 12px;
+    color: #71838c;
+    font-size: 14px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.account-state-card--error .account-state-icon {
+    background: #fff0eb;
+    color: #e65e3c;
+}
+
+.account-state-card--error p {
+    color: #c64c35;
+}
+
+.account-loading-spinner {
+    display: block;
+    width: 38px;
+    height: 38px;
+    margin: 0 auto 20px;
+    border: 3px solid #d8ebed;
+    border-top-color: #1a8f9c;
+    border-radius: 50%;
+    animation: account-spin 0.8s linear infinite;
+}
+
+@keyframes account-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 650px) {
+    .account-page {
+        min-height: 80vh;
+        padding: 65px 17px 80px;
+    }
+
+    .account-header {
+        margin-bottom: 28px;
+    }
+
+    .account-profile-top {
+        flex-wrap: wrap;
+        gap: 17px;
+        padding: 27px 23px;
+    }
+
+    .account-avatar {
+        width: 62px;
+        height: 62px;
+        border-radius: 18px;
+        font-size: 26px;
+    }
+
+    .account-profile-decoration {
+        display: none;
+    }
+
+    .account-details {
+        padding: 28px 23px;
+    }
+
+    .account-details-heading h3 {
+        font-size: 22px;
+    }
+
+    .account-card-footer {
+        padding: 16px 23px;
+        font-size: 8px;
+        letter-spacing: 0.7px;
+    }
+}
+
+@media (max-width: 380px) {
+    .account-card-footer {
+        flex-wrap: wrap;
+    }
+
+    .account-card-footer span:last-child {
+        margin-left: 0;
+    }
+
+    .account-details-count {
+        font-size: 8px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .account-loading-spinner {
+        animation: none;
+    }
+}

@@ -57,7 +57,6 @@ function App() {
         <Route path="pricing/:eventId" element={<EventPricingPage />} />
         <Route path="success" element={<PaymentSuccessPage />} />
         <Route path="cancel" element={<PaymentCancelPage />} />
-        <Route path="leaderboard" element={<LeaderboardPage />} />
 
         {/* Guest-only pages */}
         <Route element={<PublicRoute />}>
@@ -67,6 +66,7 @@ function App() {
 
         {/* Authenticated user pages */}
         <Route element={<ProtectedRoute />}>
+          <Route path="leaderboard" element={<LeaderboardPage />} />
           <Route path="account" element={<AccountPage />} />
           <Route path="bookings" element={<MyBookingsPage />} />
           <Route path="cart" element={<CartPage />} />

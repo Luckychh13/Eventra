@@ -1,4 +1,6 @@
+
 import { useEffect, useState } from "react";
+import "./ContactPage.css";
 
 const faqData = [
     {
@@ -35,36 +37,37 @@ const faqData = [
 
 function ContactHeroSection() {
     return (
-        <section className="relative overflow-hidden bg-black px-6 pb-24 pt-20 text-white">
-            <div className="pointer-events-none absolute left-0 top-10 h-96 w-96 rounded-full bg-blue-600/20 blur-[180px]" />
-            <div className="pointer-events-none absolute bottom-0 right-0 h-96 w-96 rounded-full bg-purple-700/25 blur-[200px]" />
+        <section className="contact-hero">
+            <div className="contact-hero__glow contact-hero__glow--one" />
+            <div className="contact-hero__glow contact-hero__glow--two" />
 
-            <div className="relative z-10 mx-auto max-w-6xl text-center">
-                <p className="mb-4 font-semibold uppercase tracking-[6px] text-pink-500">
-                    Contact Us
-                </p>
+            <div className="contact-hero__content">
+                <span className="contact-eyebrow">We're Just a Message Away</span>
 
-                <h1 className="text-4xl font-extrabold leading-tight sm:text-6xl md:text-7xl">
-                    We're Here to <span className="text-pink-500">Help You</span>
+                <h1>
+                    We're Here to
                     <br />
-                    <span className="text-purple-400">Reach Out Anytime</span>
+                    <span>Help You.</span>
                 </h1>
 
-                <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-gray-300">
+                <p>
                     Have questions, suggestions, or need support?
                     Explore our website or reach out to the event organizers.
                 </p>
 
-                <div className="mt-10 flex justify-center gap-6">
-                    {["✉", "☎", "⌖"].map((symbol) => (
-                        <div
-                            key={symbol}
-                            className="flex h-16 w-16 items-center justify-center rounded-full bg-white/10 text-3xl transition hover:bg-pink-500/20"
-                        >
-                            {symbol}
-                        </div>
-                    ))}
+                <div className="contact-hero__symbols">
+                    <span>✉</span>
+                    <span>⌕</span>
+                    <span>↗</span>
                 </div>
+            </div>
+
+            <div className="contact-hero__bottom">
+                <span>QUESTIONS</span>
+                <span />
+                <span>SUPPORT</span>
+                <span />
+                <span>CONNECTION</span>
             </div>
         </section>
     );
@@ -74,44 +77,52 @@ function ContactInfoSection() {
     const items = [
         {
             icon: "✉",
+            number: "01",
             title: "Email Us",
             description: "Official support email will be published here.",
         },
         {
-            icon: "☎",
+            icon: "⌕",
+            number: "02",
             title: "Call Us",
             description: "Official contact number will be published here.",
         },
         {
             icon: "⌖",
+            number: "03",
             title: "Our Address",
             description: "Official event venue information will be published here.",
         },
     ];
 
     return (
-        <section className="relative overflow-hidden bg-black px-6 py-24 text-white">
-            <div className="pointer-events-none absolute -left-20 top-0 h-96 w-96 rounded-full bg-pink-600/10 blur-[150px]" />
+        <section className="contact-section contact-info">
+            <div className="contact-container">
+                <div className="contact-section-heading">
+                    <span className="contact-eyebrow contact-eyebrow--light">
+                        Let's Connect
+                    </span>
+                    <h2>
+                        Get in <span>Touch.</span>
+                    </h2>
+                    <p>
+                        Have a question, suggestion, or need help?
+                        We're working to make it easier to connect with our team.
+                    </p>
+                </div>
 
-            <div className="relative mx-auto max-w-6xl">
-                <h2 className="text-center text-4xl font-extrabold sm:text-6xl">
-                    Get in <span className="text-pink-400">Touch</span>
-                </h2>
-
-                <p className="mx-auto mb-16 mt-5 max-w-2xl text-center text-lg text-gray-300">
-                    Have a question, suggestion, or need help?
-                    We're working to make it easier to connect with our team.
-                </p>
-
-                <div className="grid gap-8 md:grid-cols-3">
+                <div className="contact-info__grid">
                     {items.map((item) => (
-                        <article
-                            key={item.title}
-                            className="rounded-3xl border border-white/10 bg-white/10 p-10 text-center transition hover:-translate-y-2 hover:border-pink-500/60"
-                        >
-                            <div className="text-5xl text-pink-400">{item.icon}</div>
-                            <h3 className="mt-5 text-2xl font-bold">{item.title}</h3>
-                            <p className="mt-3 text-gray-300">{item.description}</p>
+                        <article className="contact-info-card" key={item.title}>
+                            <div className="contact-info-card__top">
+                                <span>{item.number}</span>
+                                <span className="contact-info-card__icon">
+                                    {item.icon}
+                                </span>
+                            </div>
+
+                            <h3>{item.title}</h3>
+                            <p>{item.description}</p>
                         </article>
                     ))}
                 </div>
@@ -122,99 +133,129 @@ function ContactInfoSection() {
 
 function ContactFormSection() {
     return (
-        <section className="relative overflow-hidden bg-black px-6 py-24 text-white">
-            <div className="mx-auto max-w-3xl">
-                <h2 className="text-center text-4xl font-extrabold sm:text-5xl">
-                    Send Us a <span className="text-pink-400">Message</span>
-                </h2>
+        <section className="contact-section contact-form-section">
+            <div className="contact-container contact-form-section__grid">
+                <div className="contact-form-intro">
+                    <span className="contact-eyebrow contact-eyebrow--light">
+                        We'd Love to Hear From You
+                    </span>
 
-                <p className="mx-auto mb-12 mt-5 max-w-2xl text-center text-lg text-gray-300">
-                    Have questions or suggestions? You can prepare your message below.
-                </p>
+                    <h2>
+                        Send Us a <span>Message.</span>
+                    </h2>
+
+                    <p>
+                        Have questions or suggestions? You can prepare your
+                        message below.
+                    </p>
+
+                    <div className="contact-form-note">
+                        <span>✦</span>
+                        <div>
+                            <strong>We're listening.</strong>
+                            <p>
+                                Your feedback helps make every Eventra
+                                experience better.
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
                 <form
                     onSubmit={(event) => event.preventDefault()}
-                    className="rounded-2xl border border-white/10 bg-white/10 p-6 shadow-lg backdrop-blur-md sm:p-10"
+                    className="contact-form"
                 >
-                    <div className="grid gap-6 sm:grid-cols-2">
+                    <div className="contact-form__grid">
+                        <label>
+                            <span>Full Name</span>
+                            <input
+                                type="text"
+                                placeholder="Your name"
+                                aria-label="Full Name"
+                            />
+                        </label>
+
+                        <label>
+                            <span>Email Address</span>
+                            <input
+                                type="email"
+                                placeholder="you@example.com"
+                                aria-label="Email Address"
+                            />
+                        </label>
+
+                        <label>
+                            <span>Phone Number</span>
+                            <input
+                                type="tel"
+                                placeholder="Your phone number"
+                                aria-label="Phone Number"
+                            />
+                        </label>
+
+                        <label>
+                            <span>Reason for Contact</span>
+                            <select
+                                defaultValue=""
+                                aria-label="Select Reason"
+                            >
+                                <option value="" disabled>
+                                    Select a reason
+                                </option>
+                                <option value="general">General Inquiry</option>
+                                <option value="event">Event Related</option>
+                                <option value="technical">Technical Issue</option>
+                                <option value="feedback">Feedback / Suggestion</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <label className="contact-form__full">
+                        <span>Subject</span>
                         <input
                             type="text"
-                            placeholder="Full Name"
-                            aria-label="Full Name"
-                            className="rounded-xl border border-white/20 bg-black/40 p-4 outline-none focus:border-pink-500"
+                            placeholder="What is this regarding?"
+                            aria-label="Subject"
                         />
+                    </label>
 
+                    <label className="contact-form__full">
+                        <span>Event Name (Optional)</span>
                         <input
-                            type="email"
-                            placeholder="Email Address"
-                            aria-label="Email Address"
-                            className="rounded-xl border border-white/20 bg-black/40 p-4 outline-none focus:border-pink-500"
+                            type="text"
+                            placeholder="Enter event name"
+                            aria-label="Event Name"
                         />
+                    </label>
 
-                        <input
-                            type="tel"
-                            placeholder="Phone Number"
-                            aria-label="Phone Number"
-                            className="rounded-xl border border-white/20 bg-black/40 p-4 outline-none focus:border-pink-500"
+                    <label className="contact-form__full">
+                        <span>Your Message</span>
+                        <textarea
+                            rows={5}
+                            placeholder="Tell us how we can help..."
+                            aria-label="Your Message"
                         />
+                    </label>
 
-                        <select
-                            defaultValue=""
-                            aria-label="Select Reason"
-                            className="rounded-xl border border-white/20 bg-black/40 p-4 text-gray-300 outline-none focus:border-pink-500"
-                        >
-                            <option value="" disabled>
-                                Select Reason
-                            </option>
-                            <option value="general">General Inquiry</option>
-                            <option value="event">Event Related</option>
-                            <option value="technical">Technical Issue</option>
-                            <option value="feedback">Feedback / Suggestion</option>
-                        </select>
-                    </div>
-
-                    <input
-                        type="text"
-                        placeholder="Subject"
-                        aria-label="Subject"
-                        className="mt-6 w-full rounded-xl border border-white/20 bg-black/40 p-4 outline-none focus:border-pink-500"
-                    />
-
-                    <input
-                        type="text"
-                        placeholder="Event Name (Optional)"
-                        aria-label="Event Name"
-                        className="mt-6 w-full rounded-xl border border-white/20 bg-black/40 p-4 outline-none focus:border-pink-500"
-                    />
-
-                    <textarea
-                        rows={5}
-                        placeholder="Your Message"
-                        aria-label="Your Message"
-                        className="mt-6 w-full rounded-xl border border-white/20 bg-black/40 p-4 outline-none focus:border-pink-500"
-                    />
-
-                    <div className="mt-6">
-                        <label className="mb-2 block text-gray-300">
-                            Attach File (Optional)
-                        </label>
+                    <label className="contact-form__full">
+                        <span>Attach File (Optional)</span>
                         <input
                             type="file"
-                            className="w-full cursor-pointer rounded-xl border border-white/20 bg-black/40 p-3 text-gray-300"
+                            className="contact-form__file"
                         />
-                    </div>
+                    </label>
 
-                    <p className="mt-6 text-sm text-amber-300">
-                        This form is currently a frontend-only form. Message submission
-                        is not connected to a backend.
+                    <p className="contact-form__notice">
+                        This form is currently frontend-only. Message
+                        submission is not connected to a backend.
                     </p>
 
                     <button
                         type="button"
                         disabled
-                        className="mt-8 w-full cursor-not-allowed rounded-xl bg-pink-500/50 py-4 text-lg font-semibold text-white"
+                        className="contact-form__submit"
                     >
-                        Send Message — Not Available Yet
+                        Send Message <span>↗</span>
                     </button>
                 </form>
             </div>
@@ -224,21 +265,32 @@ function ContactFormSection() {
 
 function ContactMapSection() {
     return (
-        <section className="bg-black px-6 py-24 text-white">
-            <div className="mx-auto max-w-5xl text-center">
-                <h2 className="text-4xl font-extrabold sm:text-6xl">
-                    Find <span className="text-pink-400">Us</span>
-                </h2>
+        <section className="contact-section contact-location">
+            <div className="contact-container">
+                <div className="contact-section-heading">
+                    <span className="contact-eyebrow contact-eyebrow--light">
+                        Find Your Way
+                    </span>
+                    <h2>
+                        Find <span>Us.</span>
+                    </h2>
+                    <p>
+                        Venue and location details will be displayed here once
+                        the official event location is confirmed.
+                    </p>
+                </div>
 
-                <p className="mx-auto mt-5 max-w-2xl text-lg text-gray-300">
-                    Venue and location details will be displayed here once the
-                    official event location is confirmed.
-                </p>
-
-                <div className="mt-12 flex min-h-64 items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-8">
-                    <p className="max-w-md text-gray-400">
+                <div className="contact-location__placeholder">
+                    <div className="contact-location__decoration">
+                        <span>⌖</span>
+                    </div>
+                    <h3>Our Location</h3>
+                    <p>
                         Official venue map will be available here.
                     </p>
+                    <span className="contact-location__status">
+                        VENUE DETAILS COMING SOON
+                    </span>
                 </div>
             </div>
         </section>
@@ -249,44 +301,54 @@ function FAQSection() {
     const [openIndex, setOpenIndex] = useState(null);
 
     return (
-        <section className="relative overflow-hidden bg-black px-6 py-24 text-white">
-            <div className="mx-auto max-w-4xl">
-                <h2 className="text-center text-4xl font-extrabold sm:text-6xl">
-                    <span className="text-pink-400">FAQ</span> – Common Questions
-                </h2>
+        <section className="contact-section contact-faq">
+            <div className="contact-container contact-faq__container">
+                <div className="contact-section-heading">
+                    <span className="contact-eyebrow contact-eyebrow--light">
+                        Need Some Answers?
+                    </span>
+                    <h2>
+                        Frequently Asked <span>Questions.</span>
+                    </h2>
+                    <p>
+                        Find answers to some common questions about using Eventra.
+                    </p>
+                </div>
 
-                <p className="mx-auto mb-14 mt-5 max-w-2xl text-center text-lg text-gray-300">
-                    Find answers to some common questions about using Eventra.
-                </p>
-
-                <div className="space-y-5">
+                <div className="contact-faq__list">
                     {faqData.map((item, index) => {
                         const isOpen = openIndex === index;
 
                         return (
                             <article
                                 key={item.question}
-                                className="rounded-2xl border border-white/10 bg-white/10 p-6 transition hover:border-pink-400/40"
+                                className={`contact-faq-item ${isOpen ? "contact-faq-item--open" : ""
+                                    }`}
                             >
                                 <button
                                     type="button"
                                     aria-expanded={isOpen}
-                                    onClick={() => setOpenIndex(isOpen ? null : index)}
-                                    className="flex w-full items-center justify-between gap-4 text-left"
+                                    onClick={() =>
+                                        setOpenIndex(isOpen ? null : index)
+                                    }
                                 >
-                                    <span className="text-lg font-semibold sm:text-xl">
+                                    <span className="contact-faq-item__number">
+                                        {String(index + 1).padStart(2, "0")}
+                                    </span>
+
+                                    <span className="contact-faq-item__question">
                                         {item.question}
                                     </span>
 
-                                    <span className="text-2xl text-pink-400">
+                                    <span className="contact-faq-item__toggle">
                                         {isOpen ? "−" : "+"}
                                     </span>
                                 </button>
 
                                 {isOpen && (
-                                    <p className="mt-4 leading-relaxed text-gray-300">
-                                        {item.answer}
-                                    </p>
+                                    <div className="contact-faq-item__answer">
+                                        <p>{item.answer}</p>
+                                    </div>
                                 )}
                             </article>
                         );
@@ -299,15 +361,23 @@ function FAQSection() {
 
 function ContactSocialSection() {
     return (
-        <section className="bg-black px-6 py-16 text-center text-white">
-            <h2 className="text-4xl font-bold sm:text-5xl">
-                Follow <span className="text-pink-400">Us</span>
-            </h2>
+        <section className="contact-social">
+            <div className="contact-social__content">
+                <span className="contact-eyebrow">Stay in the Loop</span>
 
-            <p className="mx-auto mt-5 max-w-xl text-gray-300">
-                Follow the official Eventra social media channels for updates.
-                Social profile links will be added once confirmed.
-            </p>
+                <h2>
+                    Follow <span>Eventra.</span>
+                </h2>
+
+                <p>
+                    Follow the official Eventra social media channels for updates.
+                    Social profile links will be added once confirmed.
+                </p>
+
+                <div className="contact-social__placeholder">
+                    Official social profile links coming soon
+                </div>
+            </div>
         </section>
     );
 }
@@ -318,13 +388,13 @@ export default function ContactPage() {
     }, []);
 
     return (
-        <>
+        <main className="contact-page">
             <ContactHeroSection />
             <ContactInfoSection />
             <ContactFormSection />
             <ContactMapSection />
             <FAQSection />
             <ContactSocialSection />
-        </>
+        </main>
     );
 }

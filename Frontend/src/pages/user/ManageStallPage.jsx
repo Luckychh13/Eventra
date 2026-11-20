@@ -8,6 +8,7 @@ import {
     deleteStallMenuItem,
     resetStallTokens,
 } from '../../services/api/stallService.js'
+import './ManageStallPage.css'
 
 const formatPrice = (value) => {
     const amount = Number(value)
@@ -240,332 +241,407 @@ function ManageStallPage() {
 
     if (loading) {
         return (
-            <main className="px-4 py-20 text-center text-gray-400">
-                Loading stall details...
+            <main className="manage-stall-page manage-stall-page--state">
+                <div className="manage-stall-state-card">
+                    <span className="manage-stall-spinner" />
+                    <p>Loading stall details...</p>
+                </div>
             </main>
         )
     }
 
     if (error || !stall) {
         return (
-            <main className="px-4 py-20 text-center text-white">
-                <h1 className="text-2xl font-bold">
-                    Unable to load stall
-                </h1>
+            <main className="manage-stall-page manage-stall-page--state">
+                <div className="manage-stall-state-card manage-stall-state-card--error">
+                    <span className="manage-stall-state-icon">!</span>
+                    <h1>Unable to load stall</h1>
+                    <p>{error || 'Stall not found.'}</p>
 
-                <p className="mt-3 text-red-400">
-                    {error || 'Stall not found.'}
-                </p>
-
-                <Link
-                    to="/stall-dashboard"
-                    className="mt-5 inline-block text-purple-300"
-                >
-                    Back to Dashboard
-                </Link>
+                    <Link
+                        to="/stall-dashboard"
+                        className="manage-stall-primary-link"
+                    >
+                        Back to Dashboard
+                        <span>↗</span>
+                    </Link>
+                </div>
             </main>
         )
     }
 
     return (
-        <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-10 text-white sm:px-6 lg:px-8">
+        <main className="manage-stall-page">
+            <div className="manage-stall-glow manage-stall-glow--one" />
+            <div className="manage-stall-glow manage-stall-glow--two" />
 
-            <Link
-                to="/stall-dashboard"
-                className="text-sm text-gray-400 hover:text-white"
-            >
-                ← Back to Dashboard
-            </Link>
-
-            <div className="mt-6">
-                <h1 className="text-3xl font-bold">
-                    Manage Menu
-                </h1>
-
-                <p className="mt-2 text-gray-400">
-                    {stall.name}
-                </p>
-            </div>
-
-            {actionError && (
-                <p
-                    role="alert"
-                    className="mt-6 rounded-lg border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-400"
+            <div className="manage-stall-container">
+                <Link
+                    to="/stall-dashboard"
+                    className="manage-stall-back-link"
                 >
-                    {actionError}
-                </p>
-            )}
+                    <span>←</span>
+                    Back to Dashboard
+                </Link>
 
-            {successMessage && (
-                <p
-                    role="status"
-                    className="mt-6 rounded-lg border border-green-500/20 bg-green-500/5 p-4 text-sm text-green-400"
-                >
-                    {successMessage}
-                </p>
-            )}
-
-            {/* Add/Edit form */}
-            <section className="mt-8 rounded-xl border border-white/10 bg-white/5 p-5 sm:p-6">
-                <h2 className="text-xl font-semibold">
-                    {editingItemId ? 'Edit Menu Item' : 'Add Menu Item'}
-                </h2>
-
-                <form
-                    onSubmit={handleSubmit}
-                    className="mt-5 space-y-4"
-                >
+                <header className="manage-stall-header">
                     <div>
-                        <label htmlFor="item-name" className="mb-2 block text-sm text-gray-300">
-                            Item Name
-                        </label>
+                        <span className="manage-stall-eyebrow">
+                            STALL OWNER WORKSPACE
+                        </span>
 
-                        <input
-                            id="item-name"
-                            type="text"
-                            value={name}
-                            onChange={(event) => setName(event.target.value)}
-                            required
-                            className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 outline-none focus:border-purple-500"
-                            placeholder="Enter item name"
-                        />
+                        <h1>Manage Your Stall<span>.</span></h1>
+
+                        <p>
+                            Keep your menu updated and stay on top of visitor
+                            queue activity.
+                        </p>
                     </div>
 
-                    <div>
-                        <label htmlFor="item-price" className="mb-2 block text-sm text-gray-300">
-                            Price (₹)
-                        </label>
+                    <div className="manage-stall-header-mark">
+                        <span>STALL</span>
+                        <strong>MANAGEMENT</strong>
+                    </div>
+                </header>
 
-                        <input
-                            id="item-price"
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={price}
-                            onChange={(event) => setPrice(event.target.value)}
-                            required
-                            className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 outline-none focus:border-purple-500"
-                            placeholder="Enter price"
-                        />
+                <section className="manage-stall-identity">
+                    <div className="manage-stall-identity-icon">S</div>
+
+                    <div className="manage-stall-identity-info">
+                        <span>MANAGING STALL</span>
+                        <h2>{stall.name}</h2>
                     </div>
 
-                    <div>
-                        <label htmlFor="item-description" className="mb-2 block text-sm text-gray-300">
-                            Description
-                        </label>
-
-                        <textarea
-                            id="item-description"
-                            rows={3}
-                            value={description}
-                            onChange={(event) => setDescription(event.target.value)}
-                            className="w-full rounded-lg border border-white/10 bg-black/30 px-4 py-3 outline-none focus:border-purple-500"
-                            placeholder="Describe this item"
-                        />
+                    <div className="manage-stall-identity-count">
+                        <strong>{menuItems.length}</strong>
+                        <span>MENU ITEMS</span>
                     </div>
+                </section>
 
-                    <div>
-                        <label htmlFor="item-image" className="mb-2 block text-sm text-gray-300">
-                            Item Image (Optional)
-                        </label>
+                {actionError && (
+                    <div
+                        role="alert"
+                        className="manage-stall-alert manage-stall-alert--error"
+                    >
+                        <span>!</span>
+                        {actionError}
+                    </div>
+                )}
 
-                        <input
-                            id="item-image"
-                            type="file"
-                            accept="image/*"
-                            onChange={(event) =>
-                                setImage(event.target.files?.[0] || null)
-                            }
-                            className="block w-full text-sm text-gray-400 file:mr-4 file:rounded-lg file:border-0 file:bg-purple-600 file:px-4 file:py-2 file:text-white"
-                        />
+                {successMessage && (
+                    <div
+                        role="status"
+                        className="manage-stall-alert manage-stall-alert--success"
+                    >
+                        <span>✓</span>
+                        {successMessage}
+                    </div>
+                )}
 
-                        {image && (
-                            <p className="mt-2 text-xs text-gray-400">
-                                Selected: {image.name}
+                <section className="manage-stall-panel manage-stall-form-panel">
+                    <div className="manage-stall-section-heading">
+                        <div>
+                            <span className="manage-stall-section-label">
+                                {editingItemId ? 'UPDATE YOUR OFFERING' : 'GROW YOUR MENU'}
+                            </span>
+
+                            <h2>
+                                {editingItemId ? 'Edit Menu Item' : 'Add Menu Item'}
+                            </h2>
+
+                            <p>
+                                Add the details visitors will see when
+                                exploring your stall.
                             </p>
-                        )}
+                        </div>
+
+                        <div className="manage-stall-heading-icon">＋</div>
                     </div>
 
-                    <div className="flex flex-wrap gap-3">
-                        <button
-                            type="submit"
-                            disabled={actionLoading}
-                            className="rounded-lg bg-purple-600 px-6 py-3 text-sm font-medium hover:bg-purple-700 disabled:opacity-50"
-                        >
-                            {actionLoading
-                                ? 'Saving...'
-                                : editingItemId
-                                    ? 'Update Item'
-                                    : 'Add Item'}
-                        </button>
+                    <form
+                        onSubmit={handleSubmit}
+                        className="manage-stall-form"
+                    >
+                        <div className="manage-stall-form-grid">
+                            <div className="manage-stall-field">
+                                <label htmlFor="item-name">
+                                    Item Name
+                                </label>
 
-                        {editingItemId && (
-                            <button
-                                type="button"
-                                onClick={resetForm}
-                                disabled={actionLoading}
-                                className="rounded-lg border border-white/20 px-6 py-3 text-sm disabled:opacity-50"
-                            >
-                                Cancel Edit
-                            </button>
-                        )}
-                    </div>
-                </form>
-            </section>
+                                <input
+                                    id="item-name"
+                                    type="text"
+                                    value={name}
+                                    onChange={(event) => setName(event.target.value)}
+                                    required
+                                    placeholder="e.g. Classic Veg Burger"
+                                />
+                            </div>
 
-            {/* Existing menu items */}
-            <section className="mt-12">
-                <h2 className="text-2xl font-bold">
-                    Current Menu ({menuItems.length})
-                </h2>
+                            <div className="manage-stall-field">
+                                <label htmlFor="item-price">
+                                    Price (₹)
+                                </label>
 
-                {menuItems.length === 0 ? (
-                    <div className="mt-5 rounded-xl border border-white/10 bg-white/5 p-8 text-center text-gray-400">
-                        No menu items have been added yet.
-                    </div>
-                ) : (
-                    <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                        {menuItems.map((item) => (
-                            <article
-                                key={item._id}
-                                className="overflow-hidden rounded-xl border border-white/10 bg-white/5"
-                            >
-                                {item.imageUrl ? (
-                                    <img
-                                        src={item.imageUrl}
-                                        alt={item.name}
-                                        className="h-44 w-full object-cover"
+                                <div className="manage-stall-price-input">
+                                    <span>₹</span>
+                                    <input
+                                        id="item-price"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={price}
+                                        onChange={(event) => setPrice(event.target.value)}
+                                        required
+                                        placeholder="Enter price"
                                     />
-                                ) : (
-                                    <div className="flex h-44 items-center justify-center bg-white/5 text-sm text-gray-500">
-                                        No image available
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="manage-stall-field">
+                            <label htmlFor="item-description">
+                                Description
+                            </label>
+
+                            <textarea
+                                id="item-description"
+                                rows={4}
+                                value={description}
+                                onChange={(event) => setDescription(event.target.value)}
+                                placeholder="Describe the item, its ingredients, or what makes it special..."
+                            />
+                        </div>
+
+                        <div className="manage-stall-field">
+                            <label htmlFor="item-image">
+                                Item Image <span>OPTIONAL</span>
+                            </label>
+
+                            <div className="manage-stall-file-area">
+                                <input
+                                    id="item-image"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(event) =>
+                                        setImage(event.target.files?.[0] || null)
+                                    }
+                                />
+
+                                <p>
+                                    Choose an image to make your menu item stand out.
+                                </p>
+
+                                {image && (
+                                    <div className="manage-stall-selected-file">
+                                        <span>✓</span>
+                                        {image.name}
                                     </div>
                                 )}
+                            </div>
+                        </div>
 
-                                <div className="p-5">
-                                    <h3 className="text-lg font-semibold">
-                                        {item.name}
-                                    </h3>
-
-                                    <p className="mt-2 font-medium text-purple-300">
-                                        {formatPrice(item.price)}
-                                    </p>
-
-                                    <p className="mt-2 text-sm text-gray-400">
-                                        {item.description || 'No description'}
-                                    </p>
-
-                                    <div className="mt-5 flex gap-3">
-                                        <button
-                                            type="button"
-                                            onClick={() => handleEdit(item)}
-                                            disabled={actionLoading}
-                                            className="rounded-lg border border-purple-500/40 px-4 py-2 text-sm text-purple-300 hover:bg-purple-500/10 disabled:opacity-50"
-                                        >
-                                            Edit
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => handleDelete(item._id)}
-                                            disabled={actionLoading}
-                                            className="rounded-lg border border-red-500/40 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 disabled:opacity-50"
-                                        >
-                                            Delete
-                                        </button>
-                                    </div>
-                                </div>
-                            </article>
-                        ))}
-                    </div>
-                )}
-            </section>
-
-            {/* Queue Token History */}
-            <section className="mt-12">
-                <div className="mb-5 flex items-center justify-between gap-3">
-                    <div>
-                        <h2 className="text-2xl font-bold">
-                            Queue Token History
-                        </h2>
-
-                        <p className="mt-2 text-sm text-gray-400">
-                            Visitors who generated queue tokens at this stall.
-                        </p>
-                    </div>
-
-                    <span className="rounded-full bg-purple-500/10 px-3 py-1 text-sm text-purple-300">
-                        {tokenHistory.length} Tokens
-                    </span>
-                </div>
-
-                {tokenHistory.length === 0 ? (
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-8 text-center">
-                        <p className="text-gray-400">
-                            No queue tokens have been generated yet.
-                        </p>
-                    </div>
-                ) : (
-                    <div className="space-y-3">
-                        {tokenHistory.map((token, index) => (
-                            <article
-                                key={token._id || `${token.tokenNumber}-${index}`}
-                                className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/5 p-4"
+                        <div className="manage-stall-form-actions">
+                            <button
+                                type="submit"
+                                disabled={actionLoading}
+                                className="manage-stall-submit-button"
                             >
-                                <div>
-                                    <p className="text-xs text-gray-500">
-                                        Token Number
-                                    </p>
+                                {actionLoading
+                                    ? 'Saving...'
+                                    : editingItemId
+                                        ? 'Update Menu Item'
+                                        : 'Add Menu Item'}
+                                {!actionLoading && <span>↗</span>}
+                            </button>
 
-                                    <p className="mt-1 text-xl font-bold text-purple-300">
-                                        #{token.tokenNumber}
-                                    </p>
-                                </div>
+                            {editingItemId && (
+                                <button
+                                    type="button"
+                                    onClick={resetForm}
+                                    disabled={actionLoading}
+                                    className="manage-stall-cancel-button"
+                                >
+                                    Cancel Edit
+                                </button>
+                            )}
+                        </div>
+                    </form>
+                </section>
 
-                                <div className="flex-1">
-                                    <p className="font-medium">
-                                        {token.visitorName || 'Visitor'}
-                                    </p>
+                <section className="manage-stall-menu-section">
+                    <div className="manage-stall-section-heading manage-stall-menu-heading">
+                        <div>
+                            <span className="manage-stall-section-label">
+                                WHAT YOU OFFER
+                            </span>
 
-                                    <p className="mt-1 text-xs text-gray-400">
-                                        {token.timestamp
-                                            ? new Date(token.timestamp).toLocaleString('en-IN', {
-                                                dateStyle: 'medium',
-                                                timeStyle: 'short',
-                                            })
-                                            : 'Time unavailable'}
-                                    </p>
-                                </div>
+                            <h2>Current Menu</h2>
 
-                                <span className="rounded-full border border-yellow-500/20 bg-yellow-500/10 px-3 py-1 text-xs text-yellow-400">
-                                    Generated
-                                </span>
-                            </article>
-                        ))}
+                            <p>
+                                Manage the items visitors can order from your stall.
+                            </p>
+                        </div>
+
+                        <span className="manage-stall-count-pill">
+                            {menuItems.length} {menuItems.length === 1 ? 'ITEM' : 'ITEMS'}
+                        </span>
                     </div>
-                )}
-            </section>
 
-            {/* Token management */}
-            <section className="mt-12 rounded-xl border border-red-500/20 bg-red-500/5 p-5 sm:p-6">
-                <h2 className="text-xl font-semibold">
-                    Token Management
-                </h2>
+                    {menuItems.length === 0 ? (
+                        <div className="manage-stall-empty">
+                            <div className="manage-stall-empty-icon">◇</div>
+                            <h3>Your menu is waiting to be filled.</h3>
+                            <p>
+                                Add your first menu item using the form above.
+                                It will appear here once saved.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="manage-stall-menu-grid">
+                            {menuItems.map((item) => (
+                                <article
+                                    key={item._id}
+                                    className="manage-stall-menu-card"
+                                >
+                                    {item.imageUrl ? (
+                                        <img
+                                            src={item.imageUrl}
+                                            alt={item.name}
+                                            className="manage-stall-menu-image"
+                                        />
+                                    ) : (
+                                        <div className="manage-stall-menu-image-placeholder">
+                                            <span>◇</span>
+                                            <p>No image available</p>
+                                        </div>
+                                    )}
 
-                <p className="mt-2 text-sm leading-relaxed text-gray-400">
-                    Resetting tokens sets the current token counter to zero
-                    and permanently deletes the existing token history.
-                </p>
+                                    <div className="manage-stall-menu-card-body">
+                                        <div className="manage-stall-menu-card-top">
+                                            <h3>{item.name}</h3>
+                                            <strong>{formatPrice(item.price)}</strong>
+                                        </div>
 
-                <button
-                    type="button"
-                    onClick={handleResetTokens}
-                    disabled={actionLoading}
-                    className="mt-5 rounded-lg border border-red-500/40 px-5 py-2.5 text-sm text-red-400 hover:bg-red-500/10 disabled:opacity-50"
-                >
-                    Reset Stall Tokens
-                </button>
-            </section>
+                                        <p className="manage-stall-menu-description">
+                                            {item.description || 'No description'}
+                                        </p>
+
+                                        <div className="manage-stall-menu-actions">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleEdit(item)}
+                                                disabled={actionLoading}
+                                                className="manage-stall-edit-button"
+                                            >
+                                                Edit Item
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDelete(item._id)}
+                                                disabled={actionLoading}
+                                                className="manage-stall-delete-button"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+                    )}
+                </section>
+
+                <section className="manage-stall-token-section">
+                    <div className="manage-stall-section-heading manage-stall-token-heading">
+                        <div>
+                            <span className="manage-stall-section-label">
+                                VISITOR ACTIVITY
+                            </span>
+
+                            <h2>Queue Token History</h2>
+
+                            <p>
+                                Visitors who generated queue tokens at this stall.
+                            </p>
+                        </div>
+
+                        <span className="manage-stall-count-pill">
+                            {tokenHistory.length} {tokenHistory.length === 1 ? 'TOKEN' : 'TOKENS'}
+                        </span>
+                    </div>
+
+                    {tokenHistory.length === 0 ? (
+                        <div className="manage-stall-empty manage-stall-token-empty">
+                            <div className="manage-stall-empty-icon">#</div>
+                            <h3>No queue activity yet.</h3>
+                            <p>
+                                Generated visitor tokens will appear here.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="manage-stall-token-list">
+                            {tokenHistory.map((token, index) => (
+                                <article
+                                    key={token._id || `${token.tokenNumber}-${index}`}
+                                    className="manage-stall-token-card"
+                                >
+                                    <div className="manage-stall-token-number">
+                                        <span>TOKEN NUMBER</span>
+                                        <strong>#{token.tokenNumber}</strong>
+                                    </div>
+
+                                    <div className="manage-stall-token-visitor">
+                                        <strong>{token.visitorName || 'Visitor'}</strong>
+
+                                        <span>
+                                            {token.timestamp
+                                                ? new Date(token.timestamp).toLocaleString('en-IN', {
+                                                    dateStyle: 'medium',
+                                                    timeStyle: 'short',
+                                                })
+                                                : 'Time unavailable'}
+                                        </span>
+                                    </div>
+
+                                    <span className="manage-stall-token-status">
+                                        <span />
+                                        Generated
+                                    </span>
+                                </article>
+                            ))}
+                        </div>
+                    )}
+                </section>
+
+                <section className="manage-stall-reset-panel">
+                    <div className="manage-stall-reset-icon">!</div>
+
+                    <div className="manage-stall-reset-content">
+                        <span className="manage-stall-section-label">
+                            ADVANCED ACTION
+                        </span>
+
+                        <h2>Token Management</h2>
+
+                        <p>
+                            Resetting tokens sets the current token counter to
+                            zero and permanently deletes the existing token
+                            history. This action cannot be undone.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={handleResetTokens}
+                        disabled={actionLoading}
+                        className="manage-stall-reset-button"
+                    >
+                        Reset Stall Tokens
+                    </button>
+                </section>
+            </div>
         </main>
     )
 }

@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useState } from 'react'
 import useAuth from './useAuth.js'
 import { getUserStallOrders } from '../services/api/stallPaymentService.js'
@@ -13,6 +14,8 @@ function useUserStallOrders() {
     })
 
     const [refreshKey, setRefreshKey] = useState(0)
+    const [refreshing, setRefreshing] = useState(false)
+    const [lastRefreshedAt, setLastRefreshedAt] = useState(null)
 
     useEffect(() => {
         if (authLoading || !uid) return
@@ -40,14 +43,35 @@ function useUserStallOrders() {
                 }
             } catch (error) {
                 if (isActive) {
-                    setOrdersData({
-                        uid,
-                        orders: [],
-                        error:
-                            error.response?.data?.error ||
-                            error.message ||
-                            'Failed to fetch your stall orders.',
-                    })
+                    if (error.response?.status === 304) {
+                        setOrdersData((previousData) => {
+                            if (previousData.uid !== uid) {
+                                return previousData
+                            }
+
+                            return {
+                                ...previousData,
+                                error: '',
+                            }
+                        })
+                    } else {
+                        setOrdersData({
+                            uid,
+                            orders: [],
+                            error:
+                                error.response?.data?.error ||
+                                error.message ||
+                                'Failed to fetch your stall orders.',
+                        })
+                    }
+                }
+            } finally {
+                if (isActive) {
+                    if (refreshKey > 0) {
+                        setLastRefreshedAt(new Date())
+                    }
+
+                    setRefreshing(false)
                 }
             }
         }
@@ -75,13 +99,18 @@ function useUserStallOrders() {
         : ''
 
     const refreshOrders = useCallback(() => {
+        if (authLoading || !uid) return
+
+        setRefreshing(true)
         setRefreshKey((previousKey) => previousKey + 1)
-    }, [])
+    }, [authLoading, uid])
 
     return {
         orders,
         loading,
         error,
+        refreshing,
+        lastRefreshedAt,
         refreshOrders,
     }
 }

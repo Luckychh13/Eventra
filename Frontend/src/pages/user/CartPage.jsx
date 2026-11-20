@@ -1,11 +1,13 @@
-import useCart from '../../hooks/useCart.js'
+
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import useCart from '../../hooks/useCart.js'
 import useAuth from '../../hooks/useAuth.js'
 import {
     createEventOrder,
     verifyEventPayment,
 } from '../../services/api/eventPaymentService.js'
-import { useNavigate } from 'react-router-dom';
+import './CartPage.css'
 
 const formatPrice = (amount) => {
     return new Intl.NumberFormat('en-IN', {
@@ -43,7 +45,7 @@ function CartPage() {
     } = useCart()
 
     const { user } = useAuth()
-    const navigate = useNavigate();
+    const navigate = useNavigate()
 
     const [checkoutLoading, setCheckoutLoading] = useState(false)
     const [checkoutError, setCheckoutError] = useState('')
@@ -83,12 +85,12 @@ function CartPage() {
 
                 handler: async (paymentResponse) => {
                     try {
-                        const result = await verifyEventPayment(paymentResponse);
+                        const result = await verifyEventPayment(paymentResponse)
 
                         if (!result?.success || !result?.order?.ticketOrderId) {
                             throw new Error(
                                 result?.message || 'Payment verification could not be confirmed.'
-                            );
+                            )
                         }
 
                         navigate('/success', {
@@ -97,10 +99,9 @@ function CartPage() {
                                 paymentType: 'event',
                                 order: result.order,
                             },
-                        });
+                        })
 
-
-                        refreshCart().catch(() => { });
+                        refreshCart().catch(() => { })
                     } catch (verificationError) {
                         setCheckoutError(
                             verificationError.response?.data?.error ||
@@ -156,22 +157,23 @@ function CartPage() {
 
     if (loading) {
         return (
-            <main className="min-h-screen bg-eventra-black px-6 py-12 text-white">
-                <p>Loading your cart...</p>
+            <main className="cart-page cart-page--state">
+                <div className="cart-state-card">
+                    <span className="cart-loading-spinner" />
+                    <p>Loading your cart...</p>
+                </div>
             </main>
         )
     }
 
     if (error) {
         return (
-            <main className="min-h-screen bg-eventra-black px-6 py-12 text-white">
-                <h1 className="text-2xl font-bold">
-                    Unable to load cart
-                </h1>
-
-                <p role="alert" className="mt-3 text-red-400">
-                    {error}
-                </p>
+            <main className="cart-page cart-page--state">
+                <div className="cart-state-card cart-state-card--error">
+                    <span className="cart-state-icon">!</span>
+                    <h1>Unable to load cart</h1>
+                    <p role="alert">{error}</p>
+                </div>
             </main>
         )
     }
@@ -195,61 +197,91 @@ function CartPage() {
     }, {})
 
     return (
-        <main className="min-h-screen bg-eventra-black px-6 py-12 text-white">
-            <div className="mx-auto max-w-5xl">
+        <main className="cart-page">
+            <div className="cart-page__glow cart-page__glow--one" />
+            <div className="cart-page__glow cart-page__glow--two" />
 
-                <h1 className="text-3xl font-bold">
-                    My Cart
-                </h1>
+            <div className="cart-container">
+                <header className="cart-header">
+                    <span className="cart-eyebrow">
+                        YOUR EVENTRA SELECTION
+                    </span>
 
-                <p className="mt-2 text-gray-400">
-                    Review your selected event tickets.
-                </p>
+                    <div className="cart-heading-row">
+                        <div>
+                            <h1>My Cart<span>.</span></h1>
+                            <p>
+                                Your next experience is just a few steps away.
+                            </p>
+                        </div>
+
+                        <div className="cart-item-count">
+                            <span className="cart-count-icon">▤</span>
+                            <div>
+                                <strong>{items.length}</strong>
+                                <span>{items.length === 1 ? 'TICKET ITEM' : 'TICKET ITEMS'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </header>
 
                 {actionError && (
-                    <p
-                        role="alert"
-                        className="mt-6 text-red-400"
-                    >
+                    <div className="cart-alert cart-alert--error" role="alert">
+                        <span>!</span>
                         {actionError}
-                    </p>
+                    </div>
                 )}
 
                 {items.length === 0 ? (
-                    <section className="mt-10 rounded-lg border border-white/10 p-8 text-center">
-                        <h2 className="text-xl font-semibold">
-                            Your cart is empty
-                        </h2>
-
-                        <p className="mt-3 text-gray-400">
-                            Explore events and add tickets to your cart.
+                    <section className="cart-empty">
+                        <div className="cart-empty-icon">▤</div>
+                        <span className="cart-section-label">NOTHING HERE YET</span>
+                        <h2>Your cart is waiting for an adventure.</h2>
+                        <p>
+                            Explore upcoming events and add your favourite
+                            tickets. Your next experience starts here.
                         </p>
+                        <a href="/eventSchedules" className="cart-primary-link">
+                            Explore Events <span>↗</span>
+                        </a>
                     </section>
                 ) : (
-                    <>
-                        <div className="mt-8 space-y-8">
+                    <div className="cart-layout">
+                        <div className="cart-events">
+                            <div className="cart-list-heading">
+                                <h2>Selected Tickets</h2>
+                                <span>{items.length} {items.length === 1 ? 'ITEM' : 'ITEMS'}</span>
+                            </div>
 
                             {Object.entries(groupedItems).map(
                                 ([eventId, group]) => (
                                     <section
                                         key={eventId}
-                                        className="rounded-lg border border-white/10 p-6"
+                                        className="cart-event-card"
                                     >
-                                        <h2 className="text-xl font-semibold">
-                                            {group.event?.title || 'Event unavailable'}
-                                        </h2>
+                                        <div className="cart-event-heading">
+                                            <div className="cart-event-mark">E</div>
 
-                                        {group.event && (
-                                            <div className="mt-2 space-y-1 text-sm text-gray-400">
-                                                <p>
-                                                    {group.event.day} · {group.event.date}
-                                                </p>
+                                            <div className="cart-event-info">
+                                                <span className="cart-section-label">
+                                                    EVENT
+                                                </span>
+                                                <h3>
+                                                    {group.event?.title || 'Event unavailable'}
+                                                </h3>
 
-                                                <p>{group.event.location}</p>
+                                                {group.event && (
+                                                    <div className="cart-event-meta">
+                                                        <span>
+                                                            {group.event.day} · {group.event.date}
+                                                        </span>
+                                                        <span>{group.event.location}</span>
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
+                                        </div>
 
-                                        <div className="mt-6 space-y-5">
+                                        <div className="cart-ticket-list">
                                             {group.items.map((item) => {
                                                 const pricing = item.pricingId
                                                 const pricingId = pricing?._id
@@ -259,63 +291,63 @@ function CartPage() {
                                                 return (
                                                     <article
                                                         key={pricingId || `${eventId}-unavailable`}
-                                                        className="border-t border-white/10 pt-5"
+                                                        className="cart-ticket"
                                                     >
-                                                        <div className="flex flex-col justify-between gap-4 sm:flex-row">
-
-                                                            <div>
-                                                                <h3 className="font-semibold">
-                                                                    {pricing?.ticketType || 'Ticket unavailable'}
-                                                                </h3>
-
-                                                                <p className="mt-1 text-sm text-gray-400">
-                                                                    {formatPrice(unitPrice)} per ticket
-                                                                </p>
-
-                                                                <p className="mt-2 font-medium">
-                                                                    Subtotal: {formatPrice(subtotal)}
-                                                                </p>
+                                                        <div className="cart-ticket-main">
+                                                            <div className="cart-ticket-symbol">
+                                                                ◈
                                                             </div>
 
-                                                            <div className="flex flex-wrap items-center gap-3">
+                                                            <div className="cart-ticket-info">
+                                                                <h4>
+                                                                    {pricing?.ticketType || 'Ticket unavailable'}
+                                                                </h4>
+                                                                <p>
+                                                                    {formatPrice(unitPrice)} per ticket
+                                                                </p>
+                                                                <strong>
+                                                                    Subtotal: {formatPrice(subtotal)}
+                                                                </strong>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="cart-ticket-actions">
+                                                            <div className="cart-quantity-control">
                                                                 <button
                                                                     type="button"
+                                                                    aria-label="Decrease quantity"
                                                                     disabled={actionLoading || !pricingId}
                                                                     onClick={() =>
                                                                         updateQuantity(pricingId, 'decrease')
                                                                     }
-                                                                    className="rounded border border-white/20 px-3 py-1 disabled:opacity-40"
                                                                 >
-                                                                    -
+                                                                    −
                                                                 </button>
 
-                                                                <span className="min-w-6 text-center">
-                                                                    {item.quantity}
-                                                                </span>
+                                                                <span>{item.quantity}</span>
 
                                                                 <button
                                                                     type="button"
+                                                                    aria-label="Increase quantity"
                                                                     disabled={actionLoading || !pricingId}
                                                                     onClick={() =>
                                                                         updateQuantity(pricingId, 'increase')
                                                                     }
-                                                                    className="rounded border border-white/20 px-3 py-1 disabled:opacity-40"
                                                                 >
                                                                     +
                                                                 </button>
-
-                                                                <button
-                                                                    type="button"
-                                                                    disabled={actionLoading || !pricingId}
-                                                                    onClick={() =>
-                                                                        removeItem(pricingId)
-                                                                    }
-                                                                    className="ml-2 text-red-400 disabled:opacity-40"
-                                                                >
-                                                                    Remove
-                                                                </button>
                                                             </div>
 
+                                                            <button
+                                                                type="button"
+                                                                className="cart-remove-button"
+                                                                disabled={actionLoading || !pricingId}
+                                                                onClick={() =>
+                                                                    removeItem(pricingId)
+                                                                }
+                                                            >
+                                                                Remove
+                                                            </button>
                                                         </div>
                                                     </article>
                                                 )
@@ -324,49 +356,67 @@ function CartPage() {
                                     </section>
                                 )
                             )}
-
                         </div>
 
-                        <section className="mt-8 rounded-lg border border-white/10 p-6">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-xl font-semibold">
-                                    Cart Total
-                                </h2>
+                        <aside className="cart-summary">
+                            <div className="cart-summary-top">
+                                <span className="cart-section-label">
+                                    YOUR ORDER
+                                </span>
+                                <h2>Order Summary</h2>
+                            </div>
 
-                                <p className="text-2xl font-bold">
-                                    {formatPrice(cart?.totalPrice)}
-                                </p>
+                            <div className="cart-summary-line">
+                                <span>Ticket items</span>
+                                <strong>{items.length}</strong>
+                            </div>
+
+                            <div className="cart-summary-line">
+                                <span>Order subtotal</span>
+                                <strong>{formatPrice(cart?.totalPrice)}</strong>
+                            </div>
+
+                            <div className="cart-summary-divider" />
+
+                            <div className="cart-summary-total">
+                                <span>Total Amount</span>
+                                <strong>{formatPrice(cart?.totalPrice)}</strong>
                             </div>
 
                             {checkoutError && (
-                                <p role="alert" className="mt-4 text-red-400">
+                                <div className="cart-alert cart-alert--error" role="alert">
                                     {checkoutError}
-                                </p>
+                                </div>
                             )}
 
                             {checkoutMessage && (
-                                <p role="status" className="mt-4 text-green-400">
+                                <div className="cart-alert cart-alert--success" role="status">
                                     {checkoutMessage}
-                                </p>
+                                </div>
                             )}
 
                             <button
                                 type="button"
                                 onClick={handleCheckout}
                                 disabled={checkoutLoading || actionLoading || items.length === 0}
-                                className="mt-6 rounded bg-eventra-purple px-6 py-3 text-white disabled:opacity-50"
+                                className="cart-checkout-button"
                             >
                                 {checkoutLoading ? 'Processing...' : 'Proceed to Checkout'}
+                                {!checkoutLoading && <span>↗</span>}
                             </button>
 
-                            <p className="mt-3 text-sm text-gray-400">
+                            <div className="cart-secure-note">
+                                <span>◇</span>
+                                <p>Secure checkout powered by Razorpay</p>
+                            </div>
+
+                            <p className="cart-summary-note">
                                 Final ticket availability and pricing are
                                 verified during checkout.
                             </p>
-                        </section>
-                    </>
+                        </aside>
+                    </div>
                 )}
-
             </div>
         </main>
     )

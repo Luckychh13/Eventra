@@ -1,0 +1,203 @@
+.not-found-page {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    min-height: 75vh;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 100px 24px;
+    background:
+        radial-gradient(ellipse at 50% 45%, rgba(26, 143, 156, 0.17), transparent 48%),
+        linear-gradient(145deg, #071824 0%, #0d2a38 55%, #082d47 100%);
+    color: #ffffff;
+}
+
+.not-found-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 680px;
+    text-align: center;
+}
+
+.not-found-glow {
+    position: absolute;
+    z-index: -1;
+    width: 380px;
+    height: 380px;
+    border: 1px solid rgba(159, 227, 234, 0.12);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.not-found-glow::before,
+.not-found-glow::after {
+    position: absolute;
+    content: '';
+    border: 1px solid rgba(159, 227, 234, 0.09);
+    border-radius: 50%;
+}
+
+.not-found-glow::before {
+    inset: 35px;
+}
+
+.not-found-glow::after {
+    inset: 75px;
+}
+
+.not-found-glow--one {
+    top: -210px;
+    right: -100px;
+}
+
+.not-found-glow--two {
+    bottom: -260px;
+    left: -120px;
+    width: 480px;
+    height: 480px;
+}
+
+.not-found-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    font-family: var(--font-display);
+    font-size: clamp(100px, 20vw, 190px);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -12px;
+    color: #ffffff;
+    text-shadow: 0 12px 50px rgba(26, 143, 156, 0.2);
+}
+
+.not-found-zero {
+    color: #9fe3ea;
+    text-shadow: 0 0 55px rgba(159, 227, 234, 0.3);
+}
+
+.not-found-label {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 9px 16px;
+    border: 1px solid rgba(159, 227, 234, 0.3);
+    border-radius: 999px;
+    background: rgba(26, 143, 156, 0.12);
+    color: #9fe3ea;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.not-found-content h1 {
+    margin-top: 25px;
+    color: #ffffff;
+    font-family: var(--font-display);
+    font-size: clamp(30px, 5vw, 43px);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -1.2px;
+}
+
+.not-found-content>p {
+    max-width: 480px;
+    margin: 16px auto 0;
+    color: #b5c8d0;
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.not-found-home-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 32px;
+    padding: 15px 25px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background: #1a8f9c;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 12px 30px rgba(26, 143, 156, 0.22);
+    transition:
+        background 0.25s ease,
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.not-found-home-link:hover {
+    transform: translateY(-3px);
+    background: #127582;
+    box-shadow: 0 16px 35px rgba(26, 143, 156, 0.3);
+}
+
+.not-found-home-link span {
+    color: #9fe3ea;
+    font-size: 19px;
+    transition: transform 0.25s ease;
+}
+
+.not-found-home-link:hover span {
+    transform: translate(3px, -3px);
+}
+
+.not-found-decoration {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    margin-top: 55px;
+}
+
+.not-found-decoration span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #9fe3ea;
+    opacity: 0.7;
+}
+
+.not-found-decoration span:nth-child(2) {
+    width: 28px;
+    border-radius: 999px;
+    background: #ff6a45;
+    opacity: 1;
+}
+
+@media (max-width: 600px) {
+    .not-found-page {
+        min-height: 70vh;
+        padding: 80px 20px;
+    }
+
+    .not-found-number {
+        gap: 5px;
+        letter-spacing: -7px;
+    }
+
+    .not-found-content h1 {
+        font-size: 30px;
+    }
+
+    .not-found-content>p {
+        font-size: 14px;
+    }
+
+    .not-found-decoration {
+        margin-top: 42px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .not-found-home-link,
+    .not-found-home-link span {
+        transition: none;
+    }
+}

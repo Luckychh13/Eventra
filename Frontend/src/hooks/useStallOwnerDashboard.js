@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useState } from 'react'
 import useAuth from './useAuth.js'
 import { getOwnerDashboard } from '../services/api/stallService.js'
@@ -13,6 +14,8 @@ function useStallOwnerDashboard() {
     })
 
     const [refreshKey, setRefreshKey] = useState(0)
+    const [refreshing, setRefreshing] = useState(false)
+    const [lastRefreshedAt, setLastRefreshedAt] = useState(null)
 
     useEffect(() => {
         if (authLoading || !uid) return
@@ -58,6 +61,14 @@ function useStallOwnerDashboard() {
                             'Failed to fetch stall owner dashboard.',
                     })
                 }
+            } finally {
+                if (isActive) {
+                    setRefreshing(false)
+
+                    if (refreshKey > 0) {
+                        setLastRefreshedAt(new Date())
+                    }
+                }
             }
         }
 
@@ -84,14 +95,19 @@ function useStallOwnerDashboard() {
         : ''
 
     const refreshDashboard = useCallback(() => {
+        if (authLoading || !uid) return
+
+        setRefreshing(true)
         setRefreshKey((previousKey) => previousKey + 1)
-    }, [])
+    }, [authLoading, uid])
 
     return {
         dashboard,
         loading,
+        refreshing,
         error,
         refreshDashboard,
+        lastRefreshedAt
     }
 }
 

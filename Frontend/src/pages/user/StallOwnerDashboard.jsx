@@ -3,13 +3,18 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import useStallOwnerDashboard from '../../hooks/useStallOwnerDashboard.js'
 import { markStallOrderCompleted } from '../../services/api/stallService.js'
+import './StallOwnerDashboard.css'
 
 const formatPrice = (value) => {
     const amount = Number(value)
 
     if (!Number.isFinite(amount)) return '₹0'
 
-    return `₹${amount.toLocaleString('en-IN')}`
+    return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 2,
+    }).format(amount)
 }
 
 const formatDate = (value) => {
@@ -31,13 +36,17 @@ function StallOwnerDashboard() {
     const {
         dashboard,
         loading,
+        refreshing,
         error,
         refreshDashboard,
+        lastRefreshedAt
+
     } = useStallOwnerDashboard()
 
     const [processingOrderId, setProcessingOrderId] = useState(null)
     const [actionError, setActionError] = useState('')
     const [actionMessage, setActionMessage] = useState('')
+
 
     const handleMarkCompleted = async (orderId) => {
         setProcessingOrderId(orderId)
@@ -71,30 +80,35 @@ function StallOwnerDashboard() {
 
     if (loading) {
         return (
-            <main className="px-4 py-20 text-center text-gray-400">
-                Loading stall owner dashboard...
+            <main className="stall-owner-page stall-owner-page--state">
+                <div className="stall-owner-state-card">
+                    <span className="stall-owner-spinner" />
+                    <p>Loading stall owner dashboard...</p>
+                </div>
             </main>
         )
     }
 
     if (error) {
         return (
-            <main className="mx-auto max-w-7xl px-4 py-16 text-center text-white">
-                <h1 className="text-2xl font-bold">
-                    Unable to load dashboard
-                </h1>
+            <main className="stall-owner-page stall-owner-page--state">
+                <div className="stall-owner-state-card stall-owner-state-card--error">
+                    <span className="stall-owner-state-icon">!</span>
+                    <h1>Unable to load dashboard</h1>
+                    <p>{error}</p>
 
-                <p className="mt-3 text-sm text-red-400">
-                    {error}
-                </p>
-
-                <button
-                    type="button"
-                    onClick={refreshDashboard}
-                    className="mt-5 rounded-lg bg-purple-600 px-5 py-2.5 text-sm hover:bg-purple-700"
-                >
-                    Try Again
-                </button>
+                    <button
+                        type="button"
+                        onClick={refreshDashboard}
+                        disabled={refreshing}
+                        className="stall-owner-refresh-button"
+                    >
+                        <span className={refreshing ? 'stall-owner-refresh-icon--spinning' : ''}>
+                            ↻
+                        </span>
+                        {refreshing ? 'Refreshing...' : 'Refresh Dashboard'}
+                    </button>
+                </div>
             </main>
         )
     }
@@ -119,260 +133,358 @@ function StallOwnerDashboard() {
         {
             label: 'My Stalls',
             value: stalls.length,
+            icon: 'S',
+            tone: 'teal',
         },
         {
             label: 'Total Orders',
             value: orders.length,
+            icon: '▤',
+            tone: 'aqua',
         },
         {
             label: 'Confirmed Sales',
             value: formatPrice(confirmedSales),
+            icon: '₹',
+            tone: 'coral',
         },
         {
             label: 'Awaiting Completion',
             value: awaitingCompletion,
+            icon: '◷',
+            tone: 'gold',
         },
     ]
 
+    const lastCheckedText = lastRefreshedAt
+        ? lastRefreshedAt.toLocaleTimeString('en-IN', {
+            hour: '2-digit',
+            minute: '2-digit',
+        })
+        : ''
+
     return (
-        <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-10 text-white sm:px-6 lg:px-8">
+        <main className="stall-owner-page">
+            <div className="stall-owner-glow stall-owner-glow--one" />
+            <div className="stall-owner-glow stall-owner-glow--two" />
 
-            {/* Dashboard heading */}
-            <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold">
-                        Stall Owner Dashboard
-                    </h1>
+            <div className="stall-owner-container">
+                <header className="stall-owner-header">
+                    <div>
+                        <span className="stall-owner-eyebrow">
+                            STALL OWNER WORKSPACE
+                        </span>
 
-                    <p className="mt-2 text-sm text-gray-400">
-                        Manage your stalls and monitor customer orders.
-                    </p>
-                </div>
+                        <h1>Stall Owner Dashboard<span>.</span></h1>
 
-                <button
-                    type="button"
-                    onClick={refreshDashboard}
-                    className="rounded-lg border border-white/20 px-4 py-2 text-sm transition hover:bg-white/5"
-                >
-                    Refresh Dashboard
-                </button>
-            </div>
+                        <p>
+                            Manage your stalls, monitor customer orders,
+                            and keep your business moving.
+                        </p>
+                    </div>
 
-            {actionError && (
-                <p
-                    role="alert"
-                    className="mt-5 rounded-lg border border-red-500/20 bg-red-500/5 p-3 text-sm text-red-400"
-                >
-                    {actionError}
-                </p>
-            )}
+                    <div className="stall-owner-refresh-wrapper">
+                        <button
+                            type="button"
+                            onClick={refreshDashboard}
+                            disabled={refreshing}
+                            className="stall-owner-refresh-button"
+                        >
+                            <span className={refreshing ? 'stall-owner-refresh-icon--spinning' : ''}>
+                                ↻
+                            </span>
+                            {refreshing ? 'Refreshing...' : 'Refresh Dashboard'}
+                        </button>
 
-            {actionMessage && (
-                <p
-                    role="status"
-                    className="mt-5 rounded-lg border border-green-500/20 bg-green-500/5 p-3 text-sm text-green-400"
-                >
-                    {actionMessage}
-                </p>
-            )}
+                        {lastRefreshedAt && !refreshing && (
+                            <p className="stall-owner-refresh-feedback" role="status">
+                                <span>✓</span>
+                                You're all caught up. Last checked at {lastCheckedText}.
+                            </p>
+                        )}
+                    </div>
+                </header>
 
-            {/* Dashboard statistics */}
-            <section className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {statistics.map((statistic) => (
-                    <article
-                        key={statistic.label}
-                        className="rounded-xl border border-white/10 bg-white/5 p-5"
+                {actionError && (
+                    <div
+                        role="alert"
+                        className="stall-owner-alert stall-owner-alert--error"
                     >
-                        <p className="text-sm text-gray-400">
-                            {statistic.label}
-                        </p>
-
-                        <p className="mt-3 text-2xl font-bold">
-                            {statistic.value}
-                        </p>
-                    </article>
-                ))}
-            </section>
-
-            {/* Owned stalls */}
-            <section className="mt-12">
-                <h2 className="text-2xl font-bold">
-                    My Stalls
-                </h2>
-
-                {stalls.length === 0 ? (
-                    <div className="mt-5 rounded-xl border border-white/10 bg-white/5 p-8 text-center">
-                        <p className="text-gray-400">
-                            No stalls have been assigned to your account yet.
-                        </p>
+                        <span>!</span>
+                        {actionError}
                     </div>
-                ) : (
-                    <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                        {stalls.map((stall) => (
-                            <article
-                                key={stall._id}
-                                className="overflow-hidden rounded-xl border border-white/10 bg-white/5"
-                            >
-                                {stall.imageUrl ? (
-                                    <img
-                                        src={stall.imageUrl}
-                                        alt={stall.name}
-                                        className="h-44 w-full object-cover"
-                                        loading="lazy"
-                                    />
-                                ) : (
-                                    <div className="flex h-44 items-center justify-center bg-white/5 text-sm text-gray-500">
-                                        No image available
-                                    </div>
-                                )}
+                )}
 
-                                <div className="p-5">
-                                    <h3 className="text-lg font-semibold">
-                                        {stall.name}
-                                    </h3>
+                {actionMessage && (
+                    <div
+                        role="status"
+                        className="stall-owner-alert stall-owner-alert--success"
+                    >
+                        <span>✓</span>
+                        {actionMessage}
+                    </div>
+                )}
 
-                                    {stall.category && (
-                                        <p className="mt-1 text-sm text-purple-300">
-                                            {stall.category}
-                                        </p>
-                                    )}
-
-                                    <p className="mt-3 text-sm text-gray-400">
-                                        {stall.location || 'Location unavailable'}
-                                    </p>
-
-                                    <p className="mt-2 text-sm text-gray-400">
-                                        {Array.isArray(stall.menu)
-                                            ? stall.menu.length
-                                            : 0} menu items
-                                    </p>
-
-                                    <Link
-                                        to={`/stall/${stall._id}`}
-                                        className="mt-5 inline-block rounded-lg border border-purple-500/40 px-4 py-2 text-sm text-purple-300 transition hover:bg-purple-500/10"
-                                    >
-                                        View Stall
-                                    </Link>
-
-                                    <Link
-                                        to={`/stall-dashboard/stalls/${stall._id}/manage`}
-                                        className="mt-3 inline-block rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium hover:bg-purple-700"
-                                    >
-                                        Manage Menu
-                                    </Link>
+                <section className="stall-owner-statistics">
+                    {statistics.map((statistic) => (
+                        <article
+                            key={statistic.label}
+                            className={`stall-owner-stat-card stall-owner-stat-card--${statistic.tone}`}
+                        >
+                            <div className="stall-owner-stat-top">
+                                <span>{statistic.label}</span>
+                                <div className="stall-owner-stat-icon">
+                                    {statistic.icon}
                                 </div>
-                            </article>
-                        ))}
+                            </div>
+
+                            <strong>{statistic.value}</strong>
+                        </article>
+                    ))}
+                </section>
+
+                <section className="stall-owner-stalls-section">
+                    <div className="stall-owner-section-heading">
+                        <div>
+                            <span className="stall-owner-section-label">
+                                YOUR BUSINESS
+                            </span>
+
+                            <h2>My Stalls</h2>
+
+                            <p>
+                                View your stalls and manage their menus.
+                            </p>
+                        </div>
+
+                        <span className="stall-owner-section-count">
+                            {stalls.length} {stalls.length === 1 ? 'STALL' : 'STALLS'}
+                        </span>
                     </div>
-                )}
-            </section>
 
-            {/* Recent orders */}
-            <section className="mt-12">
-                <h2 className="text-2xl font-bold">
-                    Recent Orders
-                </h2>
-
-                {orders.length === 0 ? (
-                    <div className="mt-5 rounded-xl border border-white/10 bg-white/5 p-8 text-center">
-                        <p className="text-gray-400">
-                            No orders have been placed at your stalls yet.
-                        </p>
-                    </div>
-                ) : (
-                    <div className="mt-5 space-y-4">
-                        {orders.slice(0, 10).map((order) => {
-                            const isPaid =
-                                order.paymentStatus === 'SUCCESS'
-
-                            const isCompleted =
-                                order.orderStatus === 'COMPLETED'
-
-                            return (
+                    {stalls.length === 0 ? (
+                        <div className="stall-owner-empty">
+                            <div className="stall-owner-empty-icon">S</div>
+                            <h3>No stalls assigned yet</h3>
+                            <p>
+                                No stalls have been assigned to your account yet.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="stall-owner-stall-grid">
+                            {stalls.map((stall) => (
                                 <article
-                                    key={order._id}
-                                    className="rounded-xl border border-white/10 bg-white/5 p-5"
+                                    key={stall._id}
+                                    className="stall-owner-stall-card"
                                 >
-                                    <div className="flex flex-wrap items-start justify-between gap-4">
-                                        <div>
-                                            <p className="text-xs text-gray-500">
-                                                Customer
-                                            </p>
+                                    {stall.imageUrl ? (
+                                        <img
+                                            src={stall.imageUrl}
+                                            alt={stall.name}
+                                            className="stall-owner-stall-image"
+                                            loading="lazy"
+                                        />
+                                    ) : (
+                                        <div className="stall-owner-stall-image-placeholder">
+                                            <span>S</span>
+                                            <small>STALL</small>
+                                        </div>
+                                    )}
 
-                                            <h3 className="mt-1 font-semibold">
-                                                {order.userName || 'Customer'}
-                                            </h3>
+                                    <div className="stall-owner-stall-body">
+                                        <div className="stall-owner-stall-title">
+                                            <h3>{stall.name}</h3>
 
-                                            <p className="mt-2 text-sm text-gray-400">
-                                                Token: {order.tokenNumber}
-                                            </p>
-
-                                            <p className="mt-1 text-sm text-gray-400">
-                                                {formatDate(order.createdAt)}
-                                            </p>
+                                            {stall.category && (
+                                                <span>{stall.category}</span>
+                                            )}
                                         </div>
 
-                                        <div className="text-right">
-                                            <p className="text-lg font-bold">
-                                                {formatPrice(order.totalAmount)}
-                                            </p>
-
-                                            <p className={`mt-2 text-xs ${isPaid
-                                                ? 'text-green-400'
-                                                : 'text-yellow-400'
-                                                }`}>
-                                                Payment: {order.paymentStatus}
-                                            </p>
-
-                                            <p className={`mt-1 text-xs ${isCompleted
-                                                ? 'text-green-400'
-                                                : 'text-yellow-400'
-                                                }`}>
-                                                Order: {order.orderStatus}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-4 border-t border-white/10 pt-4">
-                                        <p className="mb-2 text-sm font-medium">
-                                            Purchased Items
+                                        <p className="stall-owner-stall-location">
+                                            <span>⌖</span>
+                                            {stall.location || 'Location unavailable'}
                                         </p>
 
-                                        <div className="space-y-1">
-                                            {order.items?.map((item, index) => (
-                                                <p
-                                                    key={
-                                                        item._id ||
-                                                        `${order._id}-${index}`
-                                                    }
-                                                    className="text-sm text-gray-400"
-                                                >
-                                                    {item.name} × {item.quantity}
-                                                </p>
-                                            ))}
+                                        <div className="stall-owner-menu-count">
+                                            <span>MENU ITEMS</span>
+                                            <strong>
+                                                {Array.isArray(stall.menu)
+                                                    ? stall.menu.length
+                                                    : 0}
+                                            </strong>
+                                        </div>
+
+                                        <div className="stall-owner-stall-actions">
+                                            <Link
+                                                to={`/stall/${stall._id}`}
+                                                className="stall-owner-view-link"
+                                            >
+                                                View Stall
+                                            </Link>
+
+                                            <Link
+                                                to={`/stall-dashboard/stalls/${stall._id}/manage`}
+                                                className="stall-owner-manage-link"
+                                            >
+                                                Manage Menu
+                                                <span>↗</span>
+                                            </Link>
                                         </div>
                                     </div>
-
-                                    {isPaid && !isCompleted && (
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                handleMarkCompleted(order._id)
-                                            }
-                                            disabled={processingOrderId !== null}
-                                            className="mt-5 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium transition hover:bg-purple-700 disabled:opacity-50"
-                                        >
-                                            {processingOrderId === order._id
-                                                ? 'Updating...'
-                                                : 'Mark as Completed'}
-                                        </button>
-                                    )}
                                 </article>
-                            )
-                        })}
+                            ))}
+                        </div>
+                    )}
+                </section>
+
+                <section className="stall-owner-orders-section">
+                    <div className="stall-owner-section-heading">
+                        <div>
+                            <span className="stall-owner-section-label">
+                                CUSTOMER ACTIVITY
+                            </span>
+
+                            <h2>Recent Orders</h2>
+
+                            <p>
+                                Review customer purchases and update their
+                                completion status.
+                            </p>
+                        </div>
+
+                        <span className="stall-owner-section-count">
+                            {orders.length} {orders.length === 1 ? 'ORDER' : 'ORDERS'}
+                        </span>
                     </div>
-                )}
-            </section>
+
+                    {orders.length === 0 ? (
+                        <div className="stall-owner-empty">
+                            <div className="stall-owner-empty-icon">▤</div>
+                            <h3>No orders yet</h3>
+                            <p>
+                                Customer orders from your stalls will appear here.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="stall-owner-order-list">
+                            {orders.slice(0, 10).map((order) => {
+                                const isPaid =
+                                    order.paymentStatus === 'SUCCESS'
+
+                                const isCompleted =
+                                    order.orderStatus === 'COMPLETED'
+
+                                return (
+                                    <article
+                                        key={order._id}
+                                        className="stall-owner-order-card"
+                                    >
+                                        <div className="stall-owner-order-header">
+                                            <div className="stall-owner-customer">
+                                                <div className="stall-owner-customer-avatar">
+                                                    {(order.userName || 'C')
+                                                        .charAt(0)
+                                                        .toUpperCase()}
+                                                </div>
+
+                                                <div>
+                                                    <span>CUSTOMER</span>
+                                                    <h3>
+                                                        {order.userName || 'Customer'}
+                                                    </h3>
+
+                                                    <p>{formatDate(order.createdAt)}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="stall-owner-order-total">
+                                                <span>ORDER TOTAL</span>
+                                                <strong>
+                                                    {formatPrice(order.totalAmount)}
+                                                </strong>
+                                            </div>
+                                        </div>
+
+                                        <div className="stall-owner-order-meta">
+                                            <div className="stall-owner-token-detail">
+                                                <span>QUEUE TOKEN</span>
+                                                <strong>
+                                                    #{order.tokenNumber ?? '—'}
+                                                </strong>
+                                            </div>
+
+                                            <div className="stall-owner-order-statuses">
+                                                <span className={`stall-owner-status ${isPaid
+                                                    ? 'stall-owner-status--success'
+                                                    : 'stall-owner-status--pending'
+                                                    }`}>
+                                                    <span />
+                                                    Payment: {order.paymentStatus}
+                                                </span>
+
+                                                <span className={`stall-owner-status ${isCompleted
+                                                    ? 'stall-owner-status--success'
+                                                    : 'stall-owner-status--pending'
+                                                    }`}>
+                                                    <span />
+                                                    Order: {order.orderStatus}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="stall-owner-purchased-items">
+                                            <h4>Purchased Items</h4>
+
+                                            <div>
+                                                {order.items?.map((item, index) => (
+                                                    <p
+                                                        key={
+                                                            item._id ||
+                                                            `${order._id}-${index}`
+                                                        }
+                                                    >
+                                                        <span>{item.name}</span>
+                                                        <strong>
+                                                            × {item.quantity}
+                                                        </strong>
+                                                    </p>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {isPaid && !isCompleted && (
+                                            <div className="stall-owner-order-action">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        handleMarkCompleted(order._id)
+                                                    }
+                                                    disabled={processingOrderId !== null}
+                                                    className="stall-owner-complete-button"
+                                                >
+                                                    {processingOrderId === order._id
+                                                        ? 'Updating...'
+                                                        : 'Mark as Completed'}
+                                                    {processingOrderId !== order._id && (
+                                                        <span>✓</span>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {isCompleted && (
+                                            <div className="stall-owner-completed-note">
+                                                <span>✓</span>
+                                                Order completed
+                                            </div>
+                                        )}
+                                    </article>
+                                )
+                            })}
+                        </div>
+                    )}
+                </section>
+            </div>
         </main>
     )
 }

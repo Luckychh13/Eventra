@@ -1,4 +1,6 @@
+
 import { Link, useLocation } from 'react-router-dom'
+import './PaymentSuccessPage.css'
 
 const formatPrice = (amount) => {
     return new Intl.NumberFormat('en-IN', {
@@ -25,119 +27,144 @@ function PaymentSuccessPage() {
 
     if (!isEventPayment && !isStallPayment) {
         return (
-            <main className="min-h-[70vh] px-4 py-20 text-center text-white">
-                <h1 className="text-2xl font-bold">
-                    Payment Details Unavailable
-                </h1>
+            <main className="payment-success-page payment-success-page--fallback">
+                <div className="payment-success-glow payment-success-glow--one" />
 
-                <p className="mt-3 text-gray-400">
-                    Please check your orders to confirm your payment status.
-                </p>
+                <section className="payment-success-card payment-success-fallback-card">
+                    <div className="payment-success-fallback-icon">?</div>
 
-                <div className="mt-6 flex justify-center gap-3">
-                    <Link to="/bookings" className="rounded-lg bg-purple-600 px-5 py-2">
-                        My Bookings
-                    </Link>
+                    <span className="payment-success-eyebrow">
+                        ORDER INFORMATION
+                    </span>
 
-                    <Link to="/stall-orders" className="rounded-lg border border-white/20 px-5 py-2">
-                        My Stall Orders
-                    </Link>
-                </div>
+                    <h1>Payment Details Unavailable</h1>
+
+                    <p className="payment-success-description">
+                        Please check your orders to confirm your payment status.
+                    </p>
+
+                    <div className="payment-success-fallback-links">
+                        <Link to="/bookings" className="payment-success-primary-link">
+                            My Bookings
+                        </Link>
+
+                        <Link to="/stall-orders" className="payment-success-secondary-link">
+                            My Stall Orders
+                        </Link>
+                    </div>
+                </section>
             </main>
         )
     }
 
     return (
-        <main className="min-h-[70vh] px-4 py-16 text-white">
-            <div className="mx-auto max-w-xl rounded-2xl border border-white/10 bg-white/5 p-8">
-                <div className="text-center">
-                    <div className="text-5xl text-green-400">✓</div>
+        <main className="payment-success-page">
+            <div className="payment-success-glow payment-success-glow--one" />
+            <div className="payment-success-glow payment-success-glow--two" />
 
-                    <h1 className="mt-4 text-3xl font-bold">
-                        Payment Successful!
-                    </h1>
-
-                    <p className="mt-2 text-sm text-gray-400">
-                        Your payment has been verified.
-                    </p>
+            <section className="payment-success-card">
+                <div className="payment-success-icon">
+                    <span>✓</span>
                 </div>
 
+                <span className="payment-success-eyebrow">
+                    PAYMENT CONFIRMED
+                </span>
+
+                <h1>Payment Successful<span>.</span></h1>
+
+                <p className="payment-success-description">
+                    Your payment has been verified. Thank you for choosing Eventra.
+                </p>
+
                 {isEventPayment && (
-                    <section className="mt-8">
-                        <p className="text-sm text-gray-400">
-                            Ticket Order ID
-                        </p>
-
-                        <p className="mt-1 text-xl font-bold text-purple-300">
-                            {order.ticketOrderId}
-                        </p>
-
-                        <div className="mt-5">
-                            <p className="text-sm text-gray-400">
-                                Amount Paid
-                            </p>
-
-                            <p className="mt-1 text-2xl font-bold">
-                                {formatPrice(order.amount)}
-                            </p>
+                    <div className="payment-success-details">
+                        <div className="payment-success-detail-heading">
+                            <span className="payment-success-section-label">
+                                EVENT BOOKING
+                            </span>
+                            <span className="payment-success-detail-mark">E</span>
                         </div>
 
-                        <p className="mt-5 text-sm text-gray-400">
-                            Visit My Bookings to view your booking details.
+                        <div className="payment-success-order-reference">
+                            <span>Ticket Order ID</span>
+                            <strong>{order.ticketOrderId}</strong>
+                        </div>
+
+                        <div className="payment-success-amount">
+                            <span>Amount Paid</span>
+                            <strong>{formatPrice(order.amount)}</strong>
+                        </div>
+
+                        <p className="payment-success-detail-note">
+                            Your purchased tickets and booking information are
+                            available in My Bookings.
                         </p>
-                    </section>
+                    </div>
                 )}
 
                 {isStallPayment && (
-                    <section className="mt-8">
-                        <div className="rounded-xl bg-green-500/10 p-6 text-center">
-                            <p className="text-sm text-gray-300">
-                                Your Stall Token Number
-                            </p>
+                    <div className="payment-success-details">
+                        <div className="payment-success-detail-heading">
+                            <span className="payment-success-section-label">
+                                STALL ORDER
+                            </span>
+                            <span className="payment-success-detail-mark">S</span>
+                        </div>
 
-                            <p className="mt-2 text-5xl font-bold tracking-widest text-green-400">
-                                {confirmedToken}
-                            </p>
+                        <div className="payment-success-token">
+                            <span className="payment-success-token-label">
+                                YOUR STALL TOKEN NUMBER
+                            </span>
+
+                            <strong>{confirmedToken}</strong>
 
                             {stallName && (
-                                <p className="mt-3 text-sm text-gray-400">
+                                <span className="payment-success-stall-name">
                                     {stallName}
-                                </p>
+                                </span>
                             )}
+
+                            <span className="payment-success-token-caption">
+                                KEEP THIS NUMBER HANDY
+                            </span>
                         </div>
 
-                        <div className="mt-5">
-                            <p className="text-sm text-gray-400">
-                                Amount Paid
-                            </p>
-
-                            <p className="mt-1 text-2xl font-bold">
-                                {formatPrice(order.totalAmount)}
-                            </p>
+                        <div className="payment-success-amount">
+                            <span>Amount Paid</span>
+                            <strong>{formatPrice(order.totalAmount)}</strong>
                         </div>
 
-                        <p className="mt-5 text-sm text-gray-400">
-                            Keep your token number available when collecting your order.
+                        <p className="payment-success-detail-note">
+                            Keep your token number available when collecting
+                            your order from the stall.
                         </p>
-                    </section>
+                    </div>
                 )}
 
-                <div className="mt-8 flex flex-wrap justify-center gap-3">
+                <div className="payment-success-actions">
                     <Link
                         to={isEventPayment ? '/bookings' : '/stall-orders'}
-                        className="rounded-lg bg-purple-600 px-5 py-3 text-sm font-medium hover:bg-purple-700"
+                        className="payment-success-primary-link"
                     >
                         {isEventPayment ? 'My Bookings' : 'My Stall Orders'}
+                        <span>↗</span>
                     </Link>
 
                     <Link
                         to="/"
-                        className="rounded-lg border border-white/20 px-5 py-3 text-sm font-medium hover:bg-white/10"
+                        className="payment-success-secondary-link"
                     >
                         Back to Home
                     </Link>
                 </div>
-            </div>
+
+                <div className="payment-success-footer">
+                    <span />
+                    <p>EVENTRA · EVERY EXPERIENCE MATTERS</p>
+                    <span />
+                </div>
+            </section>
         </main>
     )
 }

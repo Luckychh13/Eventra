@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import {
     Link,
@@ -15,13 +16,14 @@ import {
 } from 'firebase/auth'
 import { auth } from '../../services/firebase/firebase.js'
 import useAuth from '../../hooks/useAuth.js'
-
+import './LoginPage.css'
 
 function LoginPage() {
     const [formData, setFormData] = useState({
         email: '',
-        password: ''
+        password: '',
     })
+
     const { user, loading } = useAuth()
     const navigate = useNavigate()
     const location = useLocation()
@@ -68,13 +70,14 @@ function LoginPage() {
                 await signOut(auth)
 
                 setNeedsVerification(true)
-                setStatusMessage('Please verify your email address before logging in. Check your inbox for the verification link.')
+                setStatusMessage(
+                    'Please verify your email address before logging in. Check your inbox for the verification link.'
+                )
 
                 return
             }
 
             navigate('/', { replace: true })
-
         } catch (error) {
             console.error('Login failed:', error)
 
@@ -114,7 +117,6 @@ function LoginPage() {
 
             await signInWithPopup(auth, provider)
             navigate('/', { replace: true })
-
         } catch (error) {
             console.error('Google sign-in failed:', error)
 
@@ -136,7 +138,9 @@ function LoginPage() {
                     break
 
                 case 'auth/account-exists-with-different-credential':
-                    setError('An account already exists with this email using another sign-in method.')
+                    setError(
+                        'An account already exists with this email using another sign-in method.'
+                    )
                     break
 
                 default:
@@ -167,7 +171,9 @@ function LoginPage() {
 
             if (resendUser.emailVerified) {
                 setNeedsVerification(false)
-                setStatusMessage('Your email is already verified. You can log in now.')
+                setStatusMessage(
+                    'Your email is already verified. You can log in now.'
+                )
                 return
             }
 
@@ -176,7 +182,6 @@ function LoginPage() {
             setStatusMessage(
                 `A new verification email has been sent to ${resendUser.email}.`
             )
-
         } catch (error) {
             console.error('Resending verification email failed:', error)
 
@@ -194,14 +199,19 @@ function LoginPage() {
                     break
 
                 default:
-                    setError('Unable to resend verification email. Please try again.')
+                    setError(
+                        'Unable to resend verification email. Please try again.'
+                    )
             }
         } finally {
             if (resendUser && auth.currentUser?.uid === resendUser.uid) {
                 try {
                     await signOut(auth)
                 } catch (signOutError) {
-                    console.error('Failed to sign out after resending:', signOutError)
+                    console.error(
+                        'Failed to sign out after resending:',
+                        signOutError
+                    )
                 }
             }
 
@@ -210,7 +220,14 @@ function LoginPage() {
     }
 
     if (loading) {
-        return <h1>Checking authentication...</h1>
+        return (
+            <main className="login-page login-page--loading">
+                <div className="login-loading-card">
+                    <span className="login-spinner" />
+                    <p>Checking authentication...</p>
+                </div>
+            </main>
+        )
     }
 
     if (user?.emailVerified && !isSubmitting && !isResending) {
@@ -218,163 +235,219 @@ function LoginPage() {
     }
 
     return (
-        <main className="flex min-h-[80vh] items-center justify-center bg-eventra-black px-4 py-12 text-white">
-            <section className="w-full max-w-md rounded-2xl border border-white/10 bg-eventra-dark p-7 shadow-2xl sm:p-10">
+        <main className="login-page">
+            <div className="login-page-glow login-page-glow--one" />
+            <div className="login-page-glow login-page-glow--two" />
 
-                {/* Heading */}
-                <div className="mb-8 text-center">
-                    <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-eventra-purple to-eventra-coral">
-                        <span className="font-display text-xl font-extrabold">E</span>
-                    </div>
+            <div className="login-layout">
+                <section className="login-showcase">
+                    <Link to="/" className="login-brand">
+                        <span className="login-brand-mark">E</span>
+                        <span>EVENTRA</span>
+                    </Link>
 
-                    <h1 className="font-display text-3xl font-extrabold">
-                        Welcome Back
-                    </h1>
+                    <div className="login-showcase-content">
+                        <span className="login-showcase-eyebrow">
+                            WELCOME TO A WORLD OF EXPERIENCES
+                        </span>
 
-                    <p className="mt-2 text-sm text-white/60">
-                        Log in to continue your Eventra journey.
-                    </p>
-                </div>
+                        <h1>
+                            Every event.
+                            <br />
+                            Every moment.
+                            <br />
+                            <span>One place.</span>
+                        </h1>
 
-                {/* Login Form */}
-                <form onSubmit={handleSubmit} className="space-y-5">
-
-                    {successMessage && (
-                        <p
-                            role="status"
-                            className="rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-400"
-                        >
-                            {successMessage}
+                        <p>
+                            Discover experiences, explore events, and make
+                            memories worth coming back for.
                         </p>
-                    )}
 
-                    {statusMessage && (
-                        <p
-                            role="status"
-                            className="rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-400"
-                        >
-                            {statusMessage}
-                        </p>
-                    )}
+                        <div className="login-showcase-decoration">
+                            <div className="login-showcase-orbit login-showcase-orbit--outer">
+                                <div className="login-showcase-orbit login-showcase-orbit--inner">
+                                    <div className="login-showcase-center">E</div>
+                                </div>
+                            </div>
 
-                    {error && (
-                        <p
-                            role="alert"
-                            className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400"
-                        >
-                            {error}
-                        </p>
-                    )}
-
-                    <div>
-                        <label
-                            htmlFor="email"
-                            className="mb-2 block text-sm font-semibold"
-                        >
-                            Email Address
-                        </label>
-
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            placeholder="Enter your email"
-                            autoComplete="email"
-                            required
-                            className="w-full rounded-lg border border-white/10 bg-eventra-black px-4 py-3 text-white placeholder:text-white/40 outline-none transition focus:border-eventra-purple focus:ring-2 focus:ring-eventra-purple/30"
-                        />
-                    </div>
-
-                    <div>
-                        <label
-                            htmlFor="password"
-                            className="mb-2 block text-sm font-semibold"
-                        >
-                            Password
-                        </label>
-
-                        <div className="relative">
-                            <input
-                                id="password"
-                                name="password"
-                                type={showPassword ? 'text' : 'password'}
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder="Enter your password"
-                                autoComplete="current-password"
-                                required
-                                className="w-full rounded-lg border border-white/10 bg-eventra-black px-4 py-3 pr-16 text-white placeholder:text-white/40 outline-none transition focus:border-eventra-purple focus:ring-2 focus:ring-eventra-purple/30"
-                            />
-
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword((previous) => !previous)}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-eventra-lavender hover:text-white"
-                            >
-                                {showPassword ? 'Hide' : 'Show'}
-                            </button>
+                            <span className="login-orbit-dot login-orbit-dot--one" />
+                            <span className="login-orbit-dot login-orbit-dot--two" />
+                            <span className="login-orbit-dot login-orbit-dot--three" />
                         </div>
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={isSubmitting || isResending}
-                        className="w-full rounded-full bg-gradient-to-r from-eventra-purple to-eventra-coral py-3 font-semibold text-white transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                        {isSubmitting ? 'Logging in...' : 'Log In'}
-                    </button>
-
-                    {needsVerification && (
-                        <button
-                            type="button"
-                            onClick={handleResendVerification}
-                            disabled={
-                                isResending ||
-                                isSubmitting ||
-                                !formData.email.trim() ||
-                                !formData.password
-                            }
-                            className="w-full rounded-full border border-eventra-purple py-3 font-semibold text-eventra-lavender transition hover:bg-eventra-purple/10 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            {isResending ? 'Sending verification email...' : 'Resend Verification Email'}
-                        </button>
-                    )}
-
-                    {/* Divider */}
-                    <div className="flex items-center gap-4">
-                        <div className="h-px flex-1 bg-white/10" />
-                        <span className="text-xs text-white/50">OR</span>
-                        <div className="h-px flex-1 bg-white/10" />
+                    <div className="login-showcase-footer">
+                        <span />
+                        <p>MAKE ROOM FOR SOMETHING MEMORABLE.</p>
                     </div>
+                </section>
 
-                    {/* Google Login */}
-                    <button
-                        type="button"
-                        onClick={handleGoogleSignIn}
-                        disabled={isSubmitting}
-                        className="flex w-full items-center justify-center gap-3 rounded-full border border-white/15 py-3 font-medium transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                        <span className="font-bold text-lg">G</span>
+                <section className="login-form-section">
+                    <div className="login-form-card">
+                        <div className="login-form-heading">
+                            <span className="login-form-eyebrow">
+                                YOUR EVENTRA ACCOUNT
+                            </span>
 
-                        {isSubmitting ? 'Connecting...' : 'Continue with Google'}
-                    </button>
+                            <h2>Welcome Back<span>.</span></h2>
 
-                </form>
+                            <p>
+                                Log in to continue your Eventra journey.
+                            </p>
+                        </div>
 
-                {/* Signup Link */}
-                <p className="mt-7 text-center text-sm text-white/60">
-                    Don't have an account?{' '}
-                    <Link
-                        to="/signup"
-                        className="font-semibold text-eventra-lavender hover:text-white hover:underline"
-                    >
-                        Sign up
-                    </Link>
-                </p>
+                        <form onSubmit={handleSubmit} className="login-form">
+                            {successMessage && (
+                                <p
+                                    role="status"
+                                    className="login-alert login-alert--success"
+                                >
+                                    <span>✓</span>
+                                    {successMessage}
+                                </p>
+                            )}
 
-            </section>
+                            {statusMessage && (
+                                <p
+                                    role="status"
+                                    className="login-alert login-alert--success"
+                                >
+                                    <span>✓</span>
+                                    {statusMessage}
+                                </p>
+                            )}
+
+                            {error && (
+                                <p
+                                    role="alert"
+                                    className="login-alert login-alert--error"
+                                >
+                                    <span>!</span>
+                                    {error}
+                                </p>
+                            )}
+
+                            <div className="login-field">
+                                <label htmlFor="email">
+                                    Email Address
+                                </label>
+
+                                <input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    placeholder="Enter your email"
+                                    autoComplete="email"
+                                    required
+                                />
+                            </div>
+
+                            <div className="login-field">
+                                <label htmlFor="password">
+                                    Password
+                                </label>
+
+                                <div className="login-password-wrapper">
+                                    <input
+                                        id="password"
+                                        name="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        placeholder="Enter your password"
+                                        autoComplete="current-password"
+                                        required
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setShowPassword((previous) => !previous)
+                                        }
+                                        className="login-password-toggle"
+                                        aria-label={
+                                            showPassword
+                                                ? 'Hide password'
+                                                : 'Show password'
+                                        }
+                                    >
+                                        {showPassword ? 'Hide' : 'Show'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isSubmitting || isResending}
+                                className="login-submit-button"
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <span className="login-button-spinner" />
+                                        Logging in...
+                                    </>
+                                ) : (
+                                    <>
+                                        Log In
+                                        <span>↗</span>
+                                    </>
+                                )}
+                            </button>
+
+                            {needsVerification && (
+                                <button
+                                    type="button"
+                                    onClick={handleResendVerification}
+                                    disabled={
+                                        isResending ||
+                                        isSubmitting ||
+                                        !formData.email.trim() ||
+                                        !formData.password
+                                    }
+                                    className="login-verification-button"
+                                >
+                                    {isResending
+                                        ? 'Sending verification email...'
+                                        : 'Resend Verification Email'}
+                                </button>
+                            )}
+
+                            <div className="login-divider">
+                                <span />
+                                <p>OR</p>
+                                <span />
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={handleGoogleSignIn}
+                                disabled={isSubmitting}
+                                className="login-google-button"
+                            >
+                                <span className="login-google-mark">G</span>
+
+                                {isSubmitting
+                                    ? 'Connecting...'
+                                    : 'Continue with Google'}
+                            </button>
+                        </form>
+
+                        <p className="login-signup-prompt">
+                            Don't have an account?{' '}
+                            <Link to="/signup">Sign up</Link>
+                        </p>
+
+                        <div className="login-card-footer">
+                            <span />
+                            <p>EVERY EXPERIENCE MATTERS</p>
+                            <span />
+                        </div>
+                    </div>
+                </section>
+            </div>
         </main>
     )
 }

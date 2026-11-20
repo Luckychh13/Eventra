@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import {
@@ -8,6 +9,7 @@ import {
 } from 'firebase/auth'
 import { auth } from '../../services/firebase/firebase.js'
 import useAuth from '../../hooks/useAuth.js'
+import './SignupPage.css'
 
 function SignupPage() {
     const [formData, setFormData] = useState({
@@ -15,6 +17,7 @@ function SignupPage() {
         email: '',
         password: '',
     })
+
     const { user, loading } = useAuth()
     const navigate = useNavigate()
 
@@ -103,7 +106,14 @@ function SignupPage() {
     }
 
     if (loading) {
-        return <h1>Checking authentication...</h1>
+        return (
+            <main className="signup-page signup-page--loading">
+                <div className="signup-loading-card">
+                    <span className="signup-spinner" />
+                    <p>Checking authentication...</p>
+                </div>
+            </main>
+        )
     }
 
     if (user && !isSubmitting) {
@@ -111,129 +121,206 @@ function SignupPage() {
     }
 
     return (
-        <main className="flex min-h-[80vh] items-center justify-center bg-eventra-black px-4 py-12 text-white">
-            <section className="w-full max-w-md rounded-2xl border border-white/10 bg-eventra-dark p-7 shadow-2xl sm:p-10">
+        <main className="signup-page">
+            <div className="signup-page-glow signup-page-glow--one" />
+            <div className="signup-page-glow signup-page-glow--two" />
 
-                <div className="mb-8 text-center">
-                    <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-eventra-purple to-eventra-coral">
-                        <span className="font-display text-xl font-extrabold">E</span>
-                    </div>
+            <div className="signup-layout">
+                <section className="signup-showcase">
+                    <Link to="/" className="signup-brand">
+                        <span className="signup-brand-mark">E</span>
+                        <span>EVENTRA</span>
+                    </Link>
 
-                    <h1 className="font-display text-3xl font-extrabold">
-                        Create Account
-                    </h1>
+                    <div className="signup-showcase-content">
+                        <span className="signup-showcase-eyebrow">
+                            YOUR NEXT EXPERIENCE STARTS HERE
+                        </span>
 
-                    <p className="mt-2 text-sm text-white/60">
-                        Join Eventra and discover amazing experiences.
-                    </p>
-                </div>
+                        <h1>
+                            Find your
+                            <br />
+                            people.
+                            <br />
+                            <span>Find your moment.</span>
+                        </h1>
 
-                <form onSubmit={handleSubmit} className="space-y-5">
-
-                    {error && (
-                        <p
-                            role="alert"
-                            className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400"
-                        >
-                            {error}
+                        <p>
+                            Join Eventra to discover events, explore new
+                            experiences, and create memories worth sharing.
                         </p>
-                    )}
 
-                    <div>
-                        <label
-                            htmlFor="fullName"
-                            className="mb-2 block text-sm font-semibold"
-                        >
-                            Full Name
-                        </label>
+                        <div className="signup-showcase-highlights">
+                            <div className="signup-highlight">
+                                <span className="signup-highlight-icon">✦</span>
+                                <div>
+                                    <strong>Discover</strong>
+                                    <p>Explore experiences that inspire you.</p>
+                                </div>
+                            </div>
 
-                        <input
-                            id="fullName"
-                            name="fullName"
-                            type="text"
-                            value={formData.fullName}
-                            onChange={handleChange}
-                            placeholder="Enter your full name"
-                            autoComplete="name"
-                            required
-                            className="w-full rounded-lg border border-white/10 bg-eventra-black px-4 py-3 text-white placeholder:text-white/40 outline-none transition focus:border-eventra-purple focus:ring-2 focus:ring-eventra-purple/30"
-                        />
-                    </div>
+                            <div className="signup-highlight">
+                                <span className="signup-highlight-icon">◇</span>
+                                <div>
+                                    <strong>Connect</strong>
+                                    <p>Be part of moments worth sharing.</p>
+                                </div>
+                            </div>
 
-                    <div>
-                        <label
-                            htmlFor="email"
-                            className="mb-2 block text-sm font-semibold"
-                        >
-                            Email Address
-                        </label>
-
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            placeholder="Enter your email"
-                            autoComplete="email"
-                            required
-                            className="w-full rounded-lg border border-white/10 bg-eventra-black px-4 py-3 text-white placeholder:text-white/40 outline-none transition focus:border-eventra-purple focus:ring-2 focus:ring-eventra-purple/30"
-                        />
-                    </div>
-
-                    <div>
-                        <label
-                            htmlFor="password"
-                            className="mb-2 block text-sm font-semibold"
-                        >
-                            Password
-                        </label>
-
-                        <div className="relative">
-                            <input
-                                id="password"
-                                name="password"
-                                type={showPassword ? 'text' : 'password'}
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder="Create a password"
-                                autoComplete="new-password"
-                                minLength={6}
-                                required
-                                className="w-full rounded-lg border border-white/10 bg-eventra-black px-4 py-3 pr-16 text-white placeholder:text-white/40 outline-none transition focus:border-eventra-purple focus:ring-2 focus:ring-eventra-purple/30"
-                            />
-
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword((previous) => !previous)}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-eventra-lavender hover:text-white"
-                            >
-                                {showPassword ? 'Hide' : 'Show'}
-                            </button>
+                            <div className="signup-highlight">
+                                <span className="signup-highlight-icon">↗</span>
+                                <div>
+                                    <strong>Experience</strong>
+                                    <p>Make every event count.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="w-full rounded-full bg-gradient-to-r from-eventra-purple to-eventra-coral py-3 font-semibold text-white transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                        {isSubmitting ? 'Creating account...' : 'Create Account'}
-                    </button>
+                    <div className="signup-showcase-footer">
+                        <span />
+                        <p>MAKE ROOM FOR SOMETHING MEMORABLE.</p>
+                    </div>
+                </section>
 
-                </form>
+                <section className="signup-form-section">
+                    <div className="signup-form-card">
+                        <div className="signup-form-heading">
+                            <span className="signup-form-eyebrow">
+                                BECOME PART OF EVENTRA
+                            </span>
 
-                <p className="mt-7 text-center text-sm text-white/60">
-                    Already have an account?{' '}
-                    <Link
-                        to="/login"
-                        className="font-semibold text-eventra-lavender hover:text-white hover:underline"
-                    >
-                        Log in
-                    </Link>
-                </p>
+                            <h2>Create Account<span>.</span></h2>
 
-            </section>
+                            <p>
+                                Set up your account and start exploring.
+                            </p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="signup-form">
+                            {error && (
+                                <p
+                                    role="alert"
+                                    className="signup-alert signup-alert--error"
+                                >
+                                    <span>!</span>
+                                    {error}
+                                </p>
+                            )}
+
+                            <div className="signup-field">
+                                <label htmlFor="fullName">
+                                    Full Name
+                                </label>
+
+                                <input
+                                    id="fullName"
+                                    name="fullName"
+                                    type="text"
+                                    value={formData.fullName}
+                                    onChange={handleChange}
+                                    placeholder="Enter your full name"
+                                    autoComplete="name"
+                                    required
+                                />
+                            </div>
+
+                            <div className="signup-field">
+                                <label htmlFor="email">
+                                    Email Address
+                                </label>
+
+                                <input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    placeholder="Enter your email"
+                                    autoComplete="email"
+                                    required
+                                />
+                            </div>
+
+                            <div className="signup-field">
+                                <label htmlFor="password">
+                                    Password
+                                </label>
+
+                                <div className="signup-password-wrapper">
+                                    <input
+                                        id="password"
+                                        name="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        placeholder="Create a password"
+                                        autoComplete="new-password"
+                                        minLength={6}
+                                        required
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setShowPassword((previous) => !previous)
+                                        }
+                                        className="signup-password-toggle"
+                                        aria-label={
+                                            showPassword
+                                                ? 'Hide password'
+                                                : 'Show password'
+                                        }
+                                    >
+                                        {showPassword ? 'Hide' : 'Show'}
+                                    </button>
+                                </div>
+
+                                <p className="signup-password-hint">
+                                    Use at least 6 characters.
+                                </p>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="signup-submit-button"
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <span className="signup-button-spinner" />
+                                        Creating account...
+                                    </>
+                                ) : (
+                                    <>
+                                        Create Account
+                                        <span>↗</span>
+                                    </>
+                                )}
+                            </button>
+                        </form>
+
+                        <p className="signup-login-prompt">
+                            Already have an account?{' '}
+                            <Link to="/login">Log in</Link>
+                        </p>
+
+                        <div className="signup-verification-note">
+                            <span>✉</span>
+                            <p>
+                                We'll send a verification link to your email
+                                before you can log in.
+                            </p>
+                        </div>
+
+                        <div className="signup-card-footer">
+                            <span />
+                            <p>EVERY EXPERIENCE MATTERS</p>
+                            <span />
+                        </div>
+                    </div>
+                </section>
+            </div>
         </main>
     )
 }

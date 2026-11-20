@@ -121,12 +121,14 @@ function Navbar() {
                 </Link>
 
                 <div className="hidden items-center gap-2 md:flex">
-                    <Link
-                        to="/leaderboard"
-                        className={navItemClass}
-                    >
-                        Leaderboard
-                    </Link>
+                    {!loading && user && (
+                        <Link
+                            to="/leaderboard"
+                            className={navItemClass}
+                        >
+                            Leaderboard
+                        </Link>
+                    )}
 
                     {loading ? (
                         <span className="px-4 text-sm text-white/60">
@@ -227,13 +229,15 @@ function Navbar() {
                     className="mx-auto mt-3 max-w-7xl overflow-hidden rounded-2xl border border-white/10 bg-eventra-dark p-4 shadow-2xl md:hidden"
                 >
                     <div className="space-y-2">
-                        <Link
-                            to="/leaderboard"
-                            onClick={closeMenu}
-                            className={mobileNavItemClass}
-                        >
-                            Leaderboard
-                        </Link>
+                        {!loading && user && (
+                            <Link
+                                to="/leaderboard"
+                                onClick={closeMenu}
+                                className={mobileNavItemClass}
+                            >
+                                Leaderboard
+                            </Link>
+                        )}
 
                         {loading ? (
                             <p className="px-3 py-2 text-sm text-white/60">

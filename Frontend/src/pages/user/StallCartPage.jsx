@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import useAuth from '../../hooks/useAuth.js'
@@ -7,13 +8,18 @@ import {
     createStallOrder,
     verifyStallPayment,
 } from '../../services/api/stallPaymentService.js'
+import './StallCartPage.css'
 
 const formatPrice = (value) => {
     const amount = Number(value)
 
     if (!Number.isFinite(amount)) return '₹0'
 
-    return `₹${amount.toLocaleString('en-IN')}`
+    return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 2,
+    }).format(amount)
 }
 
 function StallCartPage() {
@@ -183,29 +189,31 @@ function StallCartPage() {
 
     if (stallLoading || cartLoading) {
         return (
-            <main className="px-4 py-20 text-center text-gray-400">
-                Loading your stall cart...
+            <main className="stall-cart-page stall-cart-page--state">
+                <div className="stall-cart-state-card">
+                    <span className="stall-cart-spinner" />
+                    <p>Loading your stall cart...</p>
+                </div>
             </main>
         )
     }
 
     if (stallError || cartError) {
         return (
-            <main className="mx-auto max-w-5xl px-4 py-16 text-center text-white">
-                <h1 className="text-2xl font-bold">
-                    Unable to load your cart
-                </h1>
+            <main className="stall-cart-page stall-cart-page--state">
+                <div className="stall-cart-state-card stall-cart-state-card--error">
+                    <span className="stall-cart-state-icon">!</span>
+                    <h1>Unable to load your cart</h1>
+                    <p>{stallError || cartError}</p>
 
-                <p className="mt-3 text-sm text-red-400">
-                    {stallError || cartError}
-                </p>
-
-                <Link
-                    to={`/stall/${id}`}
-                    className="mt-6 inline-block rounded-lg bg-purple-600 px-5 py-2.5 text-sm font-medium hover:bg-purple-700"
-                >
-                    Back to Stall
-                </Link>
+                    <Link
+                        to={`/stall/${id}`}
+                        className="stall-cart-primary-link"
+                    >
+                        Back to Stall
+                        <span>↗</span>
+                    </Link>
+                </div>
             </main>
         )
     }
@@ -218,221 +226,259 @@ function StallCartPage() {
     )
 
     return (
-        <main className="mx-auto min-h-screen w-full max-w-5xl px-4 py-10 text-white sm:px-6 lg:px-8">
+        <main className="stall-cart-page">
+            <div className="stall-cart-glow stall-cart-glow--one" />
+            <div className="stall-cart-glow stall-cart-glow--two" />
 
-            <Link
-                to={`/stall/${id}`}
-                className="text-sm text-gray-400 transition hover:text-white"
-            >
-                ← Back to Stall
-            </Link>
+            <div className="stall-cart-container">
+                <Link
+                    to={`/stall/${id}`}
+                    className="stall-cart-back-link"
+                >
+                    <span>←</span>
+                    Back to Stall
+                </Link>
 
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold">
-                        Your Stall Cart
-                    </h1>
+                <header className="stall-cart-header">
+                    <div>
+                        <span className="stall-cart-eyebrow">
+                            YOUR STALL SELECTION
+                        </span>
 
-                    <p className="mt-2 text-sm text-gray-400">
-                        {stall?.name || 'Selected Stall'}
-                    </p>
-                </div>
+                        <h1>Your Stall Cart<span>.</span></h1>
+
+                        <p>{stall?.name || 'Selected Stall'}</p>
+                    </div>
+
+                    <div className="stall-cart-item-count">
+                        <span className="stall-cart-count-icon">▤</span>
+                        <div>
+                            <strong>{totalItems}</strong>
+                            <span>{totalItems === 1 ? 'ITEM' : 'ITEMS'}</span>
+                        </div>
+                    </div>
+                </header>
 
                 {items.length > 0 && (
-                    <button
-                        type="button"
-                        onClick={clearCart}
-                        disabled={actionLoading || checkoutLoading}
-                        className="rounded-lg border border-red-500/40 px-4 py-2 text-sm text-red-400 transition hover:bg-red-500/10 disabled:opacity-50"
-                    >
-                        Clear Cart
-                    </button>
-                )}
-            </div>
-
-            {actionError && (
-                <p
-                    role="alert"
-                    className="mt-5 rounded-lg border border-red-500/20 bg-red-500/5 p-3 text-sm text-red-400"
-                >
-                    {actionError}
-                </p>
-            )}
-
-            {checkoutError && (
-                <p
-                    role="alert"
-                    className="mt-5 rounded-lg border border-red-500/20 bg-red-500/5 p-3 text-sm text-red-400"
-                >
-                    {checkoutError}
-                </p>
-            )}
-
-            {checkoutMessage && (
-                <div className="mt-5 rounded-lg border border-green-500/20 bg-green-500/5 p-4">
-                    <p className="text-sm text-green-400">
-                        {checkoutMessage}
-                    </p>
-
-                    {tokenNumber !== null && (
-                        <p className="mt-2 font-semibold text-white">
-                            Your Stall Token Number: {tokenNumber}
-                        </p>
-                    )}
-                </div>
-            )}
-
-            {items.length === 0 ? (
-                <div className="mt-10 rounded-xl border border-white/10 bg-white/5 px-6 py-16 text-center">
-                    <h2 className="text-xl font-semibold">
-                        Your cart is empty
-                    </h2>
-
-                    <p className="mt-2 text-sm text-gray-400">
-                        Explore this stall's menu and add some items.
-                    </p>
-
-                    <Link
-                        to={`/stall/${id}`}
-                        className="mt-6 inline-block rounded-lg bg-purple-600 px-6 py-2.5 text-sm font-medium hover:bg-purple-700"
-                    >
-                        Explore Menu
-                    </Link>
-                </div>
-            ) : (
-                <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_300px]">
-
-                    {/* Cart items */}
-                    <section className="space-y-4">
-                        {items.map((item) => (
-                            <article
-                                key={item.itemId}
-                                className="flex flex-col gap-4 rounded-xl border border-white/10 bg-white/5 p-4 sm:flex-row sm:items-center"
-                            >
-                                {item.imageUrl ? (
-                                    <img
-                                        src={item.imageUrl}
-                                        alt={item.name}
-                                        className="h-24 w-full rounded-lg object-cover sm:w-28"
-                                    />
-                                ) : (
-                                    <div className="flex h-24 w-full items-center justify-center rounded-lg bg-white/5 text-xs text-gray-500 sm:w-28">
-                                        No image
-                                    </div>
-                                )}
-
-                                <div className="min-w-0 flex-1">
-                                    <h2 className="font-semibold">
-                                        {item.name}
-                                    </h2>
-
-                                    <p className="mt-1 text-sm text-gray-400">
-                                        {formatPrice(item.price)} each
-                                    </p>
-
-                                    <p className="mt-2 text-sm font-medium text-purple-300">
-                                        Subtotal: {formatPrice(
-                                            Number(item.price) * Number(item.quantity)
-                                        )}
-                                    </p>
-                                </div>
-
-                                <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end">
-                                    <div className="flex items-center gap-3">
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                updateQuantity(
-                                                    item.itemId,
-                                                    Number(item.quantity) - 1
-                                                )
-                                            }
-                                            disabled={
-                                                actionLoading ||
-                                                checkoutLoading ||
-                                                Number(item.quantity) <= 1
-                                            }
-                                            className="h-8 w-8 rounded border border-white/20 disabled:opacity-40"
-                                            aria-label={`Decrease ${item.name} quantity`}
-                                        >
-                                            −
-                                        </button>
-
-                                        <span className="min-w-5 text-center">
-                                            {item.quantity}
-                                        </span>
-
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                updateQuantity(
-                                                    item.itemId,
-                                                    Number(item.quantity) + 1
-                                                )
-                                            }
-                                            disabled={actionLoading || checkoutLoading}
-                                            className="h-8 w-8 rounded border border-white/20 disabled:opacity-40"
-                                            aria-label={`Increase ${item.name} quantity`}
-                                        >
-                                            +
-                                        </button>
-                                    </div>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => removeItem(item.itemId)}
-                                        disabled={actionLoading || checkoutLoading}
-                                        className="text-sm text-red-400 hover:text-red-300 disabled:opacity-40"
-                                    >
-                                        Remove
-                                    </button>
-                                </div>
-                            </article>
-                        ))}
-                    </section>
-
-                    {/* Cart summary */}
-                    <aside className="h-fit rounded-xl border border-white/10 bg-white/5 p-5">
-                        <h2 className="text-lg font-semibold">
-                            Order Summary
-                        </h2>
-
-                        <div className="mt-5 flex justify-between text-sm text-gray-400">
-                            <span>Total Items</span>
-                            <span>{totalItems}</span>
-                        </div>
-
-                        <div className="mt-4 flex justify-between border-t border-white/10 pt-4">
-                            <span className="font-semibold">
-                                Total
-                            </span>
-
-                            <span className="text-xl font-bold text-purple-300">
-                                {formatPrice(cart?.totalPrice)}
-                            </span>
-                        </div>
+                    <div className="stall-cart-toolbar">
+                        <span>
+                            Review your items before placing your order.
+                        </span>
 
                         <button
                             type="button"
-                            onClick={handleCheckout}
-                            disabled={
-                                checkoutLoading ||
-                                actionLoading ||
-                                items.length === 0
-                            }
-                            className="mt-5 w-full rounded-lg bg-purple-600 px-4 py-3 text-sm font-semibold transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            onClick={clearCart}
+                            disabled={actionLoading || checkoutLoading}
+                            className="stall-cart-clear-button"
                         >
-                            {checkoutLoading
-                                ? 'Processing...'
-                                : 'Proceed to Checkout'}
+                            Clear Cart
                         </button>
+                    </div>
+                )}
 
-                        <p className="mt-3 text-xs text-gray-400">
-                            Final item prices are verified by the backend during checkout.
+                {actionError && (
+                    <div
+                        role="alert"
+                        className="stall-cart-alert stall-cart-alert--error"
+                    >
+                        <span>!</span>
+                        {actionError}
+                    </div>
+                )}
+
+                {checkoutError && (
+                    <div
+                        role="alert"
+                        className="stall-cart-alert stall-cart-alert--error"
+                    >
+                        <span>!</span>
+                        {checkoutError}
+                    </div>
+                )}
+
+                {checkoutMessage && (
+                    <div
+                        role="status"
+                        className="stall-cart-alert stall-cart-alert--success"
+                    >
+                        <div>
+                            <span>✓</span>
+                            <p>{checkoutMessage}</p>
+                        </div>
+
+                        {tokenNumber !== null && (
+                            <strong>
+                                Your Stall Token Number: {tokenNumber}
+                            </strong>
+                        )}
+                    </div>
+                )}
+
+                {items.length === 0 ? (
+                    <section className="stall-cart-empty">
+                        <div className="stall-cart-empty-icon">▤</div>
+
+                        <span className="stall-cart-section-label">
+                            YOUR ORDER STARTS HERE
+                        </span>
+
+                        <h2>Your cart is empty</h2>
+
+                        <p>
+                            Explore this stall's menu and add some items.
+                            Your next favourite bite could be waiting here.
                         </p>
-                    </aside>
-                </div>
-            )}
+
+                        <Link
+                            to={`/stall/${id}`}
+                            className="stall-cart-primary-link"
+                        >
+                            Explore Menu
+                            <span>↗</span>
+                        </Link>
+                    </section>
+                ) : (
+                    <div className="stall-cart-layout">
+                        <section className="stall-cart-items-section">
+                            <div className="stall-cart-section-heading">
+                                <h2>Selected Items</h2>
+                                <span>{items.length} {items.length === 1 ? 'PRODUCT' : 'PRODUCTS'}</span>
+                            </div>
+
+                            <div className="stall-cart-items-list">
+                                {items.map((item) => (
+                                    <article
+                                        key={item.itemId}
+                                        className="stall-cart-item-card"
+                                    >
+                                        {item.imageUrl ? (
+                                            <img
+                                                src={item.imageUrl}
+                                                alt={item.name}
+                                                className="stall-cart-item-image"
+                                            />
+                                        ) : (
+                                            <div className="stall-cart-item-placeholder">
+                                                <span>◇</span>
+                                                <small>No image</small>
+                                            </div>
+                                        )}
+
+                                        <div className="stall-cart-item-info">
+                                            <h3>{item.name}</h3>
+
+                                            <p>
+                                                {formatPrice(item.price)} each
+                                            </p>
+
+                                            <strong>
+                                                Subtotal:{' '}
+                                                {formatPrice(
+                                                    Number(item.price) * Number(item.quantity)
+                                                )}
+                                            </strong>
+                                        </div>
+
+                                        <div className="stall-cart-item-actions">
+                                            <div className="stall-cart-quantity-control">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        updateQuantity(
+                                                            item.itemId,
+                                                            Number(item.quantity) - 1
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        actionLoading ||
+                                                        checkoutLoading ||
+                                                        Number(item.quantity) <= 1
+                                                    }
+                                                    aria-label={`Decrease ${item.name} quantity`}
+                                                >
+                                                    −
+                                                </button>
+
+                                                <span>{item.quantity}</span>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        updateQuantity(
+                                                            item.itemId,
+                                                            Number(item.quantity) + 1
+                                                        )
+                                                    }
+                                                    disabled={actionLoading || checkoutLoading}
+                                                    aria-label={`Increase ${item.name} quantity`}
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => removeItem(item.itemId)}
+                                                disabled={actionLoading || checkoutLoading}
+                                                className="stall-cart-remove-button"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </article>
+                                ))}
+                            </div>
+                        </section>
+
+                        <aside className="stall-cart-summary">
+                            <div className="stall-cart-summary-heading">
+                                <span className="stall-cart-section-label">
+                                    YOUR ORDER
+                                </span>
+                                <h2>Order Summary</h2>
+                            </div>
+
+                            <div className="stall-cart-summary-line">
+                                <span>Total Items</span>
+                                <strong>{totalItems}</strong>
+                            </div>
+
+                            <div className="stall-cart-summary-divider" />
+
+                            <div className="stall-cart-summary-total">
+                                <span>Total</span>
+                                <strong>{formatPrice(cart?.totalPrice)}</strong>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={handleCheckout}
+                                disabled={
+                                    checkoutLoading ||
+                                    actionLoading ||
+                                    items.length === 0
+                                }
+                                className="stall-cart-checkout-button"
+                            >
+                                {checkoutLoading
+                                    ? 'Processing...'
+                                    : 'Proceed to Checkout'}
+                                {!checkoutLoading && <span>↗</span>}
+                            </button>
+
+                            <div className="stall-cart-secure-note">
+                                <span>◇</span>
+                                <p>Secure checkout powered by Razorpay</p>
+                            </div>
+
+                            <p className="stall-cart-summary-note">
+                                Final item prices are verified by the backend
+                                during checkout.
+                            </p>
+                        </aside>
+                    </div>
+                )}
+            </div>
         </main>
     )
 }

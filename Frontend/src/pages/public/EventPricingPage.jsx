@@ -1,9 +1,11 @@
+
 import { useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
 import { getEventById } from '../../services/api/eventService.js'
 import { getEventPricings } from '../../services/api/pricingService.js'
-import { Link, useParams } from 'react-router-dom'
 import { addToCart } from '../../services/api/cartService.js'
 import useAuth from '../../hooks/useAuth.js'
+import './EventPricingPage.css'
 
 const formatPrice = (amount) => {
     return new Intl.NumberFormat('en-IN', {
@@ -15,7 +17,6 @@ const formatPrice = (amount) => {
 
 function EventPricingPage() {
     const { eventId } = useParams()
-
     const { user, loading: authLoading } = useAuth()
 
     const [quantities, setQuantities] = useState({})
@@ -96,79 +97,157 @@ function EventPricingPage() {
 
     if (loading) {
         return (
-            <main className="min-h-screen bg-eventra-black px-6 py-12 text-white">
-                <p>Loading event and ticket information...</p>
+            <main className="event-pricing">
+                <div className="event-pricing__state">
+                    <span className="event-pricing__state-mark" />
+                    <p>Loading event and ticket information...</p>
+                </div>
             </main>
         )
     }
 
     if (error) {
         return (
-            <main className="min-h-screen bg-eventra-black px-6 py-12 text-white">
-                <h1 className="text-2xl font-bold">
-                    Unable to load event
-                </h1>
+            <main className="event-pricing">
+                <div className="event-pricing__state event-pricing__state--error">
+                    <span className="event-pricing__eyebrow">
+                        EVENT INFORMATION
+                    </span>
 
-                <p role="alert" className="mt-3 text-red-400">
-                    {error}
-                </p>
+                    <h1>Unable to load event</h1>
+
+                    <p role="alert">{error}</p>
+                </div>
             </main>
         )
     }
 
     if (!event) {
         return (
-            <main className="min-h-screen bg-eventra-black px-6 py-12 text-white">
-                <p>Event information is unavailable.</p>
+            <main className="event-pricing">
+                <div className="event-pricing__state">
+                    <span className="event-pricing__eyebrow">
+                        EVENT INFORMATION
+                    </span>
+
+                    <h1>Event unavailable</h1>
+
+                    <p>Event information is currently unavailable.</p>
+                </div>
             </main>
         )
     }
 
     return (
-        <main className="min-h-screen bg-eventra-black px-6 py-12 text-white">
-            <div className="mx-auto max-w-7xl">
+        <main className="event-pricing">
+            <div className="event-pricing__container">
+                <section className="event-pricing__hero">
+                    <div className="event-pricing__hero-content">
+                        <p className="event-pricing__eyebrow">
+                            YOUR FESTIVAL EXPERIENCE
+                        </p>
 
-                <h1 className="text-3xl font-bold">
-                    {event.title}
-                </h1>
+                        <h1>{event.title}</h1>
 
-                <div className="mt-4 space-y-2 text-gray-400">
-                    <p>{event.day} | {event.date}</p>
-                    <p>{event.time}</p>
-                    <p>{event.location}</p>
-                </div>
+                        {event.description && (
+                            <p className="event-pricing__description">
+                                {event.description}
+                            </p>
+                        )}
 
-                {event.description && (
-                    <p className="mt-4">
-                        {event.description}
-                    </p>
-                )}
+                        <div className="event-pricing__event-details">
+                            <div className="event-pricing__detail">
+                                <span>DATE</span>
+                                <strong>
+                                    {event.day || 'Festival Event'}
+                                    {event.date ? ` · ${event.date}` : ''}
+                                </strong>
+                            </div>
 
-                <section className="mt-10">
+                            <div className="event-pricing__detail">
+                                <span>TIME</span>
+                                <strong>{event.time || 'Time TBA'}</strong>
+                            </div>
 
-                    <h2 className="mb-6 text-2xl font-semibold">
-                        Select Your Tickets
-                    </h2>
+                            <div className="event-pricing__detail">
+                                <span>VENUE</span>
+                                <strong>
+                                    {event.location || 'Venue TBA'}
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="event-pricing__hero-visual">
+                        {event.imageUrl ? (
+                            <img
+                                src={event.imageUrl}
+                                alt={event.title || 'Event'}
+                                className="event-pricing__hero-image"
+                            />
+                        ) : (
+                            <div className="event-pricing__hero-placeholder">
+                                <span>EVENTRA</span>
+                                <p>Make moments memorable</p>
+                            </div>
+                        )}
+
+                        <div className="event-pricing__hero-image-overlay" />
+                    </div>
+                </section>
+
+                <section className="event-pricing__tickets">
+                    <div className="event-pricing__section-heading">
+                        <div>
+                            <p className="event-pricing__eyebrow">
+                                FIND YOUR PASS
+                            </p>
+
+                            <h2>Select Your Tickets</h2>
+
+                            <p>
+                                Choose the ticket that suits your festival
+                                experience.
+                            </p>
+                        </div>
+
+                        <span className="event-pricing__ticket-count">
+                            {pricings.length} {pricings.length === 1 ? 'option' : 'options'}
+                        </span>
+                    </div>
 
                     {cartMessage && (
-                        <p role="status" className="mb-4 text-green-400">
+                        <p
+                            role="status"
+                            aria-live="polite"
+                            className="event-pricing__feedback event-pricing__feedback--success"
+                        >
                             {cartMessage}
                         </p>
                     )}
 
                     {cartError && (
-                        <p role="alert" className="mb-4 text-red-400">
+                        <p
+                            role="alert"
+                            className="event-pricing__feedback event-pricing__feedback--error"
+                        >
                             {cartError}
                         </p>
                     )}
 
                     {pricings.length === 0 ? (
-                        <p>
-                            Ticket pricing is not available for this event yet.
-                        </p>
-                    ) : (
-                        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        <div className="event-pricing__empty">
+                            <span className="event-pricing__empty-mark">✦</span>
 
+                            <h3>Tickets coming soon</h3>
+
+                            <p>
+                                Ticket pricing is not available for this
+                                event yet. Please check back later.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="event-pricing__grid">
                             {pricings.map((pricing) => {
                                 const availableTickets = Math.max(
                                     0,
@@ -180,102 +259,142 @@ function EventPricingPage() {
                                     pricing.finalPrice ?? pricing.price
                                 )
 
+                                const quantity =
+                                    quantities[pricing._id] ?? 1
+
+                                const isSoldOut = availableTickets === 0
+                                const isAdding =
+                                    addingPricingId === pricing._id
+
+                                const ticketType = String(
+                                    pricing.ticketType || ''
+                                ).toLowerCase()
+
+                                const ticketTone = ticketType.includes('gold')
+                                    ? 'gold'
+                                    : ticketType.includes('silver')
+                                        ? 'silver'
+                                        : ticketType.includes('bronze')
+                                            ? 'bronze'
+                                            : 'default'
+
                                 return (
                                     <article
                                         key={pricing._id}
-                                        className="rounded-lg border border-white/10 p-6"
+                                        className={`event-pricing__ticket event-pricing__ticket--${ticketTone} ${isSoldOut ? 'is-sold-out' : ''}`}
                                     >
-                                        <h3 className="text-xl font-bold">
-                                            {pricing.ticketType}
-                                        </h3>
+                                        <div className="event-pricing__ticket-top">
+                                            <span className="event-pricing__ticket-label">
+                                                FESTIVAL PASS
+                                            </span>
 
-                                        <div className="mt-4">
-                                            {finalPrice < Number(pricing.price) && (
-                                                <p className="text-sm text-gray-400 line-through">
-                                                    {formatPrice(pricing.price)}
-                                                </p>
+                                            {isSoldOut && (
+                                                <span className="event-pricing__sold-out-label">
+                                                    SOLD OUT
+                                                </span>
                                             )}
-
-                                            <p className="mt-1 text-2xl font-semibold">
-                                                {formatPrice(finalPrice)}
-                                            </p>
                                         </div>
 
-                                        <p className="mt-4 text-sm text-gray-400">
-                                            Available tickets: {availableTickets}
-                                        </p>
+                                        <h3>{pricing.ticketType}</h3>
 
-                                        {availableTickets === 0 ? (
-                                            <p className="mt-3 text-red-400">
-                                                Sold Out
+                                        <div className="event-pricing__price">
+                                            {finalPrice < Number(pricing.price) && (
+                                                <span className="event-pricing__original-price">
+                                                    {formatPrice(pricing.price)}
+                                                </span>
+                                            )}
+
+                                            <strong>{formatPrice(finalPrice)}</strong>
+
+                                            <span className="event-pricing__per-ticket">
+                                                per ticket
+                                            </span>
+                                        </div>
+
+                                        <div className="event-pricing__availability">
+                                            <span>Ticket availability</span>
+                                            <strong>
+                                                {availableTickets} available
+                                            </strong>
+                                        </div>
+
+                                        <div className="event-pricing__ticket-divider" />
+
+                                        {isSoldOut ? (
+                                            <p className="event-pricing__sold-out-message">
+                                                This ticket type is currently
+                                                sold out.
                                             </p>
                                         ) : (
-                                            <div className="mt-5">
+                                            <div className="event-pricing__purchase">
                                                 {authLoading ? (
-                                                    <p>Checking account...</p>
+                                                    <p className="event-pricing__auth-loading">
+                                                        Checking account...
+                                                    </p>
                                                 ) : user ? (
                                                     <>
-                                                        <div className="flex items-center gap-4">
-                                                            <button
-                                                                type="button"
-                                                                disabled={
-                                                                    (quantities[pricing._id] ?? 1) <= 1
-                                                                }
-                                                                onClick={() => {
-                                                                    setQuantities((current) => ({
-                                                                        ...current,
-                                                                        [pricing._id]: Math.max(
-                                                                            1,
-                                                                            (current[pricing._id] ?? 1) - 1
-                                                                        ),
-                                                                    }))
-                                                                }}
-                                                                className="rounded border px-3 py-1"
-                                                            >
-                                                                -
-                                                            </button>
+                                                        <div className="event-pricing__quantity-row">
+                                                            <span>Quantity</span>
 
-                                                            <span>
-                                                                {quantities[pricing._id] ?? 1}
-                                                            </span>
+                                                            <div className="event-pricing__quantity">
+                                                                <button
+                                                                    type="button"
+                                                                    aria-label={`Decrease ${pricing.ticketType} quantity`}
+                                                                    disabled={quantity <= 1}
+                                                                    onClick={() => {
+                                                                        setQuantities((current) => ({
+                                                                            ...current,
+                                                                            [pricing._id]: Math.max(
+                                                                                1,
+                                                                                (current[pricing._id] ?? 1) - 1
+                                                                            ),
+                                                                        }))
+                                                                    }}
+                                                                >
+                                                                    −
+                                                                </button>
 
-                                                            <button
-                                                                type="button"
-                                                                disabled={
-                                                                    (quantities[pricing._id] ?? 1) >= availableTickets
-                                                                }
-                                                                onClick={() => {
-                                                                    setQuantities((current) => ({
-                                                                        ...current,
-                                                                        [pricing._id]: Math.min(
-                                                                            availableTickets,
-                                                                            (current[pricing._id] ?? 1) + 1
-                                                                        ),
-                                                                    }))
-                                                                }}
-                                                                className="rounded border px-3 py-1"
-                                                            >
-                                                                +
-                                                            </button>
+                                                                <span aria-live="polite">
+                                                                    {quantity}
+                                                                </span>
+
+                                                                <button
+                                                                    type="button"
+                                                                    aria-label={`Increase ${pricing.ticketType} quantity`}
+                                                                    disabled={quantity >= availableTickets}
+                                                                    onClick={() => {
+                                                                        setQuantities((current) => ({
+                                                                            ...current,
+                                                                            [pricing._id]: Math.min(
+                                                                                availableTickets,
+                                                                                (current[pricing._id] ?? 1) + 1
+                                                                            ),
+                                                                        }))
+                                                                    }}
+                                                                >
+                                                                    +
+                                                                </button>
+                                                            </div>
                                                         </div>
 
                                                         <button
                                                             type="button"
                                                             onClick={() => handleAddToCart(pricing._id)}
-                                                            disabled={addingPricingId === pricing._id}
-                                                            className="mt-4 rounded border border-white/20 px-4 py-2 disabled:opacity-50"
+                                                            disabled={isAdding}
+                                                            className="event-pricing__add-button"
                                                         >
-                                                            {addingPricingId === pricing._id
-                                                                ? 'Adding...'
+                                                            {isAdding
+                                                                ? 'Adding to cart...'
                                                                 : 'Add to Cart'}
                                                         </button>
                                                     </>
                                                 ) : (
                                                     <Link
                                                         to="/login"
-                                                        className="mt-4 inline-block underline"
+                                                        className="event-pricing__login-button"
                                                     >
                                                         Login to add tickets
+                                                        <span aria-hidden="true">→</span>
                                                     </Link>
                                                 )}
                                             </div>
@@ -283,7 +402,6 @@ function EventPricingPage() {
                                     </article>
                                 )
                             })}
-
                         </div>
                     )}
                 </section>

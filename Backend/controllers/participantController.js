@@ -63,6 +63,18 @@ export const listParticipants = async (req, res, next) => {
   }
 };
 
+export const listVotingParticipants = async (req, res, next) => {
+  try {
+    const participants = await Participant.find()
+      .select("name tagNumber details photoUrl createdAt")
+      .sort({ name: 1 });
+
+    return res.status(200).json({ participants });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 export const createParticipant = async (req, res, next) => {
   try {
     const name =

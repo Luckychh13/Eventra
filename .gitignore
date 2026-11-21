@@ -3,3 +3,5 @@ Backend/node_modules/
 .env
 .env.*
 !.env.example
+# Local Eventra demo credentials
+/Backend/demo-credentials.json

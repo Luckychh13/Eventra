@@ -1,7 +1,11 @@
 
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { getIdTokenResult, signOut } from 'firebase/auth'
+import {
+    getIdTokenResult,
+    sendPasswordResetEmail,
+    signOut,
+} from 'firebase/auth'
 import useAuth from '../../hooks/useAuth.js'
 import { auth } from '../../services/firebase/firebase.js'
 
@@ -14,51 +18,66 @@ function Navbar() {
         isOpen: false,
     })
 
-    const [adminRole, setAdminRole] = useState({
+    const [accountRole, setAccountRole] = useState({
         userId: null,
-        isAdmin: false,
+        role: null,
+    })
+
+    const [accountMenuState, setAccountMenuState] = useState({
+        pathname,
+        isOpen: false,
     })
 
     const [isLoggingOut, setIsLoggingOut] = useState(false)
     const [logoutError, setLogoutError] = useState('')
 
+    const [passwordResetMessage, setPasswordResetMessage] = useState('')
+    const [passwordResetError, setPasswordResetError] = useState('')
+
     const isMenuOpen =
         menuState.pathname === pathname && menuState.isOpen
 
-    const isAdmin = Boolean(
-        user &&
-        adminRole.userId === user.uid &&
-        adminRole.isAdmin
-    )
+    const isAccountMenuOpen =
+        accountMenuState.pathname === pathname &&
+        accountMenuState.isOpen
 
+    const currentRole =
+        user && accountRole.userId === user.uid
+            ? accountRole.role
+            : null
+
+    const isAdmin = currentRole === 'admin'
+    const isStallOwner = currentRole === 'stallOwner'
+
+    // Get the signed-in user's role from Firebase custom claims.
     useEffect(() => {
         if (!user) return
 
         let isActive = true
 
-        const checkAdminRole = async () => {
+        const checkAccountRole = async () => {
             try {
                 const tokenResult = await getIdTokenResult(user, true)
 
                 if (isActive) {
-                    setAdminRole({
+                    setAccountRole({
                         userId: user.uid,
-                        isAdmin: tokenResult.claims.role === 'admin',
+                        role: tokenResult.claims.role || null,
                     })
                 }
             } catch (error) {
-                console.error('Failed to verify admin role:', error)
+                console.error('Failed to verify account role:', error)
 
                 if (isActive) {
-                    setAdminRole({
+                    setAccountRole({
                         userId: user.uid,
-                        isAdmin: false,
+                        role: null,
                     })
                 }
             }
         }
 
-        checkAdminRole()
+        checkAccountRole()
 
         return () => {
             isActive = false
@@ -70,6 +89,11 @@ function Navbar() {
             pathname,
             isOpen: false,
         })
+
+        setAccountMenuState({
+            pathname,
+            isOpen: false,
+        })
     }
 
     const toggleMenu = () => {
@@ -77,6 +101,47 @@ function Navbar() {
             pathname,
             isOpen: !isMenuOpen,
         })
+
+        setAccountMenuState({
+            pathname,
+            isOpen: false,
+        })
+    }
+
+    const toggleAccountMenu = () => {
+        setAccountMenuState({
+            pathname,
+            isOpen: !isAccountMenuOpen,
+        })
+    }
+
+    // Send a password reset email to the signed-in user's email address.
+    const handlePasswordReset = async () => {
+        setPasswordResetMessage('')
+        setPasswordResetError('')
+
+        if (!user?.email) {
+            setPasswordResetError(
+                'No email address found for this account.'
+            )
+            return
+        }
+
+        try {
+            await sendPasswordResetEmail(auth, user.email)
+
+            setPasswordResetMessage(
+                `Password reset email sent to ${user.email}. Please check your inbox.`
+            )
+
+            closeMenu()
+        } catch (error) {
+            console.error('Password reset failed:', error)
+
+            setPasswordResetError(
+                'Unable to send the password reset email. Please try again.'
+            )
+        }
     }
 
     const handleLogout = async () => {
@@ -100,12 +165,16 @@ function Navbar() {
     const mobileNavItemClass =
         'block w-full rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-left text-sm font-medium text-white/80 transition-all duration-300 hover:border-white/25 hover:bg-white/10 hover:text-white'
 
+    const accountMenuItemClass =
+        'block w-full rounded-xl px-3 py-2.5 text-left text-sm text-white/80 transition-colors hover:bg-white/10 hover:text-white'
+
     return (
         <header className="eventra-navbar sticky top-0 z-50 border-b border-white/10 bg-eventra-black/80 px-4 py-3 text-white backdrop-blur-xl sm:px-6">
             <nav
                 aria-label="Main navigation"
                 className="mx-auto flex min-h-12 max-w-7xl items-center justify-between gap-4"
             >
+                {/* Brand */}
                 <Link
                     to="/"
                     onClick={closeMenu}
@@ -120,16 +189,8 @@ function Navbar() {
                     </span>
                 </Link>
 
-                <div className="hidden items-center gap-2 md:flex">
-                    {!loading && user && (
-                        <Link
-                            to="/leaderboard"
-                            className={navItemClass}
-                        >
-                            Leaderboard
-                        </Link>
-                    )}
-
+                {/* Desktop Navigation */}
+                <div className="hidden items-center gap-2 lg:flex">
                     {loading ? (
                         <span className="px-4 text-sm text-white/60">
                             Checking account...
@@ -137,43 +198,125 @@ function Navbar() {
                     ) : user ? (
                         <>
                             <Link
-                                to="/bookings"
+                                to="/vote"
+                                onClick={closeMenu}
                                 className={navItemClass}
                             >
-                                My Bookings
+                                Vote
                             </Link>
 
                             <Link
-                                to="/stall-orders"
+                                to="/leaderboard"
+                                onClick={closeMenu}
                                 className={navItemClass}
                             >
-                                My Stall Orders
+                                Leaderboard
                             </Link>
 
-                            {isAdmin && (
+                            <Link
+                                to="/cart"
+                                onClick={closeMenu}
+                                className={navItemClass}
+                            >
+                                Cart
+                            </Link>
+
+                            {/* Role-specific dashboard */}
+                            {isAdmin ? (
                                 <Link
                                     to="/dashboard"
+                                    onClick={closeMenu}
                                     className={navItemClass}
                                 >
                                     Admin Dashboard
                                 </Link>
-                            )}
+                            ) : isStallOwner ? (
+                                <Link
+                                    to="/stall-dashboard"
+                                    onClick={closeMenu}
+                                    className={navItemClass}
+                                >
+                                    Stall Owner Dashboard
+                                </Link>
+                            ) : null}
 
-                            <span
-                                className="ml-2 max-w-40 truncate border-l border-white/15 pl-4 text-sm text-white/70"
-                                title={user.displayName || user.email}
-                            >
-                                {user.displayName || user.email}
-                            </span>
+                            {/* Account Dropdown */}
+                            <div className="relative">
+                                <button
+                                    type="button"
+                                    onClick={toggleAccountMenu}
+                                    aria-expanded={isAccountMenuOpen}
+                                    aria-haspopup="true"
+                                    aria-controls="eventra-desktop-account-menu"
+                                    className={navItemClass}
+                                >
+                                    My Account
 
-                            <button
-                                type="button"
-                                onClick={handleLogout}
-                                disabled={isLoggingOut}
-                                className={`${navItemClass} ml-2 disabled:cursor-not-allowed disabled:opacity-50`}
-                            >
-                                {isLoggingOut ? 'Logging out...' : 'Logout'}
-                            </button>
+                                    <span
+                                        className={`ml-2 text-xs transition-transform duration-200 ${
+                                            isAccountMenuOpen
+                                                ? 'rotate-180'
+                                                : ''
+                                        }`}
+                                    >
+                                        ▾
+                                    </span>
+                                </button>
+
+                                {isAccountMenuOpen && (
+                                    <div
+                                        id="eventra-desktop-account-menu"
+                                        className="absolute right-0 top-[calc(100%+0.75rem)] z-50 w-56 rounded-2xl border border-white/10 !bg-[#171522] p-2 shadow-2xl"
+                                    >
+                                        <Link
+                                            to="/account"
+                                            onClick={closeMenu}
+                                            className={accountMenuItemClass}
+                                        >
+                                            My Account
+                                        </Link>
+
+                                        <Link
+                                            to="/bookings"
+                                            onClick={closeMenu}
+                                            className={accountMenuItemClass}
+                                        >
+                                            My Bookings
+                                        </Link>
+
+                                        <Link
+                                            to="/stall-orders"
+                                            onClick={closeMenu}
+                                            className={accountMenuItemClass}
+                                        >
+                                            My Stall Orders
+                                        </Link>
+
+                                        <div className="my-2 border-t border-white/10" />
+
+                                        <button
+                                            type="button"
+                                            onClick={handlePasswordReset}
+                                            className={accountMenuItemClass}
+                                        >
+                                            Reset Password
+                                        </button>
+
+                                        <div className="my-2 border-t border-white/10" />
+
+                                        <button
+                                            type="button"
+                                            onClick={handleLogout}
+                                            disabled={isLoggingOut}
+                                            className={`${accountMenuItemClass} text-red-400 hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50`}
+                                        >
+                                            {isLoggingOut
+                                                ? 'Logging out...'
+                                                : 'Logout'}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </>
                     ) : (
                         <>
@@ -194,6 +337,7 @@ function Navbar() {
                     )}
                 </div>
 
+                {/* Mobile Menu Toggle */}
                 <button
                     type="button"
                     onClick={toggleMenu}
@@ -204,48 +348,93 @@ function Navbar() {
                     }
                     aria-expanded={isMenuOpen}
                     aria-controls="eventra-mobile-navigation"
-                    className="grid size-11 shrink-0 place-items-center rounded-xl border border-white/15 bg-white/5 text-white transition-colors hover:bg-white/10 md:hidden"
+                    className="grid size-11 shrink-0 place-items-center rounded-xl border border-white/15 bg-white/5 text-white transition-colors hover:bg-white/10 lg:hidden"
                 >
                     <span className="flex w-5 flex-col gap-1.5">
                         <span
-                            className={`h-0.5 w-full rounded-full bg-current transition-transform duration-300 ${isMenuOpen ? 'translate-y-2 rotate-45' : ''
-                                }`}
+                            className={`h-0.5 w-full rounded-full bg-current transition-transform duration-300 ${
+                                isMenuOpen
+                                    ? 'translate-y-2 rotate-45'
+                                    : ''
+                            }`}
                         />
+
                         <span
-                            className={`h-0.5 w-full rounded-full bg-current transition-opacity duration-300 ${isMenuOpen ? 'opacity-0' : 'opacity-100'
-                                }`}
+                            className={`h-0.5 w-full rounded-full bg-current transition-opacity duration-300 ${
+                                isMenuOpen ? 'opacity-0' : 'opacity-100'
+                            }`}
                         />
+
                         <span
-                            className={`h-0.5 w-full rounded-full bg-current transition-transform duration-300 ${isMenuOpen ? '-translate-y-2 -rotate-45' : ''
-                                }`}
+                            className={`h-0.5 w-full rounded-full bg-current transition-transform duration-300 ${
+                                isMenuOpen
+                                    ? '-translate-y-2 -rotate-45'
+                                    : ''
+                            }`}
                         />
                     </span>
                 </button>
             </nav>
 
+            {/* Mobile Navigation */}
             {isMenuOpen && (
                 <div
                     id="eventra-mobile-navigation"
-                    className="mx-auto mt-3 max-w-7xl overflow-hidden rounded-2xl border border-white/10 bg-eventra-dark p-4 shadow-2xl md:hidden"
+                    className="mx-auto mt-3 max-w-7xl overflow-hidden rounded-2xl border border-white/10 bg-eventra-dark p-4 shadow-2xl lg:hidden"
                 >
                     <div className="space-y-2">
-                        {!loading && user && (
-                            <Link
-                                to="/leaderboard"
-                                onClick={closeMenu}
-                                className={mobileNavItemClass}
-                            >
-                                Leaderboard
-                            </Link>
-                        )}
-
                         {loading ? (
                             <p className="px-3 py-2 text-sm text-white/60">
                                 Checking account...
                             </p>
                         ) : user ? (
                             <>
-                                <div className="border-b border-white/10 px-3 py-3">
+                                {/* Main User Links */}
+                                <Link
+                                    to="/vote"
+                                    onClick={closeMenu}
+                                    className={mobileNavItemClass}
+                                >
+                                    Vote
+                                </Link>
+
+                                <Link
+                                    to="/leaderboard"
+                                    onClick={closeMenu}
+                                    className={mobileNavItemClass}
+                                >
+                                    Leaderboard
+                                </Link>
+
+                                <Link
+                                    to="/cart"
+                                    onClick={closeMenu}
+                                    className={mobileNavItemClass}
+                                >
+                                    Cart
+                                </Link>
+
+                                {/* Role-specific dashboard */}
+                                {isAdmin ? (
+                                    <Link
+                                        to="/dashboard"
+                                        onClick={closeMenu}
+                                        className={mobileNavItemClass}
+                                    >
+                                        Admin Dashboard
+                                    </Link>
+                                ) : isStallOwner ? (
+                                    <Link
+                                        to="/stall-dashboard"
+                                        onClick={closeMenu}
+                                        className={mobileNavItemClass}
+                                    >
+                                        Stall Owner Dashboard
+                                    </Link>
+                                ) : null}
+
+                                {/* Signed-in User */}
+                                <div className="border-t border-white/10 px-3 py-3">
                                     <p className="text-xs font-semibold uppercase tracking-wider text-eventra-muted">
                                         Signed in as
                                     </p>
@@ -255,40 +444,81 @@ function Navbar() {
                                     </p>
                                 </div>
 
-                                {isAdmin && (
-                                    <Link
-                                        to="/dashboard"
-                                        onClick={closeMenu}
-                                        className={mobileNavItemClass}
-                                    >
-                                        Admin Dashboard
-                                    </Link>
-                                )}
-
-                                <Link
-                                    to="/bookings"
-                                    onClick={closeMenu}
-                                    className={mobileNavItemClass}
-                                >
-                                    My Bookings
-                                </Link>
-
-                                <Link
-                                    to="/stall-orders"
-                                    onClick={closeMenu}
-                                    className={mobileNavItemClass}
-                                >
-                                    My Stall Orders
-                                </Link>
-
+                                {/* Mobile Account Dropdown */}
                                 <button
                                     type="button"
-                                    onClick={handleLogout}
-                                    disabled={isLoggingOut}
-                                    className={`${mobileNavItemClass} disabled:cursor-not-allowed disabled:opacity-50`}
+                                    onClick={toggleAccountMenu}
+                                    aria-expanded={isAccountMenuOpen}
+                                    aria-haspopup="true"
+                                    aria-controls="eventra-mobile-account-menu"
+                                    className={`${mobileNavItemClass} flex items-center justify-between`}
                                 >
-                                    {isLoggingOut ? 'Logging out...' : 'Logout'}
+                                    My Account
+
+                                    <span
+                                        className={`text-xs transition-transform duration-200 ${
+                                            isAccountMenuOpen
+                                                ? 'rotate-180'
+                                                : ''
+                                        }`}
+                                    >
+                                        ▾
+                                    </span>
                                 </button>
+
+                                {isAccountMenuOpen && (
+                                    <div
+                                        id="eventra-mobile-account-menu"
+                                        className="space-y-1 rounded-xl border border-white/10 !bg-[#171522] p-2"
+                                    >
+                                        <Link
+                                            to="/account"
+                                            onClick={closeMenu}
+                                            className={accountMenuItemClass}
+                                        >
+                                            My Account
+                                        </Link>
+
+                                        <Link
+                                            to="/bookings"
+                                            onClick={closeMenu}
+                                            className={accountMenuItemClass}
+                                        >
+                                            My Bookings
+                                        </Link>
+
+                                        <Link
+                                            to="/stall-orders"
+                                            onClick={closeMenu}
+                                            className={accountMenuItemClass}
+                                        >
+                                            My Stall Orders
+                                        </Link>
+
+                                        <div className="my-2 border-t border-white/10" />
+
+                                        <button
+                                            type="button"
+                                            onClick={handlePasswordReset}
+                                            className={accountMenuItemClass}
+                                        >
+                                            Reset Password
+                                        </button>
+
+                                        <div className="my-2 border-t border-white/10" />
+
+                                        <button
+                                            type="button"
+                                            onClick={handleLogout}
+                                            disabled={isLoggingOut}
+                                            className={`${accountMenuItemClass} text-red-400 hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50`}
+                                        >
+                                            {isLoggingOut
+                                                ? 'Logging out...'
+                                                : 'Logout'}
+                                        </button>
+                                    </div>
+                                )}
                             </>
                         ) : (
                             <>
@@ -313,12 +543,32 @@ function Navbar() {
                 </div>
             )}
 
+            {/* Logout Error */}
             {logoutError && (
                 <p
                     role="alert"
                     className="mx-auto mt-3 max-w-7xl rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-400"
                 >
                     {logoutError}
+                </p>
+            )}
+
+            {/* Password Reset Feedback */}
+            {passwordResetMessage && (
+                <p
+                    role="status"
+                    className="mx-auto mt-3 max-w-7xl rounded-lg bg-green-500/10 px-4 py-2 text-sm text-green-400"
+                >
+                    {passwordResetMessage}
+                </p>
+            )}
+
+            {passwordResetError && (
+                <p
+                    role="alert"
+                    className="mx-auto mt-3 max-w-7xl rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-400"
+                >
+                    {passwordResetError}
                 </p>
             )}
         </header>

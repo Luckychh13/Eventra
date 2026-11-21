@@ -20,6 +20,9 @@
 ========================================================= */
 
 .home-reveal {
+    min-width: 0;
+    max-width: 100%;
+
     opacity: 0;
     transform: translate3d(0, 42px, 0);
     transition:

@@ -65,27 +65,33 @@ export async function castVote(req, res) {
     const io = req.app.get("io");
 
     if (io) {
-      io.emit("voteUpdate", {
-        id: participantId,
-        votes: updated.votes,
+      const leaderboardConfig = await AppConfig.findOne({
+        key: "leaderboard",
       });
 
-      const topParticipants = await Participant.find()
-        .select("name tagNumber photoUrl votes")
-        .sort({ votes: -1 })
-        .limit(5);
+      if (leaderboardConfig?.value?.isLive === true) {
+        io.emit("voteUpdate", {
+          id: participantId,
+          votes: updated.votes,
+        });
 
-      io.emit("leaderboardUpdate", topParticipants);
+        const topParticipants = await Participant.find()
+          .select("name tagNumber photoUrl votes")
+          .sort({ votes: -1 })
+          .limit(5);
 
-      const [totalParticipants, totalVotes] = await Promise.all([
-        Participant.countDocuments(),
-        Vote.countDocuments(),
-      ]);
+        io.emit("leaderboardUpdate", topParticipants);
 
-      io.emit("statsUpdate", {
-        totalParticipants,
-        totalVotes,
-      });
+        const [totalParticipants, totalVotes] = await Promise.all([
+          Participant.countDocuments(),
+          Vote.countDocuments(),
+        ]);
+
+        io.emit("statsUpdate", {
+          totalParticipants,
+          totalVotes,
+        });
+      }
     }
 
     return res.json({

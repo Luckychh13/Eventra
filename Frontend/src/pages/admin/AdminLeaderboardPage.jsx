@@ -5,6 +5,10 @@ import {
     toggleLeaderboard,
     scheduleLeaderboard,
 } from "../../services/api/leaderboardService.js";
+import {
+    getVotingStatus,
+    toggleVoting,
+} from "../../services/api/votingService.js";
 import "./AdminLeaderboardPage.css";
 
 function toLocalDateTime(value) {
@@ -53,6 +57,10 @@ function AdminLeaderboardPage() {
     const [scheduledRevealTime, setScheduledRevealTime] = useState(null);
     const [isRevealScheduled, setIsRevealScheduled] = useState(false);
 
+    const [isVotingLive, setIsVotingLive] = useState(null);
+    const [votingLoading, setVotingLoading] = useState(true);
+    const [votingUpdating, setVotingUpdating] = useState(false);
+
     const [revealTime, setRevealTime] = useState("");
 
     const [loading, setLoading] = useState(true);
@@ -99,6 +107,28 @@ function AdminLeaderboardPage() {
                 }
             });
 
+        getVotingStatus()
+            .then((data) => {
+                if (!isActive) return;
+
+                setIsVotingLive(data.isLive === true);
+            })
+            .catch((err) => {
+                if (isActive) {
+                    setError(
+                        getErrorMessage(
+                            err,
+                            "Failed to load voting status."
+                        )
+                    );
+                }
+            })
+            .finally(() => {
+                if (isActive) {
+                    setVotingLoading(false);
+                }
+            });
+
         return () => {
             isActive = false;
         };
@@ -132,6 +162,36 @@ function AdminLeaderboardPage() {
             );
         } finally {
             setStatusUpdating(false);
+        }
+    };
+
+    const handleToggleVoting = async () => {
+        if (isVotingLive === null) return;
+
+        const nextStatus = !isVotingLive;
+
+        try {
+            setVotingUpdating(true);
+            setError("");
+            setSuccessMessage("");
+
+            const data = await toggleVoting(nextStatus);
+
+            setIsVotingLive(nextStatus);
+
+            setSuccessMessage(
+                data.message ||
+                `Voting ${nextStatus ? "started" : "stopped"} successfully.`
+            );
+        } catch (err) {
+            setError(
+                getErrorMessage(
+                    err,
+                    "Failed to update voting status."
+                )
+            );
+        } finally {
+            setVotingUpdating(false);
         }
     };
 
@@ -241,6 +301,77 @@ function AdminLeaderboardPage() {
                 </div>
             )}
 
+            <section className="admin-leaderboard-status-card">
+                <div className="admin-leaderboard-section-heading">
+                    <div>
+                        <span className="admin-leaderboard-eyebrow">
+                            VOTING CONTROL
+                        </span>
+
+                        <h2>Voting status</h2>
+                    </div>
+
+                    <div className="admin-leaderboard-status-icon">
+                        <span />
+                    </div>
+                </div>
+
+                {votingLoading ? (
+                    <div className="admin-leaderboard-state">
+                        Loading voting status...
+                    </div>
+                ) : isVotingLive === null ? (
+                    <div className="admin-leaderboard-state">
+                        Unable to retrieve voting status.
+                    </div>
+                ) : (
+                    <>
+                        <div
+                            className={`admin-leaderboard-status-panel ${isVotingLive ? "is-live" : "is-inactive"
+                                }`}
+                        >
+                            <div>
+                                <span className="admin-leaderboard-status-label">
+                                    Current status
+                                </span>
+
+                                <strong>
+                                    {isVotingLive ? "Live" : "Stopped"}
+                                </strong>
+
+                                <p>
+                                    {isVotingLive
+                                        ? "Authenticated users can currently cast their votes."
+                                        : "Voting is currently disabled. Users cannot cast votes."}
+                                </p>
+                            </div>
+
+                            <span className="admin-leaderboard-status-dot" />
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={handleToggleVoting}
+                            disabled={votingUpdating}
+                            className={`admin-leaderboard-toggle-button ${isVotingLive ? "deactivate" : "activate"
+                                }`}
+                        >
+                            {votingUpdating
+                                ? "Updating voting status..."
+                                : isVotingLive
+                                    ? "Stop Voting"
+                                    : "Start Voting"}
+                        </button>
+
+                        <p className="admin-leaderboard-helper">
+                            {isVotingLive
+                                ? "Stopping voting prevents users from submitting new votes."
+                                : "Starting voting allows authenticated users to vote once for a participant."}
+                        </p>
+                    </>
+                )}
+            </section>
+
             <div className="admin-leaderboard-layout">
                 <section className="admin-leaderboard-status-card">
                     <div className="admin-leaderboard-section-heading">
@@ -269,8 +400,8 @@ function AdminLeaderboardPage() {
                         <>
                             <div
                                 className={`admin-leaderboard-status-panel ${isLeaderboardLive
-                                        ? "is-live"
-                                        : "is-inactive"
+                                    ? "is-live"
+                                    : "is-inactive"
                                     }`}
                             >
                                 <div>
@@ -299,8 +430,8 @@ function AdminLeaderboardPage() {
                                 onClick={handleToggleLeaderboard}
                                 disabled={statusUpdating}
                                 className={`admin-leaderboard-toggle-button ${isLeaderboardLive
-                                        ? "deactivate"
-                                        : "activate"
+                                    ? "deactivate"
+                                    : "activate"
                                     }`}
                             >
                                 {statusUpdating

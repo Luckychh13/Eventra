@@ -40,6 +40,7 @@ import ContactPage from "./pages/public/ContactPage.jsx";
 import PaymentSuccessPage from './pages/user/PaymentSuccessPage.jsx';
 import PaymentCancelPage from './pages/user/PaymentCancelPage.jsx';
 import LeaderboardPage from './pages/public/LeaderboardPage.jsx'
+import VotingPage from './pages/user/VotingPage.jsx'
 
 function App() {
   return (
@@ -72,6 +73,7 @@ function App() {
           <Route path="cart" element={<CartPage />} />
           <Route path="stall/:id/cart" element={<StallCartPage />} />
           <Route path="stall-orders" element={<MyStallOrdersPage />} />
+          <Route path="vote" element={<VotingPage />} />
         </Route>
 
 

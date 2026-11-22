@@ -163,9 +163,22 @@ body>#root>header {
 }
 
 #root>footer {
-  border-color: rgba(255, 255, 255, 0.12);
-  color: rgba(244, 248, 250, 0.72);
-  background: transparent;
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.85);
+  background-color: #0d2a38;
+}
+
+#root>footer a {
+  color: rgba(255, 255, 255, 0.95);
+  transition: color 0.2s ease;
+}
+
+#root>footer a:hover {
+  color: var(--heat);
+}
+
+#root>footer p {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* ---------------------------------------------------------
@@ -233,9 +246,10 @@ main .text-eventra-muted {
 }
 
 .home-shell__atmosphere {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: -1;
+  pointer-events: none;
   background:
     radial-gradient(ellipse at 16% 12%,
       rgba(105, 178, 211, 0.20),

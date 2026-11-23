@@ -70,8 +70,8 @@ function PerformersStallsSection() {
                         <div>
                             <p className="home-kicker">Exclusive to the fest</p>
                             <h2 className="home-title">
-                                Private nights for
-                                <em className="serif-accent"> unique energy.</em>
+                                Performers of the 
+                                <em className="serif-accent"> Night.</em>
                             </h2>
                         </div>
 
